@@ -72,20 +72,20 @@
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_book_detail" />
+    <include android:id="@+id/book_detail_layout"
+        layout="@layout/content_book_detail" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <ml.puredark.personallibrary.customs.MyFloatingActionButton
+    <com.github.clans.fab.FloatingActionButton
         android:id="@+id/fab_action"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/fab_margin"
         android:fitsSystemWindows="true"
-        app:layout_anchor="@id/app_bar"
+        app:layout_anchor="@id/book_detail_layout"
         app:layout_anchorGravity="bottom|end"
-        app:borderWidth="0dp"
         android:src="@null"/>
 </ml.puredark.personallibrary.customs.MyCoordinatorLayout>

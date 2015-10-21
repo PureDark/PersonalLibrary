@@ -1,26 +1,14 @@
 package ml.puredark.personallibrary.activities;
 
-import android.annotation.TargetApi;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
-import android.support.v8.renderscript.Allocation;
-import android.support.v8.renderscript.RenderScript;
-import android.support.v8.renderscript.ScriptIntrinsicBlur;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
@@ -28,7 +16,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import jp.wasabeef.blurry.Blurry;
+import com.github.clans.fab.FloatingActionButton;
+import com.google.gson.Gson;
+
+import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
+
 import ml.puredark.personallibrary.PersonalLibraryApplication;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.beans.Book;
@@ -40,10 +32,9 @@ public class BookDetailActivity extends AppCompatActivity {
     private ImageView bookCover, backdrop;
     private View hover;
     private LinearLayout titleBar;
-    private Animation translateAnimation;
     private CollapsingToolbarLayout toolbarLayout;
     private NestedScrollView summaryLayout;
-    private MyFloatingActionButton fab_action;
+    private FloatingActionButton fab_action;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +44,13 @@ public class BookDetailActivity extends AppCompatActivity {
         toolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
-        fab_action = (MyFloatingActionButton) findViewById(R.id.fab_action);
+        fab_action = (FloatingActionButton) findViewById(R.id.fab_action);
+        fab_action.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
 
         Object data = PersonalLibraryApplication.temp;
         if(data==null||!(data instanceof Book)){
@@ -75,11 +72,13 @@ public class BookDetailActivity extends AppCompatActivity {
         bookCover.setImageBitmap(cover);
         backdrop.setImageBitmap(cover);
 
+        MaterialDrawableBuilder.with(this).setIcon(MaterialDrawableBuilder.IconValue.ACCOUNT_BOX).build();
 
-        translateAnimation = new TranslateAnimation(TranslateAnimation.RELATIVE_TO_SELF, 0f,
-                TranslateAnimation.RELATIVE_TO_SELF, 0f,
-                TranslateAnimation.RELATIVE_TO_SELF, 0f,
-                TranslateAnimation.RELATIVE_TO_SELF, -0.4f);
+
+        Animation translateAnimation = new TranslateAnimation(TranslateAnimation.RELATIVE_TO_SELF, 0f,
+        TranslateAnimation.RELATIVE_TO_SELF, 0f,
+        TranslateAnimation.RELATIVE_TO_SELF, 0f,
+        TranslateAnimation.RELATIVE_TO_SELF, -0.4f);
         translateAnimation.setDuration(30000);
         translateAnimation.setRepeatCount(-1);
         translateAnimation.setRepeatMode(Animation.REVERSE);
@@ -93,13 +92,14 @@ public class BookDetailActivity extends AppCompatActivity {
                 Palette.Swatch vibrant = palette.getVibrantSwatch();
                 Palette.Swatch darkVibrant = palette.getDarkVibrantSwatch();
                 Palette.Swatch darkmuted = palette.getDarkMutedSwatch();
-                Palette.Swatch top = darkmuted;
+                Palette.Swatch top = (darkmuted != null) ? darkmuted : darkVibrant;
                 if(darkmuted!=null&&darkVibrant!=null)
                     top = (darkmuted.getPopulation() >= darkVibrant.getPopulation()) ? darkmuted : darkVibrant;
                 Palette.Swatch muted = palette.getMutedSwatch();
                 Palette.Swatch lightmuted = palette.getLightMutedSwatch();
                 Palette.Swatch bottom = (lightmuted != null) ? lightmuted : muted;
                 Palette.Swatch fabcolor = muted;
+                Palette.Swatch darkfabcolor =  top;
                 /* 修改UI颜色 */
                 titleBar.setBackgroundColor(vibrant.getRgb());
                 bookTitle.setTextColor(vibrant.getTitleTextColor());
@@ -108,18 +108,7 @@ public class BookDetailActivity extends AppCompatActivity {
                 hover.setBackgroundColor(top.getRgb());
                 summaryLayout.setBackgroundColor(bottom.getRgb());
                 bookSummary.setTextColor(bottom.getBodyTextColor());
-                fab_action.setBackgroundTintList(new ColorStateList (
-                        new int [] [] {
-                                new int [] {android.R.attr.state_pressed},
-                                new int [] {android.R.attr.state_focused},
-                                new int [] {}
-                        },
-                        new int [] {
-                                top.getRgb(),
-                                top.getRgb(),
-                                fabcolor.getRgb()
-                        }
-                ));
+                setFloatingActionButtonColors(fab_action, fabcolor.getRgb(), darkfabcolor.getRgb());
                 Bitmap overlay = PersonalLibraryApplication.bitmap.copy(Bitmap.Config.ARGB_8888, true);
                 overlay = FastBlur.doBlur(overlay, 2, true);
                 backdrop.setImageBitmap(overlay);
@@ -128,4 +117,22 @@ public class BookDetailActivity extends AppCompatActivity {
 
     }
 
+    private void setFloatingActionButtonColors(FloatingActionButton fab, int primaryColor, int rippleColor) {
+//        int[][] states = {
+//                {android.R.attr.state_enabled},
+//                {android.R.attr.state_pressed},
+//        };
+//
+//        int[] colors = {
+//                primaryColor,
+//                rippleColor,
+//        };
+//
+//        ColorStateList colorStateList = new ColorStateList(states, colors);
+//        colorStateList = fab.getBackgroundTintList();
+//
+//        fab.setBackgroundTintList(colorStateList);
+        fab.setColorNormal(primaryColor);
+        fab.setColorPressed(rippleColor);
+    }
 }

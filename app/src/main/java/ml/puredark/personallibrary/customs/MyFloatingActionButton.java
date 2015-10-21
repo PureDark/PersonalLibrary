@@ -6,9 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.support.design.widget.FloatingActionButton;
 import android.util.AttributeSet;
 
-/**
- * Created by PureDark on 2015/10/20.
- */
+
 public class MyFloatingActionButton extends FloatingActionButton {
     private Animatable startIcon, endIcon;
     public MyFloatingActionButton(Context context) {

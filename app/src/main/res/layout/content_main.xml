@@ -97,7 +97,9 @@
         android:layout_margin="@dimen/fab_margin"
         app:layout_anchor="@id/app_bar"
         app:layout_anchorGravity="bottom|end"
-        app:borderWidth="0dp"
+        app:fab_colorNormal="@color/colorAccent"
+        app:fab_colorPressed="@color/colorAccentDarker"
+        app:fab_colorRipple="#99FFFFFF"
         android:src="@null"/>
 
     <io.codetail.widget.RevealFrameLayout

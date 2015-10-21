@@ -152,6 +152,7 @@
     <color name="colorPrimaryDark">#173E59</color>
     <color name="colorPrimaryLight">#91D1DB</color>
     <color name="colorAccent">#ff0099cc</color>
+    <color name="colorAccentDarker">#ff0089b7</color>
     <color name="bgColor">#1e3344</color>
 
     <color name="bg_grey">#e3e3e3</color>
