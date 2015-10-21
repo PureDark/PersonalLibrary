@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/nav_index"
+            android:icon="@drawable/ic_storage_black_24dp"
+            android:title="我的藏书" />
+        <item android:id="@+id/nav_borrow"
+            android:icon="@drawable/ic_library_books_black_24dp"
+            android:title="借书记录" />
+        <item android:id="@+id/nav_friend"
+            android:icon="@drawable/ic_people_black_24dp"
+            android:title="我的书友" />
+        <item android:id="@+id/nav_whatshot"
+            android:icon="@drawable/ic_explore_black_24dp"
+            android:title="书友动态" />
+    </group>
+
+    <item android:title="账户">
+        <menu>
+            <item android:id="@+id/nav_logout"
+                android:icon="@drawable/ic_directions_run_black_24dp"
+                android:title="注销" />
+            <item android:id="@+id/nav_exit"
+                android:icon="@drawable/ic_exit_to_app_black_24dp"
+                android:title="退出" />
+        </menu>
+    </item>
+
+</menu>
