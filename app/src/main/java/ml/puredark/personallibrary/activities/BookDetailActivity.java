@@ -2,11 +2,13 @@ package ml.puredark.personallibrary.activities;
 
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.animation.Animation;
@@ -16,7 +18,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.github.clans.fab.FloatingActionButton;
 import com.google.gson.Gson;
 
 import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
@@ -24,40 +25,43 @@ import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
 import ml.puredark.personallibrary.PersonalLibraryApplication;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.beans.Book;
+import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
 import ml.puredark.personallibrary.customs.MyFloatingActionButton;
+import ml.puredark.personallibrary.helpers.ActivityTransitionExitHelper;
 import ml.puredark.personallibrary.helpers.FastBlur;
+import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 
 public class BookDetailActivity extends AppCompatActivity {
     private TextView bookTitle, bookSummary;
     private ImageView bookCover, backdrop;
     private View hover;
     private LinearLayout titleBar;
+    private MyCoordinatorLayout mCoordinatorLayout;
+    private AppBarLayout mAppBarLayout;
     private CollapsingToolbarLayout toolbarLayout;
     private NestedScrollView summaryLayout;
-    private FloatingActionButton fab_action;
+    private MyFloatingActionButton fabAction;
+    private ActivityTransitionExitHelper transitionExitHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_detail);
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        mCoordinatorLayout = (MyCoordinatorLayout) findViewById(R.id.content);
+        mAppBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
         toolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
-        fab_action = (FloatingActionButton) findViewById(R.id.fab_action);
-        fab_action.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
 
         Object data = PersonalLibraryApplication.temp;
         if(data==null||!(data instanceof Book)){
+            setResult(RESULT_CANCELED);
             finish();
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            return;
         }
-        Book book = (Book)PersonalLibraryApplication.temp;
+        final Book book = (Book)PersonalLibraryApplication.temp;
         Bitmap cover = PersonalLibraryApplication.bitmap;
         titleBar = (LinearLayout) findViewById(R.id.title_bar);
         bookTitle = (TextView) findViewById(R.id.book_title);
@@ -66,15 +70,33 @@ public class BookDetailActivity extends AppCompatActivity {
         backdrop = (ImageView) findViewById(R.id.backdrop);
         hover = findViewById(R.id.hover);
         summaryLayout = (NestedScrollView) findViewById(R.id.summary_layout);
+        fabAction = (MyFloatingActionButton) findViewById(R.id.fab_action);
+        fabAction.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferencesUtil.saveData(getBaseContext(), "isbn13_"+book.isbn13, new Gson().toJson(book));
+                setResult(RESULT_OK);
+                finish();
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            }
+        });
+
+//        transitionExitHelper = ActivityTransitionExitHelper.
+//                with(getIntent()).toView(bookCover).background(mCoordinatorLayout).start(savedInstanceState);
 
         bookTitle.setText(book.title);
         bookSummary.setText(book.summary);
         bookCover.setImageBitmap(cover);
         backdrop.setImageBitmap(cover);
 
-        MaterialDrawableBuilder.with(this).setIcon(MaterialDrawableBuilder.IconValue.ACCOUNT_BOX).build();
+        Drawable fabIcon = MaterialDrawableBuilder.with(this)
+                .setIcon(MaterialDrawableBuilder.IconValue.STAR)
+                .setSizeDp(24)
+                .setColor(Color.WHITE)
+                .build();
+        fabAction.setImageDrawable(fabIcon);
 
-
+        /* 让背景的封面大图上下来回缓慢移动 */
         Animation translateAnimation = new TranslateAnimation(TranslateAnimation.RELATIVE_TO_SELF, 0f,
         TranslateAnimation.RELATIVE_TO_SELF, 0f,
         TranslateAnimation.RELATIVE_TO_SELF, 0f,
@@ -85,54 +107,65 @@ public class BookDetailActivity extends AppCompatActivity {
         translateAnimation.setInterpolator(new LinearInterpolator());
         backdrop.startAnimation(translateAnimation);
 
-        /* 从封面提取颜色 */
-        Palette.generateAsync(cover, new Palette.PaletteAsyncListener() {
-            @Override
-            public void onGenerated(Palette palette) {
-                Palette.Swatch vibrant = palette.getVibrantSwatch();
-                Palette.Swatch darkVibrant = palette.getDarkVibrantSwatch();
-                Palette.Swatch darkmuted = palette.getDarkMutedSwatch();
-                Palette.Swatch top = (darkmuted != null) ? darkmuted : darkVibrant;
-                if(darkmuted!=null&&darkVibrant!=null)
-                    top = (darkmuted.getPopulation() >= darkVibrant.getPopulation()) ? darkmuted : darkVibrant;
-                Palette.Swatch muted = palette.getMutedSwatch();
-                Palette.Swatch lightmuted = palette.getLightMutedSwatch();
-                Palette.Swatch bottom = (lightmuted != null) ? lightmuted : muted;
-                Palette.Swatch fabcolor = muted;
-                Palette.Swatch darkfabcolor =  top;
-                /* 修改UI颜色 */
-                titleBar.setBackgroundColor(vibrant.getRgb());
-                bookTitle.setTextColor(vibrant.getTitleTextColor());
-                toolbarLayout.setContentScrimColor(top.getRgb());
-                fab_action.setBackgroundColor(vibrant.getPopulation());
-                hover.setBackgroundColor(top.getRgb());
-                summaryLayout.setBackgroundColor(bottom.getRgb());
-                bookSummary.setTextColor(bottom.getBodyTextColor());
-                setFloatingActionButtonColors(fab_action, fabcolor.getRgb(), darkfabcolor.getRgb());
-                Bitmap overlay = PersonalLibraryApplication.bitmap.copy(Bitmap.Config.ARGB_8888, true);
-                overlay = FastBlur.doBlur(overlay, 2, true);
-                backdrop.setImageBitmap(overlay);
-            }
-        });
+        Bundle bundle = getIntent().getExtras();
+
+
+        /* 修改UI颜色 */
+        titleBar.setBackgroundColor(bundle.getInt("titleBarColor"));
+        bookTitle.setTextColor(bundle.getInt("titleTextColor"));
+        toolbarLayout.setContentScrimColor(bundle.getInt("topColor"));
+        hover.setBackgroundColor(bundle.getInt("topColor"));
+        summaryLayout.setBackgroundColor(bundle.getInt("bottomColor"));
+        bookSummary.setTextColor(bundle.getInt("bottomTextColor"));
+        int fabColor = bundle.getInt("fabColor");
+        float[] hsv = new float[3];
+        Color.colorToHSV(fabColor, hsv);
+        hsv[2] *= 0.8f;
+        int fabColorPressed = Color.HSVToColor(hsv);
+        setFloatingActionButtonColors(fabAction, fabColor, fabColorPressed);
+        /* 给背景封面加上高斯模糊 */
+        Bitmap overlay = PersonalLibraryApplication.bitmap.copy(Bitmap.Config.ARGB_8888, true);
+        overlay = FastBlur.doBlur(overlay, 2, true);
+        backdrop.setImageBitmap(overlay);
 
     }
 
-    private void setFloatingActionButtonColors(FloatingActionButton fab, int primaryColor, int rippleColor) {
-//        int[][] states = {
-//                {android.R.attr.state_enabled},
-//                {android.R.attr.state_pressed},
-//        };
-//
-//        int[] colors = {
-//                primaryColor,
-//                rippleColor,
-//        };
-//
-//        ColorStateList colorStateList = new ColorStateList(states, colors);
-//        colorStateList = fab.getBackgroundTintList();
-//
-//        fab.setBackgroundTintList(colorStateList);
-        fab.setColorNormal(primaryColor);
-        fab.setColorPressed(rippleColor);
+//    @Override
+//    public void onBackPressed() {
+//        transitionExitHelper.runExitAnimation(new Runnable() {
+//            @Override
+//            public void run() {
+//                finish();
+//            }
+//        });
+//    }
+//    @Override
+//    public void finish() {
+//        super.finish();
+//        // override transitions to skip the standard window animations
+//        overridePendingTransition(0, 0);
+//    }
+
+    private void setFloatingActionButtonColors(MyFloatingActionButton fab, int primaryColor, int rippleColor) {
+        int[][] states = {
+                {android.R.attr.state_enabled},
+                {android.R.attr.state_pressed},
+        };
+        int[] colors = {
+                primaryColor,
+                rippleColor,
+        };
+        ColorStateList colorStateList = new ColorStateList(states, colors);
+        fab.setBackgroundTintList(colorStateList);
+    }
+
+
+    public void setToolbarCollapsible(){
+        mAppBarLayout.setExpanded(true, true);
+        mCoordinatorLayout.setAllowForScrool(true);
+    }
+    public void setToolbarUncollapsible(){
+        mAppBarLayout.setExpanded(false, true);
+        mCoordinatorLayout.setAllowForScrool(false);
     }
 }

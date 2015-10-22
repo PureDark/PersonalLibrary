@@ -16,9 +16,6 @@
 
 package ml.puredark.personallibrary.dataprovider;
 
-import com.h6ah4i.android.widget.advrecyclerview.swipeable.RecyclerViewSwipeManager;
-
-import java.util.LinkedList;
 import java.util.List;
 
 import ml.puredark.personallibrary.beans.BookListItem;
@@ -35,6 +32,11 @@ public class BookListDataProvider extends AbstractDataProvider {
     @Override
     public int getCount() {
         return myBooks.size();
+    }
+
+    @Override
+    public List<BookListItem> getItems() {
+        return myBooks;
     }
 
     @Override
@@ -86,5 +88,17 @@ public class BookListDataProvider extends AbstractDataProvider {
 
         mLastRemovedBook = removedItem;
         mLastRemovedPosition = position;
+    }
+
+    @Override
+    public void addItem(Data item) {
+        myBooks.add((BookListItem)item);
+        mLastRemovedPosition = -1;
+    }
+
+    @Override
+    public void addItem(int position, Data item) {
+        myBooks.add(position, (BookListItem)item);
+        mLastRemovedPosition = -1;
     }
 }

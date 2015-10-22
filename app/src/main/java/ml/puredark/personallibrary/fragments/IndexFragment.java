@@ -1,56 +1,32 @@
 package ml.puredark.personallibrary.fragments;
 
 import android.app.Activity;
-import android.graphics.drawable.Animatable;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.DecelerateInterpolator;
-import android.widget.EditText;
-import android.widget.ImageView;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.h6ah4i.android.widget.advrecyclerview.animator.GeneralItemAnimator;
 import com.h6ah4i.android.widget.advrecyclerview.animator.RefactoredDefaultItemAnimator;
 import com.h6ah4i.android.widget.advrecyclerview.decoration.ItemShadowDecorator;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager;
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.animation.ObjectAnimator;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.wnafee.vector.compat.ResourcesCompat;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import io.codetail.animation.SupportAnimator;
-import io.codetail.animation.ViewAnimationUtils;
-import io.codetail.animation.arcanimator.ArcAnimator;
-import io.codetail.animation.arcanimator.Side;
-import io.codetail.widget.RevealFrameLayout;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.activities.MainActivity;
 import ml.puredark.personallibrary.adapters.BookListAdapter;
 import ml.puredark.personallibrary.beans.BookListItem;
 import ml.puredark.personallibrary.dataprovider.BookListDataProvider;
-import ml.puredark.personallibrary.utils.ViewUtils;
+import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 
 public class IndexFragment extends Fragment {
     private static IndexFragment mInstance;
@@ -62,6 +38,7 @@ public class IndexFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private RecyclerView.Adapter mWrappedAdapter;
+    private BookListAdapter mBookAdapter;
     private RecyclerViewDragDropManager mRecyclerViewDragDropManager;
 
     public static IndexFragment newInstance() {
@@ -100,29 +77,10 @@ public class IndexFragment extends Fragment {
         mLayoutManager = new LinearLayoutManager(this.getContext(), LinearLayoutManager.VERTICAL, false);
 
         List<BookListItem> myBooks = new ArrayList<>();
-        String cover1 =  "http://img4.douban.com/lpic/s28041509.jpg";
-        String title1 = "夜莺与玫瑰";
-        String author1 = "[英] 奥斯卡·王尔德";
-        String description1 = "《夜莺与玫瑰》是英国唯美主义作家王尔德的童话作品之一，收录于《快乐王子及其他故事》。故事以夜莺受到大学生的爱情感动，培育玫瑰为主线。赞扬了爱情的可贵，鞭挞了世间的拜金主义。在一个寒冷的冬夜";
+        String data = (String) SharedPreferencesUtil.getData(this.getContext(), "books", "");
+        if(data!=null&&!data.equals(""))
+            myBooks = new Gson().fromJson(data, new TypeToken<List<BookListItem>>(){}.getType());
 
-        String cover2 =  "http://img6.douban.com/lpic/s24173364.jpg";
-        String title2 = "金枝";
-        String author2 = "[英] J. G. 弗雷泽";
-        String description2 = "金枝-巫术与宗教之研究-(上.下册)，ISBN：9787100088961，作者：弗雷泽";
-
-        String cover3 =  "http://img6.douban.com/lpic/s27716905.jpg";
-        String title3 = "S.";
-        String author3 = "J. J. 亞伯拉罕(J. J Abrams) / 道格·道斯";
-        String description3 = "這不只是一本小說，更是一場挑戰紙本書可能性的敘事冒險，一部獻給文字的動人情書。書中收錄實體解謎線索，遭美國圖書館抗議，本書只能收藏，無法借閱！這不只是一本書，這是一個穿越時空而來的物件，是解謎的鑰匙…兩個素未謀面的陌生讀者，因為對同一本書的癡迷，對文字放不下的執著，攜手踏上了一場詭譎的追尋之路……";
-        myBooks.add(new BookListItem(myBooks.size(),0,cover1,title1,author1,description1));
-        myBooks.add(new BookListItem(myBooks.size(),0,cover2,title2,author2,description2));
-        myBooks.add(new BookListItem(myBooks.size(),0,cover3,title3,author3,description3));
-        myBooks.add(new BookListItem(myBooks.size(),0,cover1,title1,author1,description1));
-        myBooks.add(new BookListItem(myBooks.size(),0,cover2,title2,author2,description2));
-        myBooks.add(new BookListItem(myBooks.size(),0,cover3,title3,author3,description3));
-        myBooks.add(new BookListItem(myBooks.size(),0,cover1,title1,author1,description1));
-        myBooks.add(new BookListItem(myBooks.size(),0,cover2,title2,author2,description2));
-        myBooks.add(new BookListItem(myBooks.size(),0,cover3,title3,author3,description3));
 
         // drag & drop manager
         mRecyclerViewDragDropManager = new RecyclerViewDragDropManager();
@@ -136,9 +94,17 @@ public class IndexFragment extends Fragment {
         mRecyclerViewDragDropManager.setInitiateOnMove(false);
 
         BookListDataProvider mBookListDataProvider = new BookListDataProvider(myBooks);
+        mBookAdapter = new BookListAdapter(mBookListDataProvider);
+        mBookAdapter.setOnItemClickListener(new BookListAdapter.MyItemClickListener() {
+            @Override
+            public void onItemClick(View view, int postion) {
+
+                mListener.onFragmentInteraction(1, mBookAdapter.getDataProvider().getItem(postion), view);
+            }
+        });
 
         // 将Adapter封装成可以拖动的
-        mWrappedAdapter = mRecyclerViewDragDropManager.createWrappedAdapter(new BookListAdapter(mBookListDataProvider));
+        mWrappedAdapter =  mRecyclerViewDragDropManager.createWrappedAdapter(mBookAdapter);
 
         final GeneralItemAnimator animator = new RefactoredDefaultItemAnimator();
 
@@ -174,6 +140,17 @@ public class IndexFragment extends Fragment {
         return rootView;
     }
 
+    public void addNewBook(BookListItem book){
+        mBookAdapter.getDataProvider().addItem(book);
+        mBookAdapter.notifyDataSetChanged();
+        mWrappedAdapter.notifyDataSetChanged();
+    }
+    public void addNewBook(int position, BookListItem book){
+        mBookAdapter.getDataProvider().addItem(position, book);
+        mBookAdapter.notifyDataSetChanged();
+        mWrappedAdapter.notifyDataSetChanged();
+    }
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -192,5 +169,10 @@ public class IndexFragment extends Fragment {
         mListener = null;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        SharedPreferencesUtil.saveData(this.getContext(), "books", new Gson().toJson(mBookAdapter.getDataProvider().getItems()));
+    }
 
 }

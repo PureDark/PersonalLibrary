@@ -16,12 +16,14 @@
 
 package ml.puredark.personallibrary.dataprovider;
 
+import java.util.List;
+
+import ml.puredark.personallibrary.beans.BookListItem;
+
 public abstract class AbstractDataProvider {
 
     public static abstract class Data {
         public abstract long getId();
-
-        public abstract int getViewType();
 
         public abstract void setPinned(boolean pinned);
 
@@ -30,9 +32,14 @@ public abstract class AbstractDataProvider {
 
     public abstract int getCount();
 
+    public abstract List<BookListItem> getItems();
+
     public abstract Data getItem(int index);
 
     public abstract void removeItem(int position);
+
+    public abstract void addItem(Data item);
+    public abstract void addItem(int position, Data item);
 
     public abstract void moveItem(int fromPosition, int toPosition);
 

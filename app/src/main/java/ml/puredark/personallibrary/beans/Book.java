@@ -10,7 +10,7 @@ public final class Book {
     public String[] author, translator;
     public Map<String, String> images;
     public String pages;
-    public String isbn;
+    public String isbn13;
 
     public final class Tag {
         public int cont;

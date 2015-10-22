@@ -23,6 +23,7 @@ import ml.puredark.personallibrary.PersonalLibraryApplication;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.beans.BookListItem;
 import ml.puredark.personallibrary.dataprovider.AbstractDataProvider;
+import ml.puredark.personallibrary.dataprovider.BookListDataProvider;
 import ml.puredark.personallibrary.utils.DensityUtils;
 import ml.puredark.personallibrary.utils.ViewUtils;
 
@@ -30,17 +31,20 @@ public class BookListAdapter
         extends RecyclerView.Adapter<BookListAdapter.BookViewHolder>
         implements DraggableItemAdapter<BookListAdapter.BookViewHolder> {
     private AbstractDataProvider mProvider;
+    private MyItemClickListener mItemClickListener;
 
     // NOTE: 短名引用
     private interface Draggable extends DraggableItemConstants {
     }
 
-    public class BookViewHolder extends AbstractDraggableItemViewHolder {
+    public class BookViewHolder extends AbstractDraggableItemViewHolder implements View.OnClickListener {
         public View card;
         public LinearLayout container;
         public ImageView cover;
         public TextView title,author,description;
-        public BookViewHolder(View view) {
+        private MyItemClickListener mListener;
+
+        public BookViewHolder(View view, MyItemClickListener onClickListener) {
             super(view);
             card = view.findViewById(R.id.card);
             container = (LinearLayout)view.findViewById(R.id.container);
@@ -48,12 +52,22 @@ public class BookListAdapter
             title = (TextView)view.findViewById(R.id.title);
             author = (TextView)view.findViewById(R.id.author);
             description = (TextView)view.findViewById(R.id.description);
+            mListener = onClickListener;
+            view.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            if(mListener != null){
+                System.out.println("ViewHolder.cover="+(cover==null));
+                mListener.onItemClick(cover,getPosition());
+            }
         }
     }
 
     public BookListAdapter(AbstractDataProvider mProvider) {
         this.mProvider = mProvider;
-        setHasStableIds(true);
+        setHasStableIds(false);
     }
 
     @Override
@@ -61,7 +75,7 @@ public class BookListAdapter
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_book, parent, false);
         // 在这里对View的参数进行设置
-        BookViewHolder vh = new BookViewHolder(v);
+        BookViewHolder vh = new BookViewHolder(v, mItemClickListener);
         return vh;
     }
 
@@ -89,7 +103,7 @@ public class BookListAdapter
 
     @Override
     public int getItemViewType(int position) {
-        return mProvider.getItem(position).getViewType();
+        return 0;
     }
 
 
@@ -120,6 +134,17 @@ public class BookListAdapter
     public ItemDraggableRange onGetItemDraggableRange(BookViewHolder holder, int position) {
         // no drag-sortable range specified
         return null;
+    }
+
+    public void setOnItemClickListener(MyItemClickListener listener){
+        this.mItemClickListener = listener;
+    }
+
+    public AbstractDataProvider getDataProvider(){
+        return mProvider;
+    }
+    public interface MyItemClickListener {
+        public void onItemClick(View view,int postion);
     }
 
 }

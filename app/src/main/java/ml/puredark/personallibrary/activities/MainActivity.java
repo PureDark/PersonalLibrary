@@ -18,6 +18,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -43,6 +44,8 @@ import com.wnafee.vector.compat.ResourcesCompat;
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.ObjectAnimator;
 
+import junit.framework.Test;
+
 import io.codetail.animation.SupportAnimator;
 import io.codetail.animation.ViewAnimationUtils;
 import io.codetail.animation.arcanimator.ArcAnimator;
@@ -52,13 +55,17 @@ import io.codetail.widget.RevealFrameLayout;
 import ml.puredark.personallibrary.PersonalLibraryApplication;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.beans.Book;
+import ml.puredark.personallibrary.beans.BookListItem;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
 import ml.puredark.personallibrary.customs.MyEditText;
 import ml.puredark.personallibrary.customs.MyFloatingActionButton;
 import ml.puredark.personallibrary.fragments.IndexFragment;
 import ml.puredark.personallibrary.fragments.OnFragmentInteractionListener;
+import ml.puredark.personallibrary.helpers.ActivityTransitionEnterHelper;
 import ml.puredark.personallibrary.helpers.DoubanRestAPI;
+import ml.puredark.personallibrary.helpers.FastBlur;
 import ml.puredark.personallibrary.utils.DensityUtils;
+import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 import ml.puredark.personallibrary.utils.ViewUtils;
 
 public class MainActivity extends AppCompatActivity
@@ -79,7 +86,7 @@ public class MainActivity extends AppCompatActivity
 
 
     //动画相关元素
-    private MyFloatingActionButton fab_add;
+    private MyFloatingActionButton fabAdd;
     private RevealFrameLayout revealLayout;
     private View revealView, extendBar, blank;
     //revealView是否展开
@@ -139,10 +146,10 @@ public class MainActivity extends AppCompatActivity
         //为FAB加载图标
         Animatable crossStartIcon = (Animatable) ResourcesCompat.getDrawable(this, R.drawable.vector_animated_cross_0_to_45);
         Animatable crossEndIcon = (Animatable) ResourcesCompat.getDrawable(this, R.drawable.vector_animated_cross_45_to_0);
-        fab_add = (MyFloatingActionButton) findViewById(R.id.fab_add);
-        fab_add.setStartIcon(crossStartIcon);
-        fab_add.setEndIcon(crossEndIcon);
-        fab_add.setOnClickListener(new View.OnClickListener() {
+        fabAdd = (MyFloatingActionButton) findViewById(R.id.fab_add);
+        fabAdd.setStartIcon(crossStartIcon);
+        fabAdd.setEndIcon(crossEndIcon);
+        fabAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(!revealed&&!animating) {
@@ -207,9 +214,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
-        if (result != null) {
-            String contents = result.getContents();
-            if (contents != null) {
+        if (result != null&&result.getContents()!=null) {
 //                final Snackbar snackbar = Snackbar.make(rootLayout, contents, Snackbar.LENGTH_LONG);
 //                snackbar.setAction("隐藏", new View.OnClickListener() {
 //                    @Override
@@ -217,41 +222,35 @@ public class MainActivity extends AppCompatActivity
 //                        snackbar.dismiss();
 //                    }
 //                }).show();
-                //TODO: 获取书籍信息时显示载入动画
-                DoubanRestAPI.getBookById(contents, new CallBack() {
-                    @Override
-                    public void action(Object obj) {
-                        if(obj instanceof Book){
-                            final Book book = (Book)obj;
-                            new AnimationShowBookDetail(new MyAnimatorListener() {
-                                @Override
-                                public void onAnimationEnd() {
-                                    String url = book.images.get("large");
-                                    if(url==null) url = book.image;
-                                    ImageLoader.getInstance().loadImage(url, new SimpleImageLoadingListener() {
-                                        @Override
-                                        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                                            Intent intent = new Intent(MainActivity.this, BookDetailActivity.class);
-                                            PersonalLibraryApplication.temp = book;
-                                            PersonalLibraryApplication.bitmap = loadedImage;
-                                            startActivityForResult(intent, 1);
-                                            MainActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                                        }
-                                    });
-                                }
-                            }).start();
-                        }else
-                            new Handler().postDelayed(new Runnable() {
-                                public void run() {
-                                    new AnimationFabtoCamera().reverse();
-                                }
-                            }, 500);
+            //TODO: 获取书籍信息时显示载入动画
+
+            DoubanRestAPI.getBookById(result.getContents(), new CallBack() {
+                @Override
+                public void action(Object obj) {
+                    if (obj instanceof Book) {
+                        Book book = (Book) obj;
+                        startBookDetailActivity(book);
+                    } else {
+                        new Handler().postDelayed(new Runnable() {
+                            public void run() {
+                                new AnimationFabtoCamera().reverse();
+                            }
+                        }, 500);
                     }
-                });
-                return;
-            }
+                }
+            });
+            return;
         }else if(requestCode==1){
+            if(resultCode==RESULT_OK&&PersonalLibraryApplication.temp instanceof Book) {
+                Book book = (Book) PersonalLibraryApplication.temp;
+                String author = (book.author.length>0)?book.author[0]:"";
+                BookListItem item = new BookListItem(0,book.isbn13, book.images.get("large"), book.title, author, book.summary);
+                IndexFragment.getInstance().addNewBook(0, item);
+            }
             new AnimationShowBookDetail().reverse();
+            return;
+        }else if(requestCode==2){
+
             return;
         }
         new Handler().postDelayed(new Runnable() {
@@ -259,6 +258,61 @@ public class MainActivity extends AppCompatActivity
                 new AnimationFabtoCamera().reverse();
             }
         }, 500);
+    }
+    private void startBookDetailActivity(final Book book){
+        startBookDetailActivity(book, true, null);
+    }
+    private void startBookDetailActivity(final Book book, View view){
+        startBookDetailActivity(book, false, view);
+    }
+    private void startBookDetailActivity(final Book book, final boolean scaned, final View cover){
+        final String url = (book.images.get("large")==null)?book.image:book.images.get("large");
+        ImageLoader.getInstance().loadImage(url, new SimpleImageLoadingListener() {
+            @Override
+            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                PersonalLibraryApplication.temp = book;
+                PersonalLibraryApplication.bitmap = loadedImage;
+                final View fromView = cover;
+                Palette.generateAsync(loadedImage, new Palette.PaletteAsyncListener() {
+                    @Override
+                    public void onGenerated(Palette palette) {
+                        Palette.Swatch vibrant = palette.getVibrantSwatch();
+                        Palette.Swatch darkVibrant = palette.getDarkVibrantSwatch();
+                        Palette.Swatch darkmuted = palette.getDarkMutedSwatch();
+                        Palette.Swatch top = (darkmuted != null) ? darkmuted : darkVibrant;
+                        if (darkmuted != null && darkVibrant != null)
+                            top = (darkmuted.getPopulation() >= darkVibrant.getPopulation()) ? darkmuted : darkVibrant;
+                        Palette.Swatch muted = palette.getMutedSwatch();
+                        Palette.Swatch lightmuted = palette.getLightMutedSwatch();
+                        Palette.Swatch bottom = (lightmuted != null) ? lightmuted : muted;
+                        Palette.Swatch fabColor = muted;
+                        final Intent intent = new Intent(MainActivity.this, BookDetailActivity.class);
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("topColor", top.getRgb());
+                        bundle.putInt("bottomColor", bottom.getRgb());
+                        bundle.putInt("bottomTextColor", bottom.getBodyTextColor());
+                        bundle.putInt("titleBarColor", vibrant.getRgb());
+                        bundle.putInt("titleTextColor", vibrant.getTitleTextColor());
+                        bundle.putInt("fabColor", fabColor.getRgb());
+                        intent.putExtras(bundle);
+                        if(scaned)
+                            new AnimationShowBookDetail(new MyAnimatorListener() {
+                                @Override
+                                public void onAnimationEnd() {
+                                    startActivityForResult(intent, 1);
+                                    MainActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                                }
+                            }).start();
+                        else{
+//                            ActivityTransitionEnterHelper.with(MainActivity.this)
+//                                    .fromView(fromView).imageUrl(url).startActivityForResult(intent, 2);
+                            startActivityForResult(intent, 2);
+                            MainActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                        }
+                    }
+                });
+            }
+        });
     }
 
     @Override
@@ -288,6 +342,11 @@ public class MainActivity extends AppCompatActivity
         super.onPause();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -313,8 +372,15 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
     @Override
-    public void onFragmentInteraction(int action) {
-
+    public void onFragmentInteraction(int action, Object data, View view) {
+        if(action==1&&data instanceof BookListItem){
+                BookListItem item = (BookListItem) data;
+                String bookString = (String) SharedPreferencesUtil.getData(this, "isbn13_"+item.isbn13, "");
+                if(!bookString.equals("")){
+                    Book book = new Gson().fromJson(bookString, Book.class);
+                    startBookDetailActivity(book, view);
+                }
+        }
     }
 
     public void extendSearchBar(){
@@ -366,9 +432,9 @@ public class MainActivity extends AppCompatActivity
 
         void start(){
             animating = true;
-            startFabX = (int) ViewUtils.centerX(fab_add);
-            startFabY = (int)ViewUtils.centerY(fab_add);
-            fab_add.start();
+            startFabX = (int) ViewUtils.centerX(fabAdd);
+            startFabY = (int)ViewUtils.centerY(fabAdd);
+            fabAdd.start();
             fabToCenter();
         }
 
@@ -378,17 +444,17 @@ public class MainActivity extends AppCompatActivity
         }
 
         void fabToCenter(){
-            fab_add.setVisibility(View.VISIBLE);
+            fabAdd.setVisibility(View.VISIBLE);
             int endFabX = revealView.getWidth()/2;
             int endFabY = (int) (revealView.getHeight()*0.5f);
-            ArcAnimator arcAnimator = ArcAnimator.createArcAnimator(fab_add,
+            ArcAnimator arcAnimator = ArcAnimator.createArcAnimator(fabAdd,
                     endFabX, endFabY, 90, Side.LEFT)
                     .setDuration(300);
             arcAnimator.setInterpolator(ACCELERATE_DECELERATE);
             arcAnimator.addListener(new SimpleListener(){
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    fab_add.setVisibility(View.INVISIBLE);
+                    fabAdd.setVisibility(View.INVISIBLE);
                     revealCameraLayout();
                 }
             });
@@ -399,8 +465,8 @@ public class MainActivity extends AppCompatActivity
             revealView.setVisibility(View.VISIBLE);
             float finalRadius = Math.max(revealView.getWidth(), revealView.getHeight()) * 1.5f;
             SupportAnimator animator = ViewAnimationUtils.createCircularReveal(revealView,
-                    (int) ViewUtils.centerX(fab_add), (int) ViewUtils.centerY(fab_add),
-                    fab_add.getWidth() / 2f, finalRadius);
+                    (int) ViewUtils.centerX(fabAdd), (int) ViewUtils.centerY(fabAdd),
+                    fabAdd.getWidth() / 2f, finalRadius);
             animator.setDuration(400);
             animator.setInterpolator(ACCELERATE);
             animator.addListener(new SimpleListener() {
@@ -419,14 +485,14 @@ public class MainActivity extends AppCompatActivity
             revealView.setVisibility(View.VISIBLE);
             float finalRadius = Math.max(revealView.getWidth(), revealView.getHeight()) * 1.5f;
             SupportAnimator animator = ViewAnimationUtils.createCircularReveal(revealView,
-                    (int)ViewUtils.centerX(fab_add), (int)ViewUtils.centerY(fab_add),
-                    finalRadius, fab_add.getWidth() / 2f);
+                    (int)ViewUtils.centerX(fabAdd), (int)ViewUtils.centerY(fabAdd),
+                    finalRadius, fabAdd.getWidth() / 2f);
             animator.setDuration(400);
             animator.addListener(new SimpleListener() {
                 @Override
                 public void onAnimationEnd() {
                     revealView.setVisibility(View.INVISIBLE);
-                    fab_add.reverse();
+                    fabAdd.reverse();
                     fabToOrigin();
                 }
             });
@@ -435,8 +501,8 @@ public class MainActivity extends AppCompatActivity
         }
 
         void fabToOrigin() {
-            fab_add.setVisibility(View.VISIBLE);
-            ArcAnimator arcAnimator = ArcAnimator.createArcAnimator(fab_add,
+            fabAdd.setVisibility(View.VISIBLE);
+            ArcAnimator arcAnimator = ArcAnimator.createArcAnimator(fabAdd,
                     startFabX, startFabY, 90, Side.RIGHT)
                     .setDuration(300);
             arcAnimator.setInterpolator(ACCELERATE_DECELERATE);
@@ -481,7 +547,7 @@ public class MainActivity extends AppCompatActivity
             revealView.setVisibility(View.VISIBLE);
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(revealView, "bottom",
                     revealView.getBottom(), revealView.getTop() + DensityUtils.dp2px(MainActivity.this,264));
-            objectAnimator.setDuration(600);
+            objectAnimator.setDuration(700);
             objectAnimator.addListener(new SimpleListener() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
@@ -494,11 +560,11 @@ public class MainActivity extends AppCompatActivity
 
         void extendBar(){
             extendBar.setVisibility(View.VISIBLE);
-            float finalRadius = extendBar.getWidth()*2.5f;
+            float finalRadius = extendBar.getWidth()*2.0f;
             SupportAnimator animator = ViewAnimationUtils.createCircularReveal(extendBar,
                     extendBar.getRight(), (int) ViewUtils.centerY(extendBar),
                     0, finalRadius);
-            animator.setDuration(400);
+            animator.setDuration(700);
             animator.setInterpolator(ACCELERATE);
             animator.addListener(new SimpleListener() {
                 @Override
@@ -513,11 +579,12 @@ public class MainActivity extends AppCompatActivity
 
         void collapseBar(){
             extendBar.setVisibility(View.VISIBLE);
-            float finalRadius = extendBar.getWidth()*2.5f;
+            float finalRadius = extendBar.getWidth()*2.0f;
             SupportAnimator animator = ViewAnimationUtils.createCircularReveal(extendBar,
                     extendBar.getRight(), (int) ViewUtils.centerY(extendBar),
                     finalRadius, 0);
-            animator.setDuration(400);
+            animator.setDuration(900);
+            animator.setInterpolator(ACCELERATE);
             animator.addListener(new SimpleListener() {
                 @Override
                 public void onAnimationEnd() {
@@ -525,7 +592,6 @@ public class MainActivity extends AppCompatActivity
                     dropHeader();
                 }
             });
-            animator.setInterpolator(DECELERATE);
             animator.start();
         }
 
@@ -540,7 +606,7 @@ public class MainActivity extends AppCompatActivity
                     new AnimationFabtoCamera(callBack).reverse();
                 }
             });
-            objectAnimator.setDuration(600);
+            objectAnimator.setDuration(500);
             objectAnimator.setInterpolator(ACCELERATE_DECELERATE);
             objectAnimator.start();
         }
