@@ -119,7 +119,6 @@
     <orderEntry type="library" exported="" name="pre-lollipop-activity-transition-1.1.0" level="project" />
     <orderEntry type="library" exported="" name="mrvector-0.2.0" level="project" />
     <orderEntry type="library" exported="" name="shadow-layout-b014ac2237" level="project" />
-    <orderEntry type="library" exported="" name="wximg" level="project" />
     <orderEntry type="library" exported="" name="palette-v7-23.1.0" level="project" />
     <orderEntry type="library" exported="" name="core-3.2.0" level="project" />
     <orderEntry type="library" exported="" name="appcompat-v7-23.1.0" level="project" />
@@ -128,9 +127,9 @@
     <orderEntry type="library" exported="" name="advrecyclerview-0.8.2" level="project" />
     <orderEntry type="library" exported="" name="library-2.4.0" level="project" />
     <orderEntry type="library" exported="" name="vector-compat-87ae4c2598" level="project" />
-    <orderEntry type="library" exported="" name="roundedimageview-2.2.0" level="project" />
     <orderEntry type="library" exported="" name="material-ripple-1.0.2" level="project" />
     <orderEntry type="library" exported="" name="library-1.0.1" level="project" />
+    <orderEntry type="library" exported="" name="roundedimageview-2.2.0" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-23.1.0" level="project" />
     <orderEntry type="library" exported="" name="gson-2.2.4" level="project" />
     <orderEntry type="library" exported="" name="materialiconlib-1.0.4" level="project" />

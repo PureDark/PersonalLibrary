@@ -224,7 +224,7 @@ public class MainActivity extends AppCompatActivity
 //                }).show();
             //TODO: 获取书籍信息时显示载入动画
 
-            DoubanRestAPI.getBookById(result.getContents(), new CallBack() {
+            DoubanRestAPI.getBookByISBN(result.getContents(), new CallBack() {
                 @Override
                 public void action(Object obj) {
                     if (obj instanceof Book) {

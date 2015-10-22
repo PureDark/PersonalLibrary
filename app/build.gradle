@@ -1,15 +1,12 @@
 buildscript {
     repositories {
-        maven { url 'https://raw.github.com/xujiaao/mvn-repository/master/releases' }
     }
 
     dependencies {
-        classpath 'com.github.xujiaao:aarLinkSources:1.0.0'
     }
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'aar-link-sources'
 
 android {
     compileSdkVersion 23
@@ -64,7 +61,6 @@ dependencies {
     compile('com.h6ah4i.android.widget.advrecyclerview:advrecyclerview:0.8.2@aar') {
         transitive = true
     }
-    aarLinkSources 'com.h6ah4i.android.widget.advrecyclerview:advrecyclerview:0.8.2:sources@jar'
     compile 'com.github.twyatt:vector-compat:87ae4c2598'
     compile('com.github.ozodrukh:CircularReveal:1.1.1@aar') {
         transitive = true;

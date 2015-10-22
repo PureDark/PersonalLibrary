@@ -19,8 +19,23 @@ public class DoubanRestAPI {
     public static final String API_GET_BOOK_BY_ID = "/v2/book/";
     public static final String API_GET_BOOK_BY_ISBN = "/v2/book/isbn/";
 
-    public static void getBookById(String id, final MainActivity.CallBack callBack) {
-        DoubanRestAPIClient.get(API_GET_BOOK_BY_ISBN+id, null, new JsonHttpResponseHandler() {
+    public static void getBookByID(String id, final MainActivity.CallBack callBack) {
+        DoubanRestAPIClient.get(API_GET_BOOK_BY_ID+id, null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                Gson gson = new Gson();
+                Book book = gson.fromJson(response.toString(), Book.class);
+                callBack.action(book);
+            }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+
+            }
+        });
+    }
+
+    public static void getBookByISBN(String isbn13, final MainActivity.CallBack callBack) {
+        DoubanRestAPIClient.get(API_GET_BOOK_BY_ISBN+isbn13, null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 Gson gson = new Gson();
