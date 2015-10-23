@@ -64,10 +64,6 @@ public class ActivityTransitionHelper {
         this.activity = activity;
     }
 
-    public ActivityTransitionHelper(Intent fromIntent) {
-        this.fromIntent = fromIntent;
-    }
-
     public static ActivityTransitionHelper with(Activity activity) {
         return new ActivityTransitionHelper(activity);
     }
