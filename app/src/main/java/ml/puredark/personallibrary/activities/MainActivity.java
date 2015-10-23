@@ -5,15 +5,12 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.Animatable;
-import android.graphics.drawable.Drawable;
-import android.media.Image;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -27,15 +24,14 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
-import com.kogitune.activity_transition.ActivityTransition;
+import com.nineoldandroids.animation.AnimatorSet;
+import com.nineoldandroids.animation.ArgbEvaluator;
+import com.nineoldandroids.animation.ValueAnimator;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.telly.mrvector.MrVector;
@@ -43,8 +39,6 @@ import com.wnafee.vector.compat.ResourcesCompat;
 
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.ObjectAnimator;
-
-import junit.framework.Test;
 
 import io.codetail.animation.SupportAnimator;
 import io.codetail.animation.ViewAnimationUtils;
@@ -61,9 +55,10 @@ import ml.puredark.personallibrary.customs.MyEditText;
 import ml.puredark.personallibrary.customs.MyFloatingActionButton;
 import ml.puredark.personallibrary.fragments.IndexFragment;
 import ml.puredark.personallibrary.fragments.OnFragmentInteractionListener;
-import ml.puredark.personallibrary.helpers.ActivityTransitionEnterHelper;
+import ml.puredark.personallibrary.helpers.ActivityTransitionHelper;
+import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimator;
+import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimatorListener;
 import ml.puredark.personallibrary.helpers.DoubanRestAPI;
-import ml.puredark.personallibrary.helpers.FastBlur;
 import ml.puredark.personallibrary.utils.DensityUtils;
 import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 import ml.puredark.personallibrary.utils.ViewUtils;
@@ -83,7 +78,6 @@ public class MainActivity extends AppCompatActivity
     //搜索栏是否展开
     private boolean expanded = false;
     private MyEditText inputSearch;
-
 
     //动画相关元素
     private MyFloatingActionButton fabAdd;
@@ -153,7 +147,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 if(!revealed&&!animating) {
-                    new AnimationFabtoCamera(new MyAnimatorListener() {
+                    new AnimationFabtoCamera().start(new CustomAnimatorListener() {
                         @Override
                         public void onAnimationEnd() {
                             IntentIntegrator integrator = new IntentIntegrator(MainActivity.this);
@@ -165,7 +159,7 @@ public class MainActivity extends AppCompatActivity
                             integrator.initiateScan(IntentIntegrator.PRODUCT_CODE_TYPES);
                             MainActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                         }
-                    }).start();
+                    });
                 }
             }
         });
@@ -244,10 +238,26 @@ public class MainActivity extends AppCompatActivity
             if(resultCode==RESULT_OK&&PersonalLibraryApplication.temp instanceof Book) {
                 Book book = (Book) PersonalLibraryApplication.temp;
                 String author = (book.author.length>0)?book.author[0]:"";
-                BookListItem item = new BookListItem(0,book.isbn13, book.images.get("large"), book.title, author, book.summary);
+                BookListItem item = new BookListItem(book.id, book.isbn13, book.images.get("large"), book.title, author, book.summary);
                 IndexFragment.getInstance().addNewBook(0, item);
             }
-            new AnimationShowBookDetail().reverse();
+            new Handler().postDelayed(new Runnable() {
+                public void run() {
+                    ObjectAnimator bgColorAnimator = ObjectAnimator.ofObject(revealView,
+                            "backgroundColor",
+                            new ArgbEvaluator(),
+                            ((ColorDrawable)revealView.getBackground()).getColor(),
+                            getResources().getColor(R.color.colorAccent));
+                    bgColorAnimator.setDuration(700);
+                    bgColorAnimator.start();
+                    new AnimationShowBookDetail().reverse(new CustomAnimatorListener() {
+                        @Override
+                        public void onAnimationEnd() {
+                            new AnimationFabtoCamera().reverse();
+                        }
+                    });
+                }
+            }, 500);
             return;
         }else if(requestCode==2){
 
@@ -295,19 +305,26 @@ public class MainActivity extends AppCompatActivity
                         bundle.putInt("titleTextColor", vibrant.getTitleTextColor());
                         bundle.putInt("fabColor", fabColor.getRgb());
                         intent.putExtras(bundle);
-                        if(scaned)
-                            new AnimationShowBookDetail(new MyAnimatorListener() {
+                        intent.putExtra("scaned", scaned);
+                        if (scaned) {
+                            ObjectAnimator bgColorAnimator = ObjectAnimator.ofObject(revealView,
+                                    "backgroundColor",
+                                    new ArgbEvaluator(),
+                                    getResources().getColor(R.color.colorAccent),
+                                    top.getRgb());
+                            bgColorAnimator.setDuration(700);
+                            bgColorAnimator.start();
+                            extendBar.setBackgroundColor(vibrant.getRgb());
+                            new AnimationShowBookDetail().start(new CustomAnimatorListener() {
                                 @Override
                                 public void onAnimationEnd() {
                                     startActivityForResult(intent, 1);
                                     MainActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                                 }
-                            }).start();
-                        else{
-//                            ActivityTransitionEnterHelper.with(MainActivity.this)
-//                                    .fromView(fromView).imageUrl(url).startActivityForResult(intent, 2);
-                            startActivityForResult(intent, 2);
-                            MainActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                            });
+                        } else {
+                            ActivityTransitionHelper.with(MainActivity.this)
+                                    .fromView(fromView).startActivityForResult(intent, 2);
                         }
                     }
                 });
@@ -418,19 +435,9 @@ public class MainActivity extends AppCompatActivity
 
     static int startFabX;
     static int startFabY;
-    private class AnimationFabtoCamera{
-        final AccelerateInterpolator ACCELERATE = new AccelerateInterpolator();
-        final AccelerateDecelerateInterpolator ACCELERATE_DECELERATE = new AccelerateDecelerateInterpolator();
-        final DecelerateInterpolator DECELERATE = new DecelerateInterpolator();
-        private MyAnimatorListener callBack;
+    private class AnimationFabtoCamera extends CustomAnimator {
 
-        public AnimationFabtoCamera(){}
-
-        public AnimationFabtoCamera(MyAnimatorListener callBack){
-            this.callBack = callBack;
-        }
-
-        void start(){
+        public void start(){
             animating = true;
             startFabX = (int) ViewUtils.centerX(fabAdd);
             startFabY = (int)ViewUtils.centerY(fabAdd);
@@ -438,7 +445,7 @@ public class MainActivity extends AppCompatActivity
             fabToCenter();
         }
 
-        void reverse(){
+        public void reverse(){
             animating = true;
             shrinkCameraLayout();
         }
@@ -492,6 +499,7 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onAnimationEnd() {
                     revealView.setVisibility(View.INVISIBLE);
+                    blank.setVisibility(View.INVISIBLE);
                     fabAdd.reverse();
                     fabToOrigin();
                 }
@@ -519,100 +527,73 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private class AnimationShowBookDetail{
-        final AccelerateInterpolator ACCELERATE = new AccelerateInterpolator();
-        final AccelerateDecelerateInterpolator ACCELERATE_DECELERATE = new AccelerateDecelerateInterpolator();
-        final DecelerateInterpolator DECELERATE = new DecelerateInterpolator();
-        private MyAnimatorListener callBack;
+    private class AnimationShowBookDetail extends CustomAnimator{
 
-        public AnimationShowBookDetail(){}
-
-        public AnimationShowBookDetail(MyAnimatorListener callBack){
-            this.callBack = callBack;
+        public void start(){
+            startAnimation(true);
         }
 
-        void start(){
-            blank.setVisibility(View.VISIBLE);
+        public void reverse(){
+            startAnimation(false);
+        }
+
+        private void startAnimation(boolean show){
             animating = true;
-            raiseHeader();
-        }
-
-        void reverse(){
-            blank.setVisibility(View.VISIBLE);
-            animating = true;
-            collapseBar();
-        }
-
-        void raiseHeader(){
-            revealView.setVisibility(View.VISIBLE);
-            ObjectAnimator objectAnimator = ObjectAnimator.ofInt(revealView, "bottom",
-                    revealView.getBottom(), revealView.getTop() + DensityUtils.dp2px(MainActivity.this,264));
-            objectAnimator.setDuration(700);
-            objectAnimator.addListener(new SimpleListener() {
+            final ObjectAnimator headerAnimator = getHeaderAnimator(show);
+            final ObjectAnimator extendBarAnimator = getExtendBarAnimator(show);
+            AnimatorSet animatorSet = new AnimatorSet();
+            if(show)
+                animatorSet.playSequentially(headerAnimator, extendBarAnimator);
+            else
+                animatorSet.playSequentially(extendBarAnimator, headerAnimator );
+            animatorSet.addListener(new SimpleListener() {
                 @Override
-                public void onAnimationEnd(Animator animation) {
-                    extendBar();
-                }
-            });
-            objectAnimator.setInterpolator(ACCELERATE_DECELERATE);
-            objectAnimator.start();
-        }
-
-        void extendBar(){
-            extendBar.setVisibility(View.VISIBLE);
-            float finalRadius = extendBar.getWidth()*2.0f;
-            SupportAnimator animator = ViewAnimationUtils.createCircularReveal(extendBar,
-                    extendBar.getRight(), (int) ViewUtils.centerY(extendBar),
-                    0, finalRadius);
-            animator.setDuration(700);
-            animator.setInterpolator(ACCELERATE);
-            animator.addListener(new SimpleListener() {
-                @Override
-                public void onAnimationEnd() {
+                public void onAnimationEnd(com.nineoldandroids.animation.Animator animation) {
                     animating = false;
-                    if(callBack!=null)
+                    if (callBack != null)
                         callBack.onAnimationEnd();
                 }
             });
-            animator.start();
+            animatorSet.start();
         }
 
-        void collapseBar(){
-            extendBar.setVisibility(View.VISIBLE);
-            float finalRadius = extendBar.getWidth()*2.0f;
-            SupportAnimator animator = ViewAnimationUtils.createCircularReveal(extendBar,
-                    extendBar.getRight(), (int) ViewUtils.centerY(extendBar),
-                    finalRadius, 0);
-            animator.setDuration(900);
-            animator.setInterpolator(ACCELERATE);
-            animator.addListener(new SimpleListener() {
-                @Override
-                public void onAnimationEnd() {
-                    extendBar.setVisibility(View.INVISIBLE);
-                    dropHeader();
-                }
-            });
-            animator.start();
-        }
-
-        void dropHeader() {
-            revealView.setVisibility(View.VISIBLE);
+        ObjectAnimator getHeaderAnimator(boolean show){
+            int startY = (show)?revealLayout.getBottom():revealView.getBottom();
+            int endY = (show)?revealLayout.getTop()
+                                +getResources().getDimensionPixelSize(R.dimen.book_detail_app_bar_height)
+                            :revealLayout.getBottom();
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(revealView, "bottom",
-                    revealView.getBottom(), revealLayout.getBottom());
+                    startY, endY);
+            objectAnimator.setDuration(500);
+            objectAnimator.setInterpolator(ACCELERATE);
             objectAnimator.addListener(new SimpleListener() {
                 @Override
-                public void onAnimationEnd(Animator animation) {
-                    blank.setVisibility(View.INVISIBLE);
-                    new AnimationFabtoCamera(callBack).reverse();
+                public void onAnimationStart(com.nineoldandroids.animation.Animator animation) {
+                    revealView.setVisibility(View.VISIBLE);
+                    blank.setVisibility(View.VISIBLE);
                 }
             });
+            return objectAnimator;
+        }
+
+        ObjectAnimator getExtendBarAnimator(boolean show){
+            int startX = (show)?revealLayout.getRight():0;
+            int endX = (show)?0:revealLayout.getRight();
+            ObjectAnimator objectAnimator = ObjectAnimator.ofInt(extendBar, "left",
+                    startX, endX);
             objectAnimator.setDuration(500);
-            objectAnimator.setInterpolator(ACCELERATE_DECELERATE);
-            objectAnimator.start();
+            objectAnimator.setInterpolator(ACCELERATE);
+            objectAnimator.addListener(new SimpleListener() {
+                @Override
+                public void onAnimationStart(com.nineoldandroids.animation.Animator animation) {
+                    extendBar.setVisibility(View.VISIBLE);
+                }
+            });
+            return objectAnimator;
         }
     }
 
-    private static class SimpleListener implements SupportAnimator.AnimatorListener, ObjectAnimator.AnimatorListener{
+    private static class SimpleListener implements SupportAnimator.AnimatorListener, com.nineoldandroids.animation.ObjectAnimator.AnimatorListener{
         @Override
         public void onAnimationStart() {}
         @Override
@@ -622,16 +603,13 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onAnimationRepeat() {}
         @Override
-        public void onAnimationStart(Animator animation) {}
+        public void onAnimationStart(com.nineoldandroids.animation.Animator animation) {}
         @Override
-        public void onAnimationEnd(Animator animation) {}
+        public void onAnimationEnd(com.nineoldandroids.animation.Animator animation) {}
         @Override
-        public void onAnimationCancel(Animator animation) {}
+        public void onAnimationCancel(com.nineoldandroids.animation.Animator animation) {}
         @Override
-        public void onAnimationRepeat(Animator animation) {}
-    }
-    public interface MyAnimatorListener{
-        void onAnimationEnd();
+        public void onAnimationRepeat(com.nineoldandroids.animation.Animator animation) {}
     }
 
     public abstract class CallBack{

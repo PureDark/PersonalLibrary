@@ -5,12 +5,13 @@ import android.nfc.Tag;
 import java.util.Map;
 
 public final class Book {
-    public long bid;
+    public int id;
     public String image, title, summary, pubdate;
     public String[] author, translator;
     public Map<String, String> images;
     public String pages;
     public String isbn13;
+    public String price;
 
     public final class Tag {
         public int cont;

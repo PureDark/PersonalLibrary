@@ -12,19 +12,16 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.dd.ShadowLayout;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.DraggableItemAdapter;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.DraggableItemConstants;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.ItemDraggableRange;
 import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractDraggableItemViewHolder;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
-
-import ml.puredark.personallibrary.PersonalLibraryApplication;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.beans.BookListItem;
 import ml.puredark.personallibrary.dataprovider.AbstractDataProvider;
-import ml.puredark.personallibrary.dataprovider.BookListDataProvider;
-import ml.puredark.personallibrary.utils.DensityUtils;
 import ml.puredark.personallibrary.utils.ViewUtils;
 
 public class BookListAdapter
@@ -42,6 +39,7 @@ public class BookListAdapter
         public LinearLayout container;
         public ImageView cover;
         public TextView title,author,description;
+        public ShadowLayout coverLayout;
         private MyItemClickListener mListener;
 
         public BookViewHolder(View view, MyItemClickListener onClickListener) {
@@ -52,6 +50,7 @@ public class BookListAdapter
             title = (TextView)view.findViewById(R.id.title);
             author = (TextView)view.findViewById(R.id.author);
             description = (TextView)view.findViewById(R.id.description);
+            coverLayout = (ShadowLayout) view.findViewById(R.id.book_cover_layout);
             mListener = onClickListener;
             view.setOnClickListener(this);
         }
@@ -59,15 +58,14 @@ public class BookListAdapter
         @Override
         public void onClick(View view) {
             if(mListener != null){
-                System.out.println("ViewHolder.cover="+(cover==null));
-                mListener.onItemClick(cover,getPosition());
+                mListener.onItemClick(cover, getPosition());
             }
         }
     }
 
     public BookListAdapter(AbstractDataProvider mProvider) {
         this.mProvider = mProvider;
-        setHasStableIds(false);
+        setHasStableIds(true);
     }
 
     @Override

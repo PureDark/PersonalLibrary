@@ -148,11 +148,17 @@
     <color name="black">#000000</color><!--黑色 -->
 
 
-    <color name="colorPrimary">#458489</color>
-    <color name="colorPrimaryDark">#173E59</color>
-    <color name="colorPrimaryLight">#91D1DB</color>
-    <color name="colorAccent">#ff0099cc</color>
-    <color name="colorAccentDarker">#ff0089b7</color>
+    <color name="colorPrimary">#009688</color>
+    <color name="colorPrimaryDark">#00796B</color>
+    <color name="colorPrimaryLight">#B2DFDB</color>
+    <color name="colorAccent">#00BCD4</color>
+    <color name="colorAccentDark">#0089b7</color>
+
+    <color name="textPrimary">#212121</color>
+    <color name="textSecoundary">#727272</color>
+    <color name="iconColor">#FFFFFF</color>
+    <color name="dividerColor">#B6B6B6</color>
+
     <color name="bgColor">#1e3344</color>
 
     <color name="bg_grey">#e3e3e3</color>

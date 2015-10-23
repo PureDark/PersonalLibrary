@@ -66,8 +66,7 @@ dependencies {
         transitive = true;
     }
     compile 'com.github.asyl.animation:arcanimator:1.0.0'
-    compile "com.andkulikov:transitionseverywhere:1.6.0"
-    compile 'com.github.clans:fab:1.6.1'
+    compile 'com.bartoszlipinski:viewpropertyobjectanimator:1.1.0'
 
     // Zxing libraries
     compile 'com.journeyapps:zxing-android-embedded:3.0.2@aar'

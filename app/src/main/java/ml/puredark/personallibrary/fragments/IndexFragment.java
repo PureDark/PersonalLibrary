@@ -41,6 +41,9 @@ public class IndexFragment extends Fragment {
     private BookListAdapter mBookAdapter;
     private RecyclerViewDragDropManager mRecyclerViewDragDropManager;
 
+    //书籍已点击(避免多次点击同时打开多个Activity)
+    private boolean bookItemClicked = false;
+
     public static IndexFragment newInstance() {
         mInstance = new IndexFragment();
         return mInstance;
@@ -90,16 +93,18 @@ public class IndexFragment extends Fragment {
                 (NinePatchDrawable) ContextCompat.getDrawable(this.getContext(), R.drawable.material_shadow_z3));
 
         // 长按开启拖拽
-        mRecyclerViewDragDropManager.setInitiateOnLongPress(true);
         mRecyclerViewDragDropManager.setInitiateOnMove(false);
+        mRecyclerViewDragDropManager.setInitiateOnLongPress(true);
 
         BookListDataProvider mBookListDataProvider = new BookListDataProvider(myBooks);
         mBookAdapter = new BookListAdapter(mBookListDataProvider);
         mBookAdapter.setOnItemClickListener(new BookListAdapter.MyItemClickListener() {
             @Override
             public void onItemClick(View view, int postion) {
-
-                mListener.onFragmentInteraction(1, mBookAdapter.getDataProvider().getItem(postion), view);
+                if(bookItemClicked==false) {
+                    bookItemClicked = true;
+                    mListener.onFragmentInteraction(1, mBookAdapter.getDataProvider().getItem(postion), view);
+                }
             }
         });
 
@@ -143,12 +148,10 @@ public class IndexFragment extends Fragment {
     public void addNewBook(BookListItem book){
         mBookAdapter.getDataProvider().addItem(book);
         mBookAdapter.notifyDataSetChanged();
-        mWrappedAdapter.notifyDataSetChanged();
     }
-    public void addNewBook(int position, BookListItem book){
+    public void addNewBook(int position, BookListItem book) {
         mBookAdapter.getDataProvider().addItem(position, book);
         mBookAdapter.notifyDataSetChanged();
-        mWrappedAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -167,6 +170,12 @@ public class IndexFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        bookItemClicked = false;
     }
 
     @Override

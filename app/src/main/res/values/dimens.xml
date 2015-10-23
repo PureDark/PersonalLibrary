@@ -13,6 +13,8 @@
     <dimen name="avatar_size_large">144dp</dimen>
     <dimen name="avatar_size_large_half">72dp</dimen>
 
+    <dimen name="book_detail_app_bar_height">264dp</dimen>
+
     <dimen name="margin_standard">16dp</dimen>
 
     <dimen name="default_corner_radius">0dp</dimen>
