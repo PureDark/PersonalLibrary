@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -18,6 +19,9 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
@@ -27,6 +31,10 @@ import android.widget.TextView;
 import com.dd.CircularProgressButton;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import ml.puredark.personallibrary.adapters.ViewPagerAdapter;
 import ml.puredark.personallibrary.helpers.BgViewAware;
 import ml.puredark.personallibrary.R;
 
@@ -50,17 +58,37 @@ public class LoginActivity extends AppCompatActivity {
     private boolean isDefaultAvatar = true;
     private static Drawable defaultAvatar;
 
+    private ViewPager viewPager;
+    private List<View> views = new ArrayList<View>();
+    private ViewPagerAdapter adpter;
+    private int currentItem;
+    private Animation animation;
+    private int offSet;
+    private int bmWidth;
+    private View viewForgetPassword,viewLogin,viewRegister;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        defaultAvatar =  getResources().getDrawable(R.drawable.avatar);
-
+        defaultAvatar = getResources().getDrawable(R.drawable.avatar);
         //异步加载背景图
         ImageLoader.getInstance().displayImage("drawable://" + R.drawable.bg_login, new BgViewAware(findViewById(R.id.loginBackground)));
+        viewForgetPassword = getLayoutInflater().inflate(R.layout.view_forget_password, null);
+        viewLogin = getLayoutInflater().inflate(R.layout.view_login, null);
+        viewRegister = getLayoutInflater().inflate(R.layout.view_register, null);
+        views.add(viewForgetPassword);
+        views.add(viewLogin);
+        views.add(viewRegister);
+        adpter = new ViewPagerAdapter(views);
+        viewPager = (ViewPager) findViewById(R.id.viewPager);
+        viewPager.setAdapter(adpter);
+        viewPager.setCurrentItem(1);
+
+
 
         // 配置登录框
-        mCellphoneView = (AutoCompleteTextView) findViewById(R.id.cellphone);
+        mCellphoneView = (AutoCompleteTextView) viewLogin.findViewById(R.id.cellphone);
         mCellphoneView.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -86,7 +114,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        mPasswordView = (EditText) findViewById(R.id.password);
+        mPasswordView = (EditText) viewLogin.findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -98,7 +126,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        btnLogin = (CircularProgressButton) findViewById(R.id.btnLogin);
+        btnLogin = (CircularProgressButton) viewLogin.findViewById(R.id.btnLogin);
         btnLogin.setIndeterminateProgressMode(true);
         btnLogin.setOnClickListener(new OnClickListener() {
             @Override
@@ -107,7 +135,8 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        mAvatarView = (ImageView)findViewById(R.id.avatar);
+        mAvatarView = (ImageView)viewLogin.findViewById(R.id.avatar);
+
     }
 
 
