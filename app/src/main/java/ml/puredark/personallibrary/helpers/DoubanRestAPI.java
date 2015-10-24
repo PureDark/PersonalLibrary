@@ -29,7 +29,7 @@ public class DoubanRestAPI {
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-
+                callBack.action(null);
             }
         });
     }
@@ -44,7 +44,7 @@ public class DoubanRestAPI {
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-
+                callBack.action(null);
             }
         });
     }

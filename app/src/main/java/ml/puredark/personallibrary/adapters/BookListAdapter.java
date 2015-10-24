@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.balysv.materialripple.MaterialRippleLayout;
 import com.dd.ShadowLayout;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.DraggableItemAdapter;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.DraggableItemConstants;
@@ -35,7 +36,7 @@ public class BookListAdapter
     }
 
     public class BookViewHolder extends AbstractDraggableItemViewHolder implements View.OnClickListener {
-        public View card;
+        public MaterialRippleLayout rippleLayout;
         public LinearLayout container;
         public ImageView cover;
         public TextView title,author,description;
@@ -44,15 +45,16 @@ public class BookListAdapter
 
         public BookViewHolder(View view, MyItemClickListener onClickListener) {
             super(view);
-            card = view.findViewById(R.id.card);
             container = (LinearLayout)view.findViewById(R.id.container);
             cover = (ImageView)view.findViewById(R.id.cover);
+            rippleLayout = (MaterialRippleLayout) view.findViewById(R.id.rippleLayout);
             title = (TextView)view.findViewById(R.id.title);
             author = (TextView)view.findViewById(R.id.author);
             description = (TextView)view.findViewById(R.id.description);
             coverLayout = (ShadowLayout) view.findViewById(R.id.book_cover_layout);
             mListener = onClickListener;
-            view.setOnClickListener(this);
+            cover.setOnClickListener(this);
+            rippleLayout.setOnClickListener(this);
         }
 
         @Override
@@ -82,7 +84,7 @@ public class BookListAdapter
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
         BookListItem book = (BookListItem) mProvider.getItem(position);
-        ImageLoader.getInstance().displayImage(null, holder.cover);
+        //ImageLoader.getInstance().displayImage(null, holder.cover);
         ImageLoader.getInstance().displayImage(book.cover, holder.cover);
         holder.title.setText(book.title);
         holder.author.setText(book.author);

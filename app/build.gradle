@@ -13,7 +13,7 @@ android {
     buildToolsVersion "23.0.1"
     defaultConfig {
         applicationId "ml.puredark.personallibrary"
-        minSdkVersion 19
+        minSdkVersion 18
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
