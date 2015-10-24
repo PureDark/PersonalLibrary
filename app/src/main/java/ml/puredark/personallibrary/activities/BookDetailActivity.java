@@ -13,6 +13,7 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,11 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
+import com.transitionseverywhere.ChangeBounds;
+import com.transitionseverywhere.Fade;
+import com.transitionseverywhere.Transition;
+import com.transitionseverywhere.TransitionManager;
+import com.transitionseverywhere.TransitionSet;
 
 import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
 
@@ -125,8 +131,12 @@ public class BookDetailActivity extends AppCompatActivity {
             public void onClick(View v) {
                 SharedPreferencesUtil.saveData(getBaseContext(), "isbn13_"+book.isbn13, new Gson().toJson(book));
                 setResult(RESULT_OK);
-                finish();
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                if(transitionHelper!=null)
+                    transitionHelper.exitActivity();
+                else {
+                    finish();
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                }
             }
         });
 
@@ -176,7 +186,7 @@ public class BookDetailActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         if(animating)return;
-        if(!scaned)
+        if(transitionHelper!=null)
             transitionHelper.exitActivity();
         else
             super.onBackPressed();
@@ -229,7 +239,7 @@ public class BookDetailActivity extends AppCompatActivity {
                             ((ViewGroup) bookCover.getParent()).removeView(bookCover);
                             parent.addView(bookCover);
                         }
-                    });
+            });
 
             AnimatorSet animatorSet = new AnimatorSet();
             animatorSet.playTogether(headerAnimator, extendBarAnimator, contentAnimator);
@@ -286,7 +296,7 @@ public class BookDetailActivity extends AppCompatActivity {
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(revealView, "right",
                     startX, endX);
             objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
-            objectAnimator.setInterpolator(ACCELERATE);
+            objectAnimator.setInterpolator((show)?DECELERATE:ACCELERATE);
             return objectAnimator;
         }
 
@@ -296,7 +306,7 @@ public class BookDetailActivity extends AppCompatActivity {
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(extendBar, "left",
                     startX, endX);
             objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
-            objectAnimator.setInterpolator(ACCELERATE);
+            objectAnimator.setInterpolator((show)?DECELERATE:ACCELERATE);
             return objectAnimator;
         }
 
@@ -306,7 +316,7 @@ public class BookDetailActivity extends AppCompatActivity {
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(blank, "right",
                     startX, endX);
             objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
-            objectAnimator.setInterpolator(ACCELERATE);
+            objectAnimator.setInterpolator((show)?DECELERATE:ACCELERATE);
             return objectAnimator;
         }
     }

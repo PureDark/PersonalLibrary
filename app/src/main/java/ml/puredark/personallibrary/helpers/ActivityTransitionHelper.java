@@ -15,6 +15,10 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 
 import com.bartoszlipinski.viewpropertyobjectanimator.ViewPropertyObjectAnimator;
+import com.transitionseverywhere.ChangeBounds;
+import com.transitionseverywhere.Transition;
+import com.transitionseverywhere.TransitionManager;
+import com.transitionseverywhere.utils.ViewGroupOverlayUtils;
 
 /**
  * Use Overlay to support animation that lets view moves out of its parent
@@ -36,10 +40,10 @@ public class ActivityTransitionHelper {
     private CustomAnimator customAnimator;
 
     public static abstract class CustomAnimator{
-        protected final AccelerateInterpolator ACCELERATE = new AccelerateInterpolator();
-        protected final AccelerateDecelerateInterpolator ACCELERATE_DECELERATE = new AccelerateDecelerateInterpolator();
-        protected final DecelerateInterpolator DECELERATE = new DecelerateInterpolator();
-        protected final LinearInterpolator LINEAR = new LinearInterpolator();
+        protected static final AccelerateInterpolator ACCELERATE = new AccelerateInterpolator();
+        protected static final AccelerateDecelerateInterpolator ACCELERATE_DECELERATE = new AccelerateDecelerateInterpolator();
+        protected static final DecelerateInterpolator DECELERATE = new DecelerateInterpolator();
+        protected static final LinearInterpolator LINEAR = new LinearInterpolator();
         public static final int ANIM_DURATION_LONG = 500;
         public static final int ANIM_DURATION_MEDIUM = 400;
         public static final int ANIM_DURATION_SHORT = 300;
@@ -201,7 +205,8 @@ public class ActivityTransitionHelper {
     }
     public ObjectAnimator getToViewAnimator(CustomAnimator animator, final boolean show, final CustomAnimatorListener callBack, final boolean recoverToView){
         final ViewGroup parent = (ViewGroup) toView.getParent();
-        animationView.getOverlay().add(toView);
+        ViewGroupOverlayUtils.addOverlay(animationView, toView, 0, 0);
+//        animationView.getOverlay().add(toView);
 
         if(show) {
             toView.setPivotX(0);
@@ -224,23 +229,23 @@ public class ActivityTransitionHelper {
                     @Override
                     public void run() {
                         if (show&&recoverToView) {
-                            animationView.getOverlay().remove(toView);
+//                            animationView.getOverlay().remove(toView);
+                            ((ViewGroup) toView.getParent()).removeView(toView);
                             parent.addView(toView);
                         }
                         if(callBack!=null)
                             callBack.onAnimationEnd();
                     }
                 }).get();
-        viewAnim.setInterpolator(animator.DECELERATE);
+        viewAnim.setInterpolator(CustomAnimator.DECELERATE);
 
         return viewAnim;
     }
+
     public ObjectAnimator getBackgoundAnimator(CustomAnimator animator, boolean show){
         return getBackgoundAnimator(animator, show, null);
     }
     public ObjectAnimator getBackgoundAnimator(CustomAnimator animator, boolean show, final CustomAnimatorListener callBack){
-        final ViewGroup parent = (ViewGroup) toView.getParent();
-        animationView.getOverlay().add(toView);
         float from = (show)?0:1;
         float to = (show)?1:0;
         ObjectAnimator bgAnim = ObjectAnimator.ofFloat(background, "alpha", from, to);
@@ -264,7 +269,6 @@ public class ActivityTransitionHelper {
         });
         return bgAnim;
     }
-
 
     private CustomAnimator defaultAnimator = new CustomAnimator(){
         @Override

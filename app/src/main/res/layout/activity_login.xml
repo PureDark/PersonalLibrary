@@ -90,11 +90,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp">
-                    <com.gc.materialdesign.views.ButtonFlat
+                    <android.support.v7.widget.AppCompatButton
                         android:id="@+id/btnForgot"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentLeft="true"
+                        android:background="@null"
                         android:text="忘记密码" />
                     <com.gc.materialdesign.views.ButtonFlat
                         android:id="@+id/btnRegister"
