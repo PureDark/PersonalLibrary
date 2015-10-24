@@ -5,8 +5,11 @@
     <string name="title_activity_login">登 录</string>
     <string name="prompt_cellphone">手机号</string>
     <string name="prompt_password">密码</string>
+    <string name="comfirm_password">确认密码</string>
     <string name="action_sign_in">登 录</string>
     <string name="action_sign_in_short">登录</string>
+    <string name="action_register">注 册</string>
+    <string name="action_forget_password">忘记密码</string>
     <string name="error_invalid_cellphone">手机号格式不正确</string>
     <string name="error_invalid_password">密码太短</string>
     <string name="error_incorrect_password">密码错误</string>
