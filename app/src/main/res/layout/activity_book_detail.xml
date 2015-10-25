@@ -29,7 +29,7 @@
             android:id="@+id/extend_bar"
             android:layout_width="match_parent"
             android:layout_height="64dp"
-            android:layout_marginTop="264dp"
+            android:layout_marginTop="@dimen/book_detail_app_bar_height"
             android:visibility="invisible"
             android:background="@color/colorPrimaryLight"/>
 
