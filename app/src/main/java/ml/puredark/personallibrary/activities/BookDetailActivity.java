@@ -110,13 +110,14 @@ public class BookDetailActivity extends AppCompatActivity {
             animating = true;
             new Handler().postDelayed(new Runnable() {
                 public void run() {
-                    transitionHelper = ActivityTransitionHelper.with(BookDetailActivity.this)
-                            .intent(intent)
-                            .toView(bookCover)
-                            .background(mCoordinatorLayout)
-                            .animationView(rootView)
-                            .customAnimator(new AnimationOnActivityStart())
-                            .startTransition(savedInstanceState);
+                    transitionHelper = ActivityTransitionHelper
+                                        .with(BookDetailActivity.this)
+                                        .intent(intent)
+                                        .toView(bookCover)
+                                        .background(mCoordinatorLayout)
+                                        .animationView(rootView)
+                                        .customAnimator(new AnimationOnActivityStart())
+                                        .startTransition(savedInstanceState);
                 }
             }, 200);
         }
@@ -128,12 +129,7 @@ public class BookDetailActivity extends AppCompatActivity {
             public void onClick(View v) {
                 SharedPreferencesUtil.saveData(getBaseContext(), "isbn13_" + book.isbn13, new Gson().toJson(book));
                 setResult(RESULT_OK);
-                if (transitionHelper != null)
-                    transitionHelper.exitActivity();
-                else {
-                    finish();
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                }
+                finishActivity();
             }
         });
 
@@ -172,10 +168,10 @@ public class BookDetailActivity extends AppCompatActivity {
                 /* 给背景封面加上高斯模糊 */
                 final Bitmap overlay = FastBlur.doBlur(PersonalLibraryApplication.bitmap.copy(Bitmap.Config.ARGB_8888, true), 2, true);
                 final Drawable fabIcon = MaterialDrawableBuilder.with(BookDetailActivity.this)
-                        .setIcon(MaterialDrawableBuilder.IconValue.STAR)
-                        .setSizeDp(24)
-                        .setColor(Color.WHITE)
-                        .build();
+                                                                .setIcon(MaterialDrawableBuilder.IconValue.STAR)
+                                                                .setSizeDp(24)
+                                                                .setColor(Color.WHITE)
+                                                                .build();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -191,9 +187,23 @@ public class BookDetailActivity extends AppCompatActivity {
     public void onBackPressed() {
         if(animating)return;
         if(transitionHelper!=null)
-            transitionHelper.exitActivity();
+            finishActivity();
         else
             super.onBackPressed();
+    }
+
+    public void finishActivity(){
+        if(transitionHelper!=null) {
+            mAppBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+                @Override
+                public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                    if (verticalOffset == 0)
+                        transitionHelper.exitActivity();
+                }
+            });
+            mAppBarLayout.setExpanded(true, true);
+        }else
+            super.finish();
     }
 
     @Override

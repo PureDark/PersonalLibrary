@@ -31,7 +31,7 @@
             app:mrl_rippleColor="?attr/carbon_rippleColor"
             app:mrl_rippleDimension="10dp"
             app:mrl_rippleHover="true"
-            app:mrl_rippleDuration="150"
+            app:mrl_rippleDuration="250"
             app:mrl_rippleFadeDuration="75"
             app:mrl_rippleDelayClick="true">
             <RelativeLayout
