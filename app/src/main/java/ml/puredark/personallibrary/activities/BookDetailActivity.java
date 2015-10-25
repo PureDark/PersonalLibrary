@@ -27,11 +27,6 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
-import com.transitionseverywhere.ChangeBounds;
-import com.transitionseverywhere.Fade;
-import com.transitionseverywhere.Transition;
-import com.transitionseverywhere.TransitionManager;
-import com.transitionseverywhere.TransitionSet;
 
 import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
 
@@ -96,6 +91,15 @@ public class BookDetailActivity extends AppCompatActivity {
 
         final Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
+
+        Object data = PersonalLibraryApplication.temp;
+        if(data==null||!(data instanceof Book)){
+            setResult(RESULT_CANCELED);
+            finish();
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            return;
+        }
+
         /* 修改动画元素颜色 */
         blank.setBackgroundColor(bundle.getInt("bottomColor"));
         revealView.setBackgroundColor(bundle.getInt("topColor"));
@@ -117,21 +121,14 @@ public class BookDetailActivity extends AppCompatActivity {
             }, 200);
         }
 
-        Object data = PersonalLibraryApplication.temp;
-        if(data==null||!(data instanceof Book)){
-            setResult(RESULT_CANCELED);
-            finish();
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-            return;
-        }
         final Book book = (Book)PersonalLibraryApplication.temp;
         Bitmap cover = PersonalLibraryApplication.bitmap;
         fabAction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SharedPreferencesUtil.saveData(getBaseContext(), "isbn13_"+book.isbn13, new Gson().toJson(book));
+                SharedPreferencesUtil.saveData(getBaseContext(), "isbn13_" + book.isbn13, new Gson().toJson(book));
                 setResult(RESULT_OK);
-                if(transitionHelper!=null)
+                if (transitionHelper != null)
                     transitionHelper.exitActivity();
                 else {
                     finish();
@@ -144,13 +141,6 @@ public class BookDetailActivity extends AppCompatActivity {
         bookSummary.setText(book.summary);
         bookCover.setImageBitmap(cover);
         backdrop.setImageBitmap(cover);
-
-        Drawable fabIcon = MaterialDrawableBuilder.with(this)
-                .setIcon(MaterialDrawableBuilder.IconValue.STAR)
-                .setSizeDp(24)
-                .setColor(Color.WHITE)
-                .build();
-        fabAction.setImageDrawable(fabIcon);
 
         /* 让背景的封面大图上下来回缓慢移动 */
         Animation translateAnimation = new TranslateAnimation(TranslateAnimation.RELATIVE_TO_SELF, 0f,
@@ -176,11 +166,25 @@ public class BookDetailActivity extends AppCompatActivity {
         hsv[2] *= 0.8f;
         int fabColorPressed = Color.HSVToColor(hsv);
         setFloatingActionButtonColors(fabAction, fabColor, fabColorPressed);
-        /* 给背景封面加上高斯模糊 */
-        Bitmap overlay = PersonalLibraryApplication.bitmap.copy(Bitmap.Config.ARGB_8888, true);
-        overlay = FastBlur.doBlur(overlay, 2, true);
-        backdrop.setImageBitmap(overlay);
-
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                /* 给背景封面加上高斯模糊 */
+                final Bitmap overlay = FastBlur.doBlur(PersonalLibraryApplication.bitmap.copy(Bitmap.Config.ARGB_8888, true), 2, true);
+                final Drawable fabIcon = MaterialDrawableBuilder.with(BookDetailActivity.this)
+                        .setIcon(MaterialDrawableBuilder.IconValue.STAR)
+                        .setSizeDp(24)
+                        .setColor(Color.WHITE)
+                        .build();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        backdrop.setImageBitmap(overlay);
+                        fabAction.setImageDrawable(fabIcon);
+                    }
+                });
+            }
+        }).start();
     }
 
     @Override
@@ -296,7 +300,7 @@ public class BookDetailActivity extends AppCompatActivity {
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(revealView, "right",
                     startX, endX);
             objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
-            objectAnimator.setInterpolator((show)?DECELERATE:ACCELERATE);
+            objectAnimator.setInterpolator((show)?ACCELERATE_DECELERATE:ACCELERATE);
             return objectAnimator;
         }
 
@@ -306,7 +310,7 @@ public class BookDetailActivity extends AppCompatActivity {
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(extendBar, "left",
                     startX, endX);
             objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
-            objectAnimator.setInterpolator((show)?DECELERATE:ACCELERATE);
+            objectAnimator.setInterpolator((show)?ACCELERATE_DECELERATE:ACCELERATE);
             return objectAnimator;
         }
 
@@ -316,7 +320,7 @@ public class BookDetailActivity extends AppCompatActivity {
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(blank, "right",
                     startX, endX);
             objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
-            objectAnimator.setInterpolator((show)?DECELERATE:ACCELERATE);
+            objectAnimator.setInterpolator((show)?ACCELERATE_DECELERATE:ACCELERATE);
             return objectAnimator;
         }
     }

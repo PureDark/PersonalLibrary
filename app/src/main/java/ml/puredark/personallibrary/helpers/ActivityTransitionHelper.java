@@ -15,9 +15,6 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 
 import com.bartoszlipinski.viewpropertyobjectanimator.ViewPropertyObjectAnimator;
-import com.transitionseverywhere.ChangeBounds;
-import com.transitionseverywhere.Transition;
-import com.transitionseverywhere.TransitionManager;
 import com.transitionseverywhere.utils.ViewGroupOverlayUtils;
 
 /**

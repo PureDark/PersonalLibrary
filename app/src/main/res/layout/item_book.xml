@@ -1,25 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<carbon.widget.LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:carbon="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="8dp"
-    android:background="@drawable/rounded_bg_2dp">
+    android:background="@color/white"
+    carbon:carbon_cornerRadius="2dp">
 
     <LinearLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="160dp">
 
-        <com.makeramen.roundedimageview.RoundedImageView
-            android:id="@+id/cover"
-            android:layout_width="114dp"
-            android:layout_height="160dp"
-            android:src="@null"
-            android:scaleType="fitXY"
-            app:riv_corner_radius_top_left="@dimen/book_item_corner_radius"
-            app:riv_corner_radius_bottom_left="@dimen/book_item_corner_radius"/>
+            <carbon.widget.ImageView
+                android:id="@+id/cover"
+                android:layout_width="114dp"
+                android:layout_height="160dp"
+                android:src="@null"
+                android:scaleType="fitXY"
+                android:longClickable="false"/>
 
 
         <com.balysv.materialripple.MaterialRippleLayout
@@ -27,11 +28,10 @@
             android:layout_height="match_parent"
             android:id="@+id/rippleLayout"
             app:mrl_rippleOverlay="true"
-            app:mrl_rippleColor="@color/black"
-            app:mrl_rippleAlpha="0.1"
+            app:mrl_rippleColor="?attr/carbon_rippleColor"
             app:mrl_rippleDimension="10dp"
             app:mrl_rippleHover="true"
-            app:mrl_rippleDuration="350"
+            app:mrl_rippleDuration="150"
             app:mrl_rippleFadeDuration="75"
             app:mrl_rippleDelayClick="true">
             <RelativeLayout
@@ -45,7 +45,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="@dimen/margin_standard"
+                    android:padding="@dimen/carbon_padding"
                     android:orientation="vertical">
 
                     <TextView
@@ -89,4 +89,4 @@
         </com.balysv.materialripple.MaterialRippleLayout>
     </LinearLayout>
 
-</RelativeLayout>
+</carbon.widget.LinearLayout>

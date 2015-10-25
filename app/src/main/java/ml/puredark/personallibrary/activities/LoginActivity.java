@@ -227,25 +227,6 @@ public class LoginActivity extends AppCompatActivity {
     private void toggleInput(final boolean enable) {
         mCellphoneView.setEnabled(enable);
         mPasswordView.setEnabled(enable);
-//        mLoginFormView.setVisibility(View.VISIBLE);
-//        YoYo.with(show?Techniques.FadeOut:Techniques.FadeIn)
-//                .withListener(new AnimatorListener(){
-//                    @Override
-//                    public void onAnimationStart(Animator animation) {
-//                    }
-//                    @Override
-//                    public void onAnimationEnd(Animator animation) {
-//                        mLoginFormView.setVisibility(show ? View.INVISIBLE : View.VISIBLE);
-//                    }
-//                    @Override
-//                    public void onAnimationRepeat(Animator animation) {
-//                    }
-//                    @Override
-//                    public void onAnimationCancel(Animator animation) {
-//                    }
-//                })
-//                .duration(700)
-//                .playOn(mLoginFormView);
     }
 
     /**

@@ -2,6 +2,7 @@
 <ml.puredark.personallibrary.customs.MyCoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:carbon="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinator_layout"
     android:layout_width="match_parent"
@@ -19,6 +20,8 @@
             android:id="@+id/toolbar_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             app:layout_scrollFlags="scroll"
             app:contentScrim="?attr/colorPrimary">
             <ScrollView
@@ -40,31 +43,30 @@
                 android:background="@color/colorPrimary"
                 android:alpha="0.8"
                 android:scaleType="fitXY"/>
-            <com.dd.ShadowLayout
+
+            <carbon.widget.LinearLayout
                 android:id="@+id/book_cover_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginLeft="32dp"
-                android:layout_marginBottom="16dp"
-                app:sl_shadowRadius="4dp"
-                app:sl_shadowColor="#AA000000"
-                app:sl_dx="1dp"
-                app:sl_dy="1dp"
-                app:sl_cornerRadius="0dp">
-                <ImageView
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:layout_marginLeft="32dp">
+                <carbon.widget.ImageView
                     android:id="@+id/book_cover"
                     android:layout_width="114dp"
                     android:layout_height="160dp"
                     android:src="@drawable/cover"
-                    android:scaleType="fitXY"/>
-            </com.dd.ShadowLayout>
+                    android:scaleType="fitXY"
+                    carbon:carbon_elevation="8dp"/>
+            </carbon.widget.LinearLayout>
 
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
-                android:layout_height="80dp"
+                android:layout_height="@dimen/tool_bar_height"
                 android:layout_width="match_parent"
-                android:paddingTop="24dp"
+                android:paddingTop="@dimen/status_bar_padding"
                 app:layout_collapseMode="pin"
                 app:popupTheme="@style/AppTheme.PopupOverlay">
             </android.support.v7.widget.Toolbar>
@@ -80,9 +82,10 @@
         <LinearLayout
             android:id="@+id/title_bar"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
+            android:layout_height="@dimen/book_detail_title_bar_height"
             android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:background="@color/colorPrimaryLight">
+            android:background="@color/colorPrimaryLight"
+            carbon:carbon_elevation="4dp">
             <TextView
                 android:id="@+id/book_title"
                 android:layout_width="match_parent"
@@ -112,12 +115,6 @@
                     android:text="" />
             </LinearLayout>
         </android.support.v4.widget.NestedScrollView>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="4dp"
-            android:layout_below="@id/title_bar"
-            android:background="@drawable/shadow_bottom" />
     </RelativeLayout>
 
     <ml.puredark.personallibrary.customs.MyFloatingActionButton

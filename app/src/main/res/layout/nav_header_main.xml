@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:carbon="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="@dimen/nav_header_height"
     android:id="@+id/navHeaderView"
@@ -8,18 +9,19 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="40dp"
+    android:paddingTop="@dimen/status_bar_padding_plus_standard"
     android:theme="@style/ThemeOverlay.AppCompat.Dark"
     android:orientation="vertical"
     android:gravity="bottom">
 
-    <com.makeramen.roundedimageview.RoundedImageView
+    <carbon.widget.ImageView
         android:id="@+id/avatar"
         android:layout_width="@dimen/avatar_size_medium"
         android:layout_height="@dimen/avatar_size_medium"
+        android:layout_centerHorizontal="true"
         android:scaleType="centerCrop"
         android:src="@drawable/myavatar"
-        app:riv_corner_radius="1000dp"/>
+        carbon:carbon_cornerRadius="@dimen/avatar_size_medium_half"/>
 
     <TextView android:layout_width="match_parent"
         android:layout_height="wrap_content"
