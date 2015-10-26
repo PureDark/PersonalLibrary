@@ -1,6 +1,5 @@
 package ml.puredark.personallibrary.activities;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -12,8 +11,8 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.graphics.drawable.DrawerArrowDrawable;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +26,8 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
+import com.nineoldandroids.animation.ValueAnimator;
+import com.transitionseverywhere.utils.ViewGroupOverlayUtils;
 
 import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
 
@@ -50,6 +51,7 @@ public class BookDetailActivity extends AppCompatActivity {
     private MyCoordinatorLayout mCoordinatorLayout;
     private AppBarLayout mAppBarLayout;
     private CollapsingToolbarLayout toolbarLayout;
+    private Toolbar toolbar;
     private NestedScrollView summaryLayout;
     private ActivityTransitionHelper transitionHelper;
     private boolean scaned = false;
@@ -59,6 +61,8 @@ public class BookDetailActivity extends AppCompatActivity {
     private MyFloatingActionButton fabAction;
     private RevealFrameLayout animationView;
     private View revealView, extendBar, blank;
+    private ImageView backButton;
+    private DrawerArrowDrawable backButtonIcon;
     //是否动画中
     private boolean animating = false;
 
@@ -66,7 +70,7 @@ public class BookDetailActivity extends AppCompatActivity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_detail);
-        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         mCoordinatorLayout = (MyCoordinatorLayout) findViewById(R.id.coordinator_layout);
         mAppBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
         toolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
@@ -78,6 +82,7 @@ public class BookDetailActivity extends AppCompatActivity {
         revealView = findViewById(R.id.reveal_view);
         extendBar = findViewById(R.id.extend_bar);
         blank = findViewById(R.id.blank);
+        backButton = (ImageView) findViewById(R.id.back_button);
 
         titleBar = (LinearLayout) findViewById(R.id.title_bar);
         bookTitle = (TextView) findViewById(R.id.book_title);
@@ -99,6 +104,20 @@ public class BookDetailActivity extends AppCompatActivity {
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             return;
         }
+
+        //为返回按钮加载图标
+//        Animatable backStartIcon = (Animatable) ResourcesCompat.getDrawable(this, R.drawable.ic_drawer_to_arrow);
+//        Animatable backEndIcon = (Animatable) ResourcesCompat.getDrawable(this, R.drawable.ic_arrow_to_drawer);
+        backButtonIcon = new DrawerArrowDrawable(this);
+        backButtonIcon.setColor(getResources().getColor(R.color.white));
+        backButton.setImageDrawable(backButtonIcon);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setResult(RESULT_CANCELED);
+                finishActivity();
+            }
+        });
 
         /* 修改动画元素颜色 */
         blank.setBackgroundColor(bundle.getInt("bottomColor"));
@@ -203,7 +222,7 @@ public class BookDetailActivity extends AppCompatActivity {
             });
             mAppBarLayout.setExpanded(true, true);
         }else
-            super.finish();
+            finish();
     }
 
     @Override
@@ -241,7 +260,11 @@ public class BookDetailActivity extends AppCompatActivity {
 
         public void start(){
             animating = true;
-            final ViewGroup parent = (ViewGroup) bookCover.getParent();
+            final ViewGroup bookParent = (ViewGroup) bookCover.getParent();
+            final ViewGroup backParent = (ViewGroup) backButton.getParent();
+            ViewGroupOverlayUtils.addOverlay(rootView, backButton, (int)backButton.getX(), (int)backButton.getY());
+
+            ValueAnimator backAnimator = getArrowAnimator(true);
             ObjectAnimator headerAnimator = getHeaderAnimator(true);
             ObjectAnimator extendBarAnimator = getExtendBarAnimator(true);
             ObjectAnimator contentAnimator = getContentAnimator(true);
@@ -251,12 +274,14 @@ public class BookDetailActivity extends AppCompatActivity {
                         @Override
                         public void onAnimationEnd() {
                             ((ViewGroup) bookCover.getParent()).removeView(bookCover);
-                            parent.addView(bookCover);
+                            bookParent.addView(bookCover);
+                            ((ViewGroup) backButton.getParent()).removeView(backButton);
+                            backParent.addView(backButton);
                         }
             });
 
             AnimatorSet animatorSet = new AnimatorSet();
-            animatorSet.playTogether(headerAnimator, extendBarAnimator, contentAnimator);
+            animatorSet.playTogether(headerAnimator, extendBarAnimator, contentAnimator, backAnimator);
             animatorSet.addListener(new SimpleListener() {
 
                 @Override
@@ -265,6 +290,7 @@ public class BookDetailActivity extends AppCompatActivity {
                     extendBar.setVisibility(View.VISIBLE);
                     revealView.setVisibility(View.VISIBLE);
                 }
+
                 @Override
                 public void onAnimationEnd(com.nineoldandroids.animation.Animator animation) {
                     bgAnim.start();
@@ -279,6 +305,9 @@ public class BookDetailActivity extends AppCompatActivity {
 
         public void reverse(){
             animating = true;
+            ViewGroupOverlayUtils.addOverlay(rootView, backButton, (int)backButton.getX(), (int)backButton.getY());
+
+            final ValueAnimator backAnimator = getArrowAnimator(false);
             final ObjectAnimator headerAnimator = getHeaderAnimator(false);
             final ObjectAnimator extendBarAnimator = getExtendBarAnimator(false);
             final ObjectAnimator contentAnimator = getContentAnimator(false);
@@ -288,7 +317,7 @@ public class BookDetailActivity extends AppCompatActivity {
                 @Override
                 public void onAnimationEnd(android.animation.Animator animation) {
                     AnimatorSet animatorSet = new AnimatorSet();
-                    animatorSet.playTogether(headerAnimator, extendBarAnimator, contentAnimator);
+                    animatorSet.playTogether(headerAnimator, extendBarAnimator, contentAnimator, backAnimator);
                     animatorSet.addListener(new SimpleListener() {
                         @Override
                         public void onAnimationEnd(com.nineoldandroids.animation.Animator animation) {
@@ -302,6 +331,20 @@ public class BookDetailActivity extends AppCompatActivity {
                 }
             });
             bgAnim.start();
+        }
+
+        ValueAnimator getArrowAnimator(boolean show){
+            float start = (show)?0f:1f;
+            float end = (show)?1f:0f;
+            ValueAnimator animator = ValueAnimator.ofFloat(start, end);
+            animator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
+            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener(){
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    backButtonIcon.setProgress((Float) animation.getAnimatedValue());
+                }
+            });
+            return animator;
         }
 
         ObjectAnimator getHeaderAnimator(boolean show){
@@ -330,7 +373,7 @@ public class BookDetailActivity extends AppCompatActivity {
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(blank, "right",
                     startX, endX);
             objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
-            objectAnimator.setInterpolator((show)?ACCELERATE_DECELERATE:ACCELERATE);
+            objectAnimator.setInterpolator((show) ? ACCELERATE_DECELERATE : ACCELERATE);
             return objectAnimator;
         }
     }
