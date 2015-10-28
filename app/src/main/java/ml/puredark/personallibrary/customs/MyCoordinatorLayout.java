@@ -5,11 +5,7 @@ import android.os.Build;
 import android.support.design.widget.CoordinatorLayout;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.VelocityTracker;
 import android.view.View;
-import android.view.ViewConfiguration;
-
-import ml.puredark.personallibrary.PersonalLibraryApplication;
 
 /**
  * Created by PureDark on 2015/10/19.

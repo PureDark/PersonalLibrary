@@ -77,11 +77,12 @@ public class BookListAdapter
 
     @Override
     public void onBindViewHolder(BookViewHolder holder, int position) {
-        // - get element from your dataset at this position
-        // - replace the contents of the view with that element
         BookListItem book = (BookListItem) mProvider.getItem(position);
-        //ImageLoader.getInstance().displayImage(null, holder.cover);
-        ImageLoader.getInstance().displayImage(book.cover, holder.cover);
+        if(holder.cover.getTag()!=book.cover) {
+            ImageLoader.getInstance().displayImage(null, holder.cover);
+            ImageLoader.getInstance().displayImage(book.cover, holder.cover);
+            holder.cover.setTag(book.cover);
+        }
         holder.title.setText(book.title);
         holder.author.setText(book.author);
         holder.description.setText(book.description);

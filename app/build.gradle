@@ -21,8 +21,14 @@ android {
         renderscriptSupportModeEnabled true
     }
     buildTypes {
+        debug {
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
         release {
             minifyEnabled false
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -69,6 +75,7 @@ dependencies {
     }
     compile "com.andkulikov:transitionseverywhere:1.6.0"
     compile 'tk.zielony:carbon:0.10.1'
+//    compile 'com.melnykov:floatingactionbutton:1.3.0'
 
     // Zxing libraries
     compile 'com.journeyapps:zxing-android-embedded:3.0.2@aar'

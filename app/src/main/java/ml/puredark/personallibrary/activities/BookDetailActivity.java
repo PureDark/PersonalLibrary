@@ -32,7 +32,7 @@ import com.transitionseverywhere.utils.ViewGroupOverlayUtils;
 import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
 
 import io.codetail.widget.RevealFrameLayout;
-import ml.puredark.personallibrary.PersonalLibraryApplication;
+import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
@@ -97,7 +97,7 @@ public class BookDetailActivity extends AppCompatActivity {
         final Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
 
-        Object data = PersonalLibraryApplication.temp;
+        Object data = PLApplication.temp;
         if(data==null||!(data instanceof Book)){
             setResult(RESULT_CANCELED);
             finish();
@@ -141,8 +141,8 @@ public class BookDetailActivity extends AppCompatActivity {
             }, 200);
         }
 
-        final Book book = (Book)PersonalLibraryApplication.temp;
-        Bitmap cover = PersonalLibraryApplication.bitmap;
+        final Book book = (Book) PLApplication.temp;
+        Bitmap cover = PLApplication.bitmap;
         fabAction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -158,10 +158,11 @@ public class BookDetailActivity extends AppCompatActivity {
         backdrop.setImageBitmap(cover);
 
         /* 让背景的封面大图上下来回缓慢移动 */
+        float targetY = (backdrop.getHeight()>backdrop.getWidth())?-0.4f:0f;
         Animation translateAnimation = new TranslateAnimation(TranslateAnimation.RELATIVE_TO_SELF, 0f,
         TranslateAnimation.RELATIVE_TO_SELF, 0f,
         TranslateAnimation.RELATIVE_TO_SELF, 0f,
-        TranslateAnimation.RELATIVE_TO_SELF, -0.4f);
+        TranslateAnimation.RELATIVE_TO_SELF, targetY);
         translateAnimation.setDuration(30000);
         translateAnimation.setRepeatCount(-1);
         translateAnimation.setRepeatMode(Animation.REVERSE);
@@ -185,7 +186,7 @@ public class BookDetailActivity extends AppCompatActivity {
             @Override
             public void run() {
                 /* 给背景封面加上高斯模糊 */
-                final Bitmap overlay = FastBlur.doBlur(PersonalLibraryApplication.bitmap.copy(Bitmap.Config.ARGB_8888, true), 2, true);
+                final Bitmap overlay = FastBlur.doBlur(PLApplication.bitmap.copy(Bitmap.Config.ARGB_8888, true), 2, true);
                 final Drawable fabIcon = MaterialDrawableBuilder.with(BookDetailActivity.this)
                                                                 .setIcon(MaterialDrawableBuilder.IconValue.STAR)
                                                                 .setSizeDp(24)
@@ -268,7 +269,7 @@ public class BookDetailActivity extends AppCompatActivity {
             ObjectAnimator headerAnimator = getHeaderAnimator(true);
             ObjectAnimator extendBarAnimator = getExtendBarAnimator(true);
             ObjectAnimator contentAnimator = getContentAnimator(true);
-            android.animation.ObjectAnimator viewAnim = transitionHelper.getToViewAnimator(this, true, false);
+            android.animation.ObjectAnimator coverAnim = transitionHelper.getToViewAnimator(this, true, false);
             final android.animation.ObjectAnimator bgAnim = transitionHelper.getBackgoundAnimator(this, true,
                     new CustomAnimatorListener() {
                         @Override
@@ -300,7 +301,7 @@ public class BookDetailActivity extends AppCompatActivity {
                 }
             });
             animatorSet.start();
-            viewAnim.start();
+            coverAnim.start();
         }
 
         public void reverse(){
@@ -311,7 +312,7 @@ public class BookDetailActivity extends AppCompatActivity {
             final ObjectAnimator headerAnimator = getHeaderAnimator(false);
             final ObjectAnimator extendBarAnimator = getExtendBarAnimator(false);
             final ObjectAnimator contentAnimator = getContentAnimator(false);
-            final android.animation.ObjectAnimator viewAnim = transitionHelper.getToViewAnimator(this, false);
+            final android.animation.ObjectAnimator coverAnim = transitionHelper.getToViewAnimator(this, false);
             android.animation.ObjectAnimator bgAnim = transitionHelper.getBackgoundAnimator(this, false);
             bgAnim.addListener(new SimpleListener() {
                 @Override
@@ -327,7 +328,7 @@ public class BookDetailActivity extends AppCompatActivity {
                         }
                     });
                     animatorSet.start();
-                    viewAnim.start();
+                    coverAnim.start();
                 }
             });
             bgAnim.start();
@@ -352,7 +353,7 @@ public class BookDetailActivity extends AppCompatActivity {
             int endX = (show)?animationView.getRight():0;
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(revealView, "right",
                     startX, endX);
-            objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
+            objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
             objectAnimator.setInterpolator((show)?ACCELERATE_DECELERATE:ACCELERATE);
             return objectAnimator;
         }
@@ -362,7 +363,7 @@ public class BookDetailActivity extends AppCompatActivity {
             int endX = (show)?0:animationView.getRight();
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(extendBar, "left",
                     startX, endX);
-            objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
+            objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
             objectAnimator.setInterpolator((show)?ACCELERATE_DECELERATE:ACCELERATE);
             return objectAnimator;
         }
@@ -372,7 +373,7 @@ public class BookDetailActivity extends AppCompatActivity {
             int endX = (show)?animationView.getRight():0;
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(blank, "right",
                     startX, endX);
-            objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
+            objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
             objectAnimator.setInterpolator((show) ? ACCELERATE_DECELERATE : ACCELERATE);
             return objectAnimator;
         }

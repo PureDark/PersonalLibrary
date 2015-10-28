@@ -10,6 +10,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -18,6 +19,9 @@ import com.h6ah4i.android.widget.advrecyclerview.animator.RefactoredDefaultItemA
 import com.h6ah4i.android.widget.advrecyclerview.decoration.ItemShadowDecorator;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -121,26 +125,6 @@ public class IndexFragment extends Fragment {
                 (NinePatchDrawable) ContextCompat.getDrawable(this.getContext(), R.drawable.material_shadow_z1)));
 
         mRecyclerViewDragDropManager.attachRecyclerView(mRecyclerView);
-
-//        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.main_swipe);
-//        mAppBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
-//        //设置刷新时动画的颜色，可以设置4个
-//        mSwipeRefreshLayout.setColorSchemeResources(android.R.color.holo_red_light,
-//                android.R.color.holo_orange_light,
-//                android.R.color.holo_green_light,
-//                android.R.color.holo_blue_light);
-//        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-//            @Override
-//            public void onRefresh() {
-//                mSwipeRefreshLayout.setEnabled(false);
-//                new Handler().postDelayed(new Runnable() {
-//                    public void run() {
-//                        mSwipeRefreshLayout.setRefreshing(false);
-//                        mSwipeRefreshLayout.setEnabled(true);
-//                    }
-//                }, 4000);
-//            }
-//        });
 
         return rootView;
     }

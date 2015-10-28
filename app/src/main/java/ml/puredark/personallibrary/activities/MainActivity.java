@@ -36,13 +36,14 @@ import com.wnafee.vector.compat.ResourcesCompat;
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.ObjectAnimator;
 
+import carbon.widget.ProgressBar;
 import io.codetail.animation.SupportAnimator;
 import io.codetail.animation.ViewAnimationUtils;
 import io.codetail.animation.arcanimator.ArcAnimator;
 import io.codetail.animation.arcanimator.Side;
 
 import io.codetail.widget.RevealFrameLayout;
-import ml.puredark.personallibrary.PersonalLibraryApplication;
+import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.beans.BookListItem;
@@ -78,6 +79,7 @@ public class MainActivity extends AppCompatActivity
     private MyFloatingActionButton fabAdd;
     private RevealFrameLayout revealLayout;
     private View revealView, extendBar, blank;
+    private ProgressBar loading;
     //revealView是否展开
     private boolean revealed = false;
     //是否动画中
@@ -108,6 +110,7 @@ public class MainActivity extends AppCompatActivity
         revealView = findViewById(R.id.reveal_view);
         extendBar = findViewById(R.id.animator_view);
         blank = findViewById(R.id.blank);
+        loading = (ProgressBar) findViewById(R.id.loading);
         revealLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -212,7 +215,7 @@ public class MainActivity extends AppCompatActivity
 //                    }
 //                }).show();
             //TODO: 获取书籍信息时显示载入动画
-
+            loading.setVisibility(View.VISIBLE);
             DoubanRestAPI.getBookByISBN(result.getContents(), new CallBack() {
                 @Override
                 public void action(Object obj) {
@@ -230,8 +233,8 @@ public class MainActivity extends AppCompatActivity
             });
             return;
         }else if(requestCode==1){
-            if(resultCode==RESULT_OK&&PersonalLibraryApplication.temp instanceof Book) {
-                Book book = (Book) PersonalLibraryApplication.temp;
+            if(resultCode==RESULT_OK&& PLApplication.temp instanceof Book) {
+                Book book = (Book) PLApplication.temp;
                 String author = (book.author.length>0)?book.author[0]:"";
                 BookListItem item = new BookListItem(book.id, book.isbn13, book.images.get("large"), book.title, author, book.summary);
                 IndexFragment.getInstance().addNewBook(0, item);
@@ -275,8 +278,8 @@ public class MainActivity extends AppCompatActivity
         ImageLoader.getInstance().loadImage(url, new SimpleImageLoadingListener() {
             @Override
             public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                PersonalLibraryApplication.temp = book;
-                PersonalLibraryApplication.bitmap = loadedImage;
+                PLApplication.temp = book;
+                PLApplication.bitmap = loadedImage;
                 final View fromView = cover;
                 Palette.generateAsync(loadedImage, new Palette.PaletteAsyncListener() {
                     @Override
@@ -301,6 +304,7 @@ public class MainActivity extends AppCompatActivity
                         bundle.putInt("fabColor", fabColor.getRgb());
                         intent.putExtras(bundle);
                         intent.putExtra("scaned", scaned);
+                        loading.setVisibility(View.INVISIBLE);
                         if (scaned) {
                             ObjectAnimator bgColorAnimator = ObjectAnimator.ofObject(revealView,
                                     "backgroundColor",
@@ -573,7 +577,7 @@ public class MainActivity extends AppCompatActivity
             return objectAnimator;
         }
 
-        ObjectAnimator getExtendBarAnimator(boolean show){
+        ObjectAnimator getExtendBarAnimator(final boolean show){
             int startX = (show)?revealLayout.getRight():0;
             int endX = (show)?0:revealLayout.getRight();
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(extendBar, "left",
@@ -584,6 +588,11 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onAnimationStart(com.nineoldandroids.animation.Animator animation) {
                     extendBar.setVisibility(View.VISIBLE);
+                }
+                @Override
+                public void onAnimationEnd(com.nineoldandroids.animation.Animator animation) {
+                    if(!show)
+                        extendBar.setVisibility(View.INVISIBLE);
                 }
             });
             return objectAnimator;
