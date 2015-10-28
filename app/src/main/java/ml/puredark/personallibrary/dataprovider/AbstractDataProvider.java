@@ -24,10 +24,6 @@ public abstract class AbstractDataProvider {
 
     public static abstract class Data {
         public abstract long getId();
-
-        public abstract void setPinned(boolean pinned);
-
-        public abstract boolean isPinned();
     }
 
     public abstract int getCount();

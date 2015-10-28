@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<carbon.widget.LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:carbon="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="8dp"
-    android:background="@color/white"
-    carbon:carbon_cornerRadius="2dp">
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:background="@drawable/rounded_bg_2dp">
 
-    <LinearLayout
+    <carbon.widget.LinearLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
-        android:layout_height="160dp">
+        android:layout_height="160dp"
+        android:background="@color/white"
+        carbon:carbon_cornerRadius="2dp">
 
             <carbon.widget.ImageView
                 android:id="@+id/cover"
@@ -87,6 +90,6 @@
                 </LinearLayout>
             </RelativeLayout>
         </com.balysv.materialripple.MaterialRippleLayout>
-    </LinearLayout>
+    </carbon.widget.LinearLayout>
 
-</carbon.widget.LinearLayout>
+</RelativeLayout>

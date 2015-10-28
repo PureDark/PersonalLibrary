@@ -2,7 +2,9 @@ package ml.puredark.personallibrary.fragments;
 
 import android.app.Activity;
 import android.graphics.drawable.NinePatchDrawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,8 +18,12 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.h6ah4i.android.widget.advrecyclerview.animator.GeneralItemAnimator;
 import com.h6ah4i.android.widget.advrecyclerview.animator.RefactoredDefaultItemAnimator;
+import com.h6ah4i.android.widget.advrecyclerview.animator.SwipeDismissItemAnimator;
 import com.h6ah4i.android.widget.advrecyclerview.decoration.ItemShadowDecorator;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager;
+import com.h6ah4i.android.widget.advrecyclerview.swipeable.RecyclerViewSwipeManager;
+import com.h6ah4i.android.widget.advrecyclerview.touchguard.RecyclerViewTouchActionGuardManager;
+import com.h6ah4i.android.widget.advrecyclerview.utils.WrapperAdapterUtils;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -25,10 +31,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.activities.MainActivity;
 import ml.puredark.personallibrary.adapters.BookListAdapter;
 import ml.puredark.personallibrary.beans.BookListItem;
+import ml.puredark.personallibrary.dataprovider.AbstractDataProvider;
 import ml.puredark.personallibrary.dataprovider.BookListDataProvider;
 import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 
@@ -44,6 +52,8 @@ public class IndexFragment extends Fragment {
     private RecyclerView.Adapter mWrappedAdapter;
     private BookListAdapter mBookAdapter;
     private RecyclerViewDragDropManager mRecyclerViewDragDropManager;
+    private RecyclerViewSwipeManager mRecyclerViewSwipeManager;
+    private RecyclerViewTouchActionGuardManager mRecyclerViewTouchActionGuardManager;
 
     //书籍已点击(避免多次点击同时打开多个Activity)
     private boolean bookItemClicked = false;
@@ -88,9 +98,16 @@ public class IndexFragment extends Fragment {
         if(data!=null&&!data.equals(""))
             myBooks = new Gson().fromJson(data, new TypeToken<List<BookListItem>>(){}.getType());
 
+        // touch guard manager  (this class is required to suppress scrolling while swipe-dismiss animation is running)
+        mRecyclerViewTouchActionGuardManager = new RecyclerViewTouchActionGuardManager();
+        mRecyclerViewTouchActionGuardManager.setInterceptVerticalScrollingWhileAnimationRunning(true);
+        mRecyclerViewTouchActionGuardManager.setEnabled(true);
 
         // drag & drop manager
         mRecyclerViewDragDropManager = new RecyclerViewDragDropManager();
+
+        // swipe manager
+        mRecyclerViewSwipeManager = new RecyclerViewSwipeManager();
 
         // 拖拽时的阴影
         mRecyclerViewDragDropManager.setDraggingItemShadowDrawable(
@@ -105,17 +122,44 @@ public class IndexFragment extends Fragment {
         mBookAdapter.setOnItemClickListener(new BookListAdapter.MyItemClickListener() {
             @Override
             public void onItemClick(View view, int postion) {
-                if(bookItemClicked==false) {
+                if (bookItemClicked == false) {
                     bookItemClicked = true;
                     mListener.onFragmentInteraction(1, mBookAdapter.getDataProvider().getItem(postion), view);
                 }
             }
         });
+        mBookAdapter.setEventListener(new BookListAdapter.EventListener() {
+            @Override
+            public void onItemRemoved(int position) {
+                Snackbar snackbar = Snackbar.make(
+                        findViewById(R.id.container),
+                        R.string.item_removed,
+                        Snackbar.LENGTH_LONG);
 
-        // 将Adapter封装成可以拖动的
+                snackbar.setAction(R.string.snack_bar_action_undo, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        int position = mBookAdapter.getDataProvider().undoLastRemoval();
+                        if (position >= 0) {
+                            notifyItemInserted(position);
+                        }
+                    }
+                });
+                snackbar.setActionTextColor(ContextCompat.getColor(PLApplication.mContext, R.color.white));
+                snackbar.show();
+            }
+        });
+
+        // wrap for dragging
         mWrappedAdapter =  mRecyclerViewDragDropManager.createWrappedAdapter(mBookAdapter);
+        // wrap for swiping
+        mWrappedAdapter = mRecyclerViewSwipeManager.createWrappedAdapter(mWrappedAdapter);
 
-        final GeneralItemAnimator animator = new RefactoredDefaultItemAnimator();
+        final GeneralItemAnimator animator = new SwipeDismissItemAnimator();
+
+        // Change animations are enabled by default since support-v7-recyclerview v22.
+        // Disable the change animation in order to make turning back animation of swiped item works properly.
+        animator.setSupportsChangeAnimations(false);
 
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mWrappedAdapter);  // 设置的是处理过的mWrappedAdapter
@@ -124,6 +168,12 @@ public class IndexFragment extends Fragment {
         mRecyclerView.addItemDecoration(new ItemShadowDecorator(
                 (NinePatchDrawable) ContextCompat.getDrawable(this.getContext(), R.drawable.material_shadow_z1)));
 
+        // NOTE:
+        // The initialization order is very important! This order determines the priority of touch event handling.
+        //
+        // priority: TouchActionGuard > Swipe > DragAndDrop
+        mRecyclerViewTouchActionGuardManager.attachRecyclerView(mRecyclerView);
+        mRecyclerViewSwipeManager.attachRecyclerView(mRecyclerView);
         mRecyclerViewDragDropManager.attachRecyclerView(mRecyclerView);
 
         return rootView;
@@ -136,6 +186,11 @@ public class IndexFragment extends Fragment {
     public void addNewBook(int position, BookListItem book) {
         mBookAdapter.getDataProvider().addItem(position, book);
         mBookAdapter.notifyDataSetChanged();
+    }
+
+    public void notifyItemInserted(int position) {
+        mBookAdapter.notifyItemInserted(position);
+        mRecyclerView.scrollToPosition(position);
     }
 
     @Override
@@ -160,6 +215,12 @@ public class IndexFragment extends Fragment {
     public void onResume(){
         super.onResume();
         bookItemClicked = false;
+    }
+
+    @Override
+    public void onPause() {
+        mRecyclerViewDragDropManager.cancelDrag();
+        super.onPause();
     }
 
     @Override

@@ -4,7 +4,6 @@ import ml.puredark.personallibrary.dataprovider.AbstractDataProvider;
 
 public final class BookListItem extends AbstractDataProvider.Data {
     public final int id;
-    private boolean mPinned;
     public final String cover, title, author, description, isbn13;
 
     public BookListItem(int id, String isbn13, String cover, String title, String author, String description){
@@ -19,15 +18,5 @@ public final class BookListItem extends AbstractDataProvider.Data {
     @Override
     public long getId() {
         return id;
-    }
-
-    @Override
-    public boolean isPinned() {
-        return mPinned;
-    }
-
-    @Override
-    public void setPinned(boolean pinned) {
-        mPinned = pinned;
     }
 }
