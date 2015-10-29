@@ -202,7 +202,7 @@ public class ActivityTransitionHelper {
     }
     public ObjectAnimator getToViewAnimator(CustomAnimator animator, final boolean show, final CustomAnimatorListener callBack, final boolean recoverToView){
         final ViewGroup parent = (ViewGroup) toView.getParent();
-        ViewGroupOverlayUtils.addOverlay(animationView, toView, 0, 0);
+        ViewGroupOverlayUtils.addOverlay(animationView, toView, (int)toView.getX(), (int)toView.getY());
 //        animationView.getOverlay().add(toView);
 
         if(show) {

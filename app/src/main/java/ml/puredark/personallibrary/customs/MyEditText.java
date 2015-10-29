@@ -12,18 +12,16 @@ public class MyEditText extends EditText {
     public MyEditText(Context context) {
         super(context);
     }
-
     public MyEditText(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
-
     public MyEditText(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
     public void setStartIcon(Animatable startIcon){
         this.startIcon = startIcon;
-        this.setBackground((Drawable) startIcon);
+        this.setBackgroundDrawable((Drawable) startIcon);
     }
 
     public void setEndIcon(Animatable endIcon){
@@ -32,14 +30,14 @@ public class MyEditText extends EditText {
 
     public void start(){
         if(startIcon!=null){
-            this.setBackground((Drawable) startIcon);
+            this.setBackgroundDrawable((Drawable) startIcon);
             startIcon.start();
         }
     }
 
     public void reverse(){
         if(endIcon!=null){
-            this.setBackground((Drawable)endIcon);
+            this.setBackgroundDrawable((Drawable)endIcon);
             endIcon.start();
         }
     }

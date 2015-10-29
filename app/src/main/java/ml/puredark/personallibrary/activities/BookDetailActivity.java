@@ -1,6 +1,5 @@
 package ml.puredark.personallibrary.activities;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -12,8 +11,8 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.graphics.drawable.DrawerArrowDrawable;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,11 +26,13 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
+import com.nineoldandroids.animation.ValueAnimator;
+import com.transitionseverywhere.utils.ViewGroupOverlayUtils;
 
 import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
 
 import io.codetail.widget.RevealFrameLayout;
-import ml.puredark.personallibrary.PersonalLibraryApplication;
+import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
@@ -50,6 +51,7 @@ public class BookDetailActivity extends AppCompatActivity {
     private MyCoordinatorLayout mCoordinatorLayout;
     private AppBarLayout mAppBarLayout;
     private CollapsingToolbarLayout toolbarLayout;
+    private Toolbar toolbar;
     private NestedScrollView summaryLayout;
     private ActivityTransitionHelper transitionHelper;
     private boolean scaned = false;
@@ -59,6 +61,8 @@ public class BookDetailActivity extends AppCompatActivity {
     private MyFloatingActionButton fabAction;
     private RevealFrameLayout animationView;
     private View revealView, extendBar, blank;
+    private ImageView backButton;
+    private DrawerArrowDrawable backButtonIcon;
     //是否动画中
     private boolean animating = false;
 
@@ -66,7 +70,7 @@ public class BookDetailActivity extends AppCompatActivity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_detail);
-        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         mCoordinatorLayout = (MyCoordinatorLayout) findViewById(R.id.coordinator_layout);
         mAppBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
         toolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
@@ -78,6 +82,7 @@ public class BookDetailActivity extends AppCompatActivity {
         revealView = findViewById(R.id.reveal_view);
         extendBar = findViewById(R.id.extend_bar);
         blank = findViewById(R.id.blank);
+        backButton = (ImageView) findViewById(R.id.back_button);
 
         titleBar = (LinearLayout) findViewById(R.id.title_bar);
         bookTitle = (TextView) findViewById(R.id.book_title);
@@ -92,13 +97,27 @@ public class BookDetailActivity extends AppCompatActivity {
         final Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
 
-        Object data = PersonalLibraryApplication.temp;
+        Object data = PLApplication.temp;
         if(data==null||!(data instanceof Book)){
             setResult(RESULT_CANCELED);
             finish();
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             return;
         }
+
+        //为返回按钮加载图标
+//        Animatable backStartIcon = (Animatable) ResourcesCompat.getDrawable(this, R.drawable.ic_drawer_to_arrow);
+//        Animatable backEndIcon = (Animatable) ResourcesCompat.getDrawable(this, R.drawable.ic_arrow_to_drawer);
+        backButtonIcon = new DrawerArrowDrawable(this);
+        backButtonIcon.setColor(getResources().getColor(R.color.white));
+        backButton.setImageDrawable(backButtonIcon);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setResult(RESULT_CANCELED);
+                finishActivity();
+            }
+        });
 
         /* 修改动画元素颜色 */
         blank.setBackgroundColor(bundle.getInt("bottomColor"));
@@ -110,30 +129,26 @@ public class BookDetailActivity extends AppCompatActivity {
             animating = true;
             new Handler().postDelayed(new Runnable() {
                 public void run() {
-                    transitionHelper = ActivityTransitionHelper.with(BookDetailActivity.this)
-                            .intent(intent)
-                            .toView(bookCover)
-                            .background(mCoordinatorLayout)
-                            .animationView(rootView)
-                            .customAnimator(new AnimationOnActivityStart())
-                            .startTransition(savedInstanceState);
+                    transitionHelper = ActivityTransitionHelper
+                                        .with(BookDetailActivity.this)
+                                        .intent(intent)
+                                        .toView(bookCover)
+                                        .background(mCoordinatorLayout)
+                                        .animationView(rootView)
+                                        .customAnimator(new AnimationOnActivityStart())
+                                        .startTransition(savedInstanceState);
                 }
             }, 200);
         }
 
-        final Book book = (Book)PersonalLibraryApplication.temp;
-        Bitmap cover = PersonalLibraryApplication.bitmap;
+        final Book book = (Book) PLApplication.temp;
+        Bitmap cover = PLApplication.bitmap;
         fabAction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 SharedPreferencesUtil.saveData(getBaseContext(), "isbn13_" + book.isbn13, new Gson().toJson(book));
                 setResult(RESULT_OK);
-                if (transitionHelper != null)
-                    transitionHelper.exitActivity();
-                else {
-                    finish();
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                }
+                finishActivity();
             }
         });
 
@@ -143,10 +158,11 @@ public class BookDetailActivity extends AppCompatActivity {
         backdrop.setImageBitmap(cover);
 
         /* 让背景的封面大图上下来回缓慢移动 */
+        float targetY = (backdrop.getHeight()>backdrop.getWidth())?-0.4f:0f;
         Animation translateAnimation = new TranslateAnimation(TranslateAnimation.RELATIVE_TO_SELF, 0f,
         TranslateAnimation.RELATIVE_TO_SELF, 0f,
         TranslateAnimation.RELATIVE_TO_SELF, 0f,
-        TranslateAnimation.RELATIVE_TO_SELF, -0.4f);
+        TranslateAnimation.RELATIVE_TO_SELF, targetY);
         translateAnimation.setDuration(30000);
         translateAnimation.setRepeatCount(-1);
         translateAnimation.setRepeatMode(Animation.REVERSE);
@@ -170,12 +186,12 @@ public class BookDetailActivity extends AppCompatActivity {
             @Override
             public void run() {
                 /* 给背景封面加上高斯模糊 */
-                final Bitmap overlay = FastBlur.doBlur(PersonalLibraryApplication.bitmap.copy(Bitmap.Config.ARGB_8888, true), 2, true);
+                final Bitmap overlay = FastBlur.doBlur(PLApplication.bitmap.copy(Bitmap.Config.ARGB_8888, true), 2, true);
                 final Drawable fabIcon = MaterialDrawableBuilder.with(BookDetailActivity.this)
-                        .setIcon(MaterialDrawableBuilder.IconValue.STAR)
-                        .setSizeDp(24)
-                        .setColor(Color.WHITE)
-                        .build();
+                                                                .setIcon(MaterialDrawableBuilder.IconValue.STAR)
+                                                                .setSizeDp(24)
+                                                                .setColor(Color.WHITE)
+                                                                .build();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -191,9 +207,23 @@ public class BookDetailActivity extends AppCompatActivity {
     public void onBackPressed() {
         if(animating)return;
         if(transitionHelper!=null)
-            transitionHelper.exitActivity();
+            finishActivity();
         else
             super.onBackPressed();
+    }
+
+    public void finishActivity(){
+        if(transitionHelper!=null) {
+            mAppBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+                @Override
+                public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                    if (verticalOffset == 0)
+                        transitionHelper.exitActivity();
+                }
+            });
+            mAppBarLayout.setExpanded(true, true);
+        }else
+            finish();
     }
 
     @Override
@@ -231,22 +261,28 @@ public class BookDetailActivity extends AppCompatActivity {
 
         public void start(){
             animating = true;
-            final ViewGroup parent = (ViewGroup) bookCover.getParent();
+            final ViewGroup bookParent = (ViewGroup) bookCover.getParent();
+            final ViewGroup backParent = (ViewGroup) backButton.getParent();
+            ViewGroupOverlayUtils.addOverlay(rootView, backButton, (int)backButton.getX(), (int)backButton.getY());
+
+            ValueAnimator backAnimator = getArrowAnimator(true);
             ObjectAnimator headerAnimator = getHeaderAnimator(true);
             ObjectAnimator extendBarAnimator = getExtendBarAnimator(true);
             ObjectAnimator contentAnimator = getContentAnimator(true);
-            android.animation.ObjectAnimator viewAnim = transitionHelper.getToViewAnimator(this, true, false);
+            android.animation.ObjectAnimator coverAnim = transitionHelper.getToViewAnimator(this, true, false);
             final android.animation.ObjectAnimator bgAnim = transitionHelper.getBackgoundAnimator(this, true,
                     new CustomAnimatorListener() {
                         @Override
                         public void onAnimationEnd() {
                             ((ViewGroup) bookCover.getParent()).removeView(bookCover);
-                            parent.addView(bookCover);
+                            bookParent.addView(bookCover);
+                            ((ViewGroup) backButton.getParent()).removeView(backButton);
+                            backParent.addView(backButton);
                         }
             });
 
             AnimatorSet animatorSet = new AnimatorSet();
-            animatorSet.playTogether(headerAnimator, extendBarAnimator, contentAnimator);
+            animatorSet.playTogether(headerAnimator, extendBarAnimator, contentAnimator, backAnimator);
             animatorSet.addListener(new SimpleListener() {
 
                 @Override
@@ -255,6 +291,7 @@ public class BookDetailActivity extends AppCompatActivity {
                     extendBar.setVisibility(View.VISIBLE);
                     revealView.setVisibility(View.VISIBLE);
                 }
+
                 @Override
                 public void onAnimationEnd(com.nineoldandroids.animation.Animator animation) {
                     bgAnim.start();
@@ -264,21 +301,24 @@ public class BookDetailActivity extends AppCompatActivity {
                 }
             });
             animatorSet.start();
-            viewAnim.start();
+            coverAnim.start();
         }
 
         public void reverse(){
             animating = true;
+            ViewGroupOverlayUtils.addOverlay(rootView, backButton, (int)backButton.getX(), (int)backButton.getY());
+
+            final ValueAnimator backAnimator = getArrowAnimator(false);
             final ObjectAnimator headerAnimator = getHeaderAnimator(false);
             final ObjectAnimator extendBarAnimator = getExtendBarAnimator(false);
             final ObjectAnimator contentAnimator = getContentAnimator(false);
-            final android.animation.ObjectAnimator viewAnim = transitionHelper.getToViewAnimator(this, false);
+            final android.animation.ObjectAnimator coverAnim = transitionHelper.getToViewAnimator(this, false);
             android.animation.ObjectAnimator bgAnim = transitionHelper.getBackgoundAnimator(this, false);
             bgAnim.addListener(new SimpleListener() {
                 @Override
                 public void onAnimationEnd(android.animation.Animator animation) {
                     AnimatorSet animatorSet = new AnimatorSet();
-                    animatorSet.playTogether(headerAnimator, extendBarAnimator, contentAnimator);
+                    animatorSet.playTogether(headerAnimator, extendBarAnimator, contentAnimator, backAnimator);
                     animatorSet.addListener(new SimpleListener() {
                         @Override
                         public void onAnimationEnd(com.nineoldandroids.animation.Animator animation) {
@@ -288,10 +328,24 @@ public class BookDetailActivity extends AppCompatActivity {
                         }
                     });
                     animatorSet.start();
-                    viewAnim.start();
+                    coverAnim.start();
                 }
             });
             bgAnim.start();
+        }
+
+        ValueAnimator getArrowAnimator(boolean show){
+            float start = (show)?0f:1f;
+            float end = (show)?1f:0f;
+            ValueAnimator animator = ValueAnimator.ofFloat(start, end);
+            animator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
+            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener(){
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    backButtonIcon.setProgress((Float) animation.getAnimatedValue());
+                }
+            });
+            return animator;
         }
 
         ObjectAnimator getHeaderAnimator(boolean show){
@@ -299,7 +353,7 @@ public class BookDetailActivity extends AppCompatActivity {
             int endX = (show)?animationView.getRight():0;
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(revealView, "right",
                     startX, endX);
-            objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
+            objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
             objectAnimator.setInterpolator((show)?ACCELERATE_DECELERATE:ACCELERATE);
             return objectAnimator;
         }
@@ -309,7 +363,7 @@ public class BookDetailActivity extends AppCompatActivity {
             int endX = (show)?0:animationView.getRight();
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(extendBar, "left",
                     startX, endX);
-            objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
+            objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
             objectAnimator.setInterpolator((show)?ACCELERATE_DECELERATE:ACCELERATE);
             return objectAnimator;
         }
@@ -319,8 +373,8 @@ public class BookDetailActivity extends AppCompatActivity {
             int endX = (show)?animationView.getRight():0;
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(blank, "right",
                     startX, endX);
-            objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
-            objectAnimator.setInterpolator((show)?ACCELERATE_DECELERATE:ACCELERATE);
+            objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
+            objectAnimator.setInterpolator((show) ? ACCELERATE_DECELERATE : ACCELERATE);
             return objectAnimator;
         }
     }

@@ -14,6 +14,7 @@
     <dimen name="tool_bar_height_no_padding">56dp</dimen>
     <dimen name="text_margin">16dp</dimen>
 
+    <dimen name="loading_size">56dp</dimen>
 
     <dimen name="avatar_size_small">40dp</dimen>
     <dimen name="avatar_size_small_half">20dp</dimen>

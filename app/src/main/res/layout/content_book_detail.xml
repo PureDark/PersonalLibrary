@@ -67,8 +67,24 @@
                 android:layout_height="@dimen/tool_bar_height"
                 android:layout_width="match_parent"
                 android:paddingTop="@dimen/status_bar_padding"
+                android:paddingLeft="-16dp"
+                app:contentInsetStart="0dp"
                 app:layout_collapseMode="pin"
                 app:popupTheme="@style/AppTheme.PopupOverlay">
+
+                <carbon.widget.LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
+                    <ImageView
+                        android:id="@+id/back_button"
+                        android:layout_width="@dimen/tool_bar_height_no_padding"
+                        android:layout_height="@dimen/tool_bar_height_no_padding"
+                        android:scaleType="fitXY"
+                        android:padding="16dp"
+                        android:background="@drawable/button_pressed"/>
+                </carbon.widget.LinearLayout>
             </android.support.v7.widget.Toolbar>
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
@@ -79,7 +95,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="false">
-        <LinearLayout
+        <carbon.widget.LinearLayout
             android:id="@+id/title_bar"
             android:layout_width="match_parent"
             android:layout_height="@dimen/book_detail_title_bar_height"
@@ -94,7 +110,7 @@
                 android:gravity="center_vertical"
                 android:textAppearance="?android:textAppearanceLarge"
                 android:text="标题"/>
-        </LinearLayout>
+        </carbon.widget.LinearLayout>
 
         <android.support.v4.widget.NestedScrollView
             android:id="@+id/summary_layout"
@@ -102,7 +118,8 @@
             android:background="@color/bg_grey"
             android:layout_below="@id/title_bar"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

@@ -13,7 +13,9 @@ import com.balysv.materialripple.MaterialRippleLayout;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.DraggableItemAdapter;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.DraggableItemConstants;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.ItemDraggableRange;
-import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractDraggableItemViewHolder;
+import com.h6ah4i.android.widget.advrecyclerview.swipeable.LegacySwipeableItemAdapter;
+import com.h6ah4i.android.widget.advrecyclerview.swipeable.SwipeableItemConstants;
+import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractDraggableSwipeableItemViewHolder;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import ml.puredark.personallibrary.R;
@@ -23,15 +25,23 @@ import ml.puredark.personallibrary.utils.ViewUtils;
 
 public class BookListAdapter
         extends RecyclerView.Adapter<BookListAdapter.BookViewHolder>
-        implements DraggableItemAdapter<BookListAdapter.BookViewHolder> {
+        implements DraggableItemAdapter<BookListAdapter.BookViewHolder>,
+        LegacySwipeableItemAdapter<BookListAdapter.BookViewHolder> {
     private AbstractDataProvider mProvider;
+    private EventListener mEventListener;
     private MyItemClickListener mItemClickListener;
+
+    public interface EventListener {
+        void onItemRemoved(int position);
+    }
 
     // NOTE: 短名引用
     private interface Draggable extends DraggableItemConstants {
     }
+    private interface Swipeable extends SwipeableItemConstants {
+    }
 
-    public class BookViewHolder extends AbstractDraggableItemViewHolder implements View.OnClickListener {
+    public class BookViewHolder extends AbstractDraggableSwipeableItemViewHolder implements View.OnClickListener {
         public MaterialRippleLayout rippleLayout;
         public LinearLayout container;
         public ImageView cover;
@@ -51,6 +61,11 @@ public class BookListAdapter
             mListener = onClickListener;
             cover.setOnClickListener(this);
             rippleLayout.setOnClickListener(this);
+        }
+
+        @Override
+        public View getSwipeableContainerView() {
+            return container;
         }
 
         @Override
@@ -77,14 +92,19 @@ public class BookListAdapter
 
     @Override
     public void onBindViewHolder(BookViewHolder holder, int position) {
-        // - get element from your dataset at this position
-        // - replace the contents of the view with that element
-        BookListItem book = (BookListItem) mProvider.getItem(position);
-        //ImageLoader.getInstance().displayImage(null, holder.cover);
-        ImageLoader.getInstance().displayImage(book.cover, holder.cover);
+        final BookListItem book = (BookListItem) mProvider.getItem(position);
+
+        if(holder.cover.getTag()!=book.cover) {
+            ImageLoader.getInstance().displayImage(null, holder.cover);
+            ImageLoader.getInstance().displayImage(book.cover, holder.cover);
+            holder.cover.setTag(book.cover);
+        }
         holder.title.setText(book.title);
         holder.author.setText(book.author);
         holder.description.setText(book.description);
+
+        // set swiping properties
+        holder.setSwipeItemHorizontalSlideAmount(0);
     }
 
     @Override
@@ -101,7 +121,6 @@ public class BookListAdapter
     public int getItemViewType(int position) {
         return 0;
     }
-
 
     @Override
     public void onMoveItem(int fromPosition, int toPosition) {
@@ -132,6 +151,70 @@ public class BookListAdapter
         return null;
     }
 
+    @Override
+    public int onGetSwipeReactionType(BookViewHolder holder, int position, int x, int y) {
+        if (onCheckCanStartDrag(holder, position, x, y)) {
+            return Swipeable.REACTION_CAN_NOT_SWIPE_BOTH_H;
+        } else {
+            return Swipeable.REACTION_CAN_SWIPE_LEFT | Swipeable.REACTION_MASK_START_SWIPE_LEFT |
+                    Swipeable.REACTION_CAN_SWIPE_RIGHT | Swipeable.REACTION_MASK_START_SWIPE_RIGHT |
+                    Swipeable.REACTION_START_SWIPE_ON_LONG_PRESS;
+        }
+    }
+
+    @Override
+    public void onSetSwipeBackground(BookViewHolder holder, int position, int type) {
+        int bgRes = 0;
+        switch (type) {
+            case Swipeable.DRAWABLE_SWIPE_NEUTRAL_BACKGROUND:
+                bgRes = R.drawable.rounded_bg_2dp;
+                break;
+            case Swipeable.DRAWABLE_SWIPE_LEFT_BACKGROUND:
+                bgRes = R.drawable.bg_swipe_item_right;
+                break;
+            case Swipeable.DRAWABLE_SWIPE_RIGHT_BACKGROUND:
+                bgRes = R.drawable.bg_swipe_item_left;
+                break;
+        }
+
+        holder.itemView.setBackgroundResource(bgRes);
+    }
+
+    @Override
+    public int onSwipeItem(BookViewHolder holder, int position, int result) {
+        switch (result) {
+            // swipe right
+            case Swipeable.RESULT_SWIPED_RIGHT:
+                return Swipeable.AFTER_SWIPE_REACTION_REMOVE_ITEM;
+            // swipe left
+            case Swipeable.RESULT_SWIPED_LEFT:
+                return Swipeable.AFTER_SWIPE_REACTION_REMOVE_ITEM;
+            // other
+            case Swipeable.RESULT_CANCELED:
+            default:
+                return Swipeable.AFTER_SWIPE_REACTION_DEFAULT;
+        }
+    }
+
+    @Override
+    public void onPerformAfterSwipeReaction(BookViewHolder holder, int position, int result, int reaction) {
+        if (reaction == Swipeable.AFTER_SWIPE_REACTION_REMOVE_ITEM) {
+            mProvider.removeItem(position);
+            notifyItemRemoved(position);
+            if (mEventListener != null) {
+                mEventListener.onItemRemoved(position);
+            }
+        }
+    }
+
+    public EventListener getEventListener() {
+        return mEventListener;
+    }
+
+    public void setEventListener(EventListener eventListener) {
+        mEventListener = eventListener;
+    }
+
     public void setOnItemClickListener(MyItemClickListener listener){
         this.mItemClickListener = listener;
     }
@@ -140,7 +223,7 @@ public class BookListAdapter
         return mProvider;
     }
     public interface MyItemClickListener {
-        public void onItemClick(View view,int postion);
+        void onItemClick(View view,int postion);
     }
 
 }

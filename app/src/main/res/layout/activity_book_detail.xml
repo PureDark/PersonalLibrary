@@ -19,11 +19,12 @@
             android:visibility="invisible"
             android:background="@color/white"/>
 
-        <View
+        <LinearLayout
             android:id="@+id/reveal_view"
             android:layout_width="match_parent"
             android:layout_height="@dimen/book_detail_app_bar_height"
             android:visibility="invisible"
+            android:orientation="vertical"
             android:background="@color/colorPrimary"/>
         <View
             android:id="@+id/extend_bar"

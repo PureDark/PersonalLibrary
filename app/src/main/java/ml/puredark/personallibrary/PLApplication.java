@@ -21,7 +21,7 @@ import com.telly.mrvector.MrVector;
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
-public class PersonalLibraryApplication extends Application {
+public class PLApplication extends Application {
     public static Context mContext;
     // 全局变量，用于跨Activity传输复杂对象
     public static Object temp;
