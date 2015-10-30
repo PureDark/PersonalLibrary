@@ -87,7 +87,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp">
                     <carbon.widget.Button
-                        android:id="@+id/btnForgot"
+                        android:id="@+id/btnGoForgot"
                         style="@style/carbon_Button.Flat"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -95,7 +95,7 @@
                         android:textColor="@color/colorPrimaryDark"
                         android:text="忘记密码" />
                     <carbon.widget.Button
-                        android:id="@+id/btnRegister"
+                        android:id="@+id/btnGoRegister"
                         style="@style/carbon_Button.Flat"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,11 +32,13 @@ import android.widget.TextView;
 import com.dd.CircularProgressButton;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 import carbon.widget.Button;
 import ml.puredark.personallibrary.adapters.ViewPagerAdapter;
+import ml.puredark.personallibrary.customs.FixedSpeedScroller;
 import ml.puredark.personallibrary.helpers.BgViewAware;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.customs.NoScrollViewPager;
@@ -49,18 +52,23 @@ public class LoginActivity extends AppCompatActivity {
      */
     private UserLoginTask mAuthTask = null;
     private GetUserAvatarTask mAvatarTask = null;
-
+    //注册的AsyncTask
+    //private UserRegisterTask mRegisterTask = null;
     // UI相关引用
     private AutoCompleteTextView mCellphoneView;
     private EditText mPasswordView;
     private ImageView mAvatarView;
     private CircularProgressButton btnLogin;
-    private Button btnRegister;
-    private Button btnForgot;
+    private Button btnGoRegister;
+    private Button btnGoForgot;
+    private CircularProgressButton btnRegister;
+    private CircularProgressButton btnForgot;
     private boolean isDefaultAvatar = true;
     private static Drawable defaultAvatar;
-
-    private ViewPager viewPager;
+    private AutoCompleteTextView mRegisterCellphone;
+    private EditText mRegisterPassword;
+    private EditText mConfirePassword;
+    private ViewPager mViewPager;
     private List<View> views = new ArrayList<View>();
     private ViewPagerAdapter adpter;
     private int currentItem;
@@ -83,9 +91,10 @@ public class LoginActivity extends AppCompatActivity {
         views.add(viewLogin);
         views.add(viewRegister);
         adpter = new ViewPagerAdapter(views);
-        viewPager = ( ViewPager) findViewById(R.id.viewPager);
-        viewPager.setAdapter(adpter);
-        viewPager.setCurrentItem(1);
+        mViewPager = ( ViewPager) findViewById(R.id.viewPager);
+        setViewPagerScrollSpeed();
+        mViewPager.setAdapter(adpter);
+        mViewPager.setCurrentItem(1);
 
 
 
@@ -138,30 +147,74 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         mAvatarView = (ImageView)viewLogin.findViewById(R.id.avatar);
-        //忘记密码界面跳转
-        btnForgot = (Button)viewLogin.findViewById(R.id.btnForgot);
-        btnForgot.setOnClickListener(new OnClickListener() {
+        //配置注册界面
+        mRegisterCellphone = (AutoCompleteTextView)viewRegister.findViewById(R.id.register_cellphone);
+        mRegisterPassword = (EditText)viewRegister.findViewById(R.id.register_password);
+        mConfirePassword = (EditText)viewRegister.findViewById(R.id.confirm_password);
+        mRegisterCellphone.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
-            public void onClick(View view) {
-                viewPager.setCurrentItem(0);
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                if (id == EditorInfo.IME_ACTION_NEXT) {
+                    mRegisterPassword.requestFocus();
+                    return true;
+                }
+                return false;
             }
         });
-        //注册界面跳转
-        btnRegister = (Button)viewLogin.findViewById(R.id.btnRegister);
+        mRegisterPassword.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                if (id == EditorInfo.IME_ACTION_NEXT) {
+                    mConfirePassword.requestFocus();
+                    return true;
+                }
+                return false;
+            }
+        });
+        mConfirePassword.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                if (id == EditorInfo.IME_ACTION_DONE) {
+                    attemptRegister();
+                    return true;
+                }
+                return false;
+            }
+        });
+        btnRegister = (CircularProgressButton)viewRegister.findViewById(R.id.btnRegister);
+        btnRegister.setIndeterminateProgressMode(true);
         btnRegister.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                viewPager.setCurrentItem(2);
+                attemptRegister();
+            }
+        });
+
+        //忘记密码界面跳转
+        btnGoForgot = (Button)viewLogin.findViewById(R.id.btnGoForgot);
+        btnGoForgot.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mViewPager.setCurrentItem(0);
+            }
+        });
+        //注册界面跳转
+        btnGoRegister = (Button)viewLogin.findViewById(R.id.btnGoRegister);
+        btnGoRegister.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mViewPager.setCurrentItem(2);
             }
         });
     }
+    //重写返回事件
     @Override
     public void onBackPressed(){
-        int page = viewPager.getCurrentItem();
+        int page = mViewPager.getCurrentItem();
         if(page == 1){
             super.onBackPressed();
         }else {
-            viewPager.setCurrentItem(1);
+            mViewPager.setCurrentItem(1);
         }
     }
 
@@ -184,7 +237,62 @@ public class LoginActivity extends AppCompatActivity {
         mAvatarTask = new GetUserAvatarTask(cellphone);
         mAvatarTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
+    /*
+    *尝试用用户手机号喝密码进行注册
+    * 若存在错误（手机号格式不正确，密码太短，两次密码不一致等）
+    * 则产生提示信息，不会真的进行注册尝试
+    */
+    private void attemptRegister(){
+        //重置错误
+        mRegisterCellphone.setError(null);
+        mRegisterPassword.setError(null);
+        //存储尝试注册时的手机号和密码
+        String cellphone = mRegisterCellphone.getText().toString();
+        String password1 = mRegisterPassword.getText().toString();
+        String password2 = mConfirePassword.getText().toString();
 
+        boolean cancel = false;
+        View focusView = null;
+
+        //检查手机号喝密码输入是否有效
+        if(TextUtils.isEmpty(cellphone)){
+            mRegisterCellphone.setError(getString(R.string.error_field_required));
+            focusView = mRegisterCellphone;
+            cancel = true;
+        }else if(!isCellphoneValid(cellphone)){
+            mRegisterCellphone.setError(getString(R.string.error_invalid_cellphone));
+            focusView = mRegisterCellphone;
+            cancel=true;
+        }else if (TextUtils.isEmpty(password1)) {
+            mRegisterPassword.setError(getString(R.string.error_field_required));
+            focusView = mRegisterPassword;
+            cancel = true;
+        }else if (TextUtils.isEmpty(password2)) {
+            mConfirePassword.setError(getString(R.string.error_field_required));
+            focusView = mConfirePassword;
+            cancel = true;
+        }else if (!isPasswordValid(password1)) {
+            mRegisterPassword.setError(getString(R.string.error_invalid_password));
+            focusView = mRegisterPassword;
+            cancel = true;
+        }else if (!password1.equals(password2)){
+            mConfirePassword.setError(getString(R.string.error_confire_failed));
+            focusView = mConfirePassword;
+            cancel = true;
+        }
+        if (cancel) {
+            // 如果有错误，则让有错输入框获取焦点，不进行登录调用
+            focusView.requestFocus();
+        } else {
+            // 禁用输入框
+            toggleInput(false);
+            // 进行登录调用
+            btnRegister.setProgress(50);
+            //mAuthTask = new UserLoginTask(cellphone, password);
+            //mAuthTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+
+    }
     /**
      * 尝试用用户的手机号和密码进行登录
      * 如果存在错误（手机号格式不正确、密码太短等）
@@ -365,6 +473,20 @@ public class LoginActivity extends AppCompatActivity {
             toggleInput(true);
         }
     }
-
+    private void setViewPagerScrollSpeed( ){
+        try {
+            Field mScroller = null;
+            mScroller = ViewPager.class.getDeclaredField("mScroller");
+            mScroller.setAccessible(true);
+            FixedSpeedScroller scroller = new FixedSpeedScroller( mViewPager.getContext( ) );
+            mScroller.set( mViewPager, scroller);
+        }catch(NoSuchFieldException e){
+            Log.e("login",e.toString());
+        }catch (IllegalArgumentException e){
+            Log.e("login",e.toString());
+        }catch (IllegalAccessException e){
+            Log.e("login",e.toString());
+        }
+    }
 }
 
