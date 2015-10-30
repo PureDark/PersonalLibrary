@@ -23,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.daimajia.easing.linear.Linear;
 import com.google.gson.Gson;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
@@ -30,6 +31,7 @@ import com.nineoldandroids.animation.ValueAnimator;
 import com.transitionseverywhere.utils.ViewGroupOverlayUtils;
 
 import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
+import net.steamcrafted.materialiconlib.MaterialIconView;
 
 import io.codetail.widget.RevealFrameLayout;
 import ml.puredark.personallibrary.PLApplication;
@@ -92,7 +94,6 @@ public class BookDetailActivity extends AppCompatActivity {
         hover = findViewById(R.id.hover);
         summaryLayout = (NestedScrollView) findViewById(R.id.summary_layout);
         fabAction = (MyFloatingActionButton) findViewById(R.id.fab_action);
-
 
         final Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
@@ -224,6 +225,25 @@ public class BookDetailActivity extends AppCompatActivity {
             mAppBarLayout.setExpanded(true, true);
         }else
             finish();
+    }
+
+    private void setInfoIconColor(int color){
+        LinearLayout book_info_layout = (LinearLayout) findViewById(R.id.book_info_layout);
+        int count = book_info_layout.getChildCount();
+        LinearLayout childAt;
+        for(int i=0;i<count;i++) {
+            childAt = (LinearLayout) book_info_layout.getChildAt(i);
+            ((MaterialIconView)childAt.getChildAt(0)).setColor(color);
+        }
+    }
+    private void setInfoTextColor(int color){
+        LinearLayout book_info_layout = (LinearLayout) findViewById(R.id.book_info_layout);
+        int count = book_info_layout.getChildCount();
+        LinearLayout childAt;
+        for(int i=0;i<count;i++) {
+            childAt = (LinearLayout) book_info_layout.getChildAt(i);
+            ((TextView)childAt.getChildAt(1)).setTextColor(color);
+        }
     }
 
     @Override

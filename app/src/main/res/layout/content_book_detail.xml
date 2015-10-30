@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:carbon="http://schemas.android.com/apk/res-auto"
+    xmlns:icon="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinator_layout"
     android:layout_width="match_parent"
@@ -61,6 +62,122 @@
                     android:scaleType="fitXY"
                     carbon:carbon_elevation="8dp"/>
             </carbon.widget.LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/book_info_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="160dp"
+                android:layout_gravity="bottom"
+                android:layout_marginTop="@dimen/tool_bar_height"
+                android:layout_marginLeft="162dp"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:orientation="vertical">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="24dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <net.steamcrafted.materialiconlib.MaterialIconView
+                        android:layout_width="36dp"
+                        android:layout_height="24dp"
+                        icon:materialIcon="account"
+                        icon:materialIconColor="@color/white"
+                        icon:materialIconSize="24dp"
+                        android:scaleType="center"/>
+                    <carbon.widget.TextView
+                        android:id="@+id/author"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/white"
+                        android:gravity="center_vertical"
+                        android:text="作者名"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="24dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <net.steamcrafted.materialiconlib.MaterialIconView
+                        android:layout_width="36dp"
+                        android:layout_height="24dp"
+                        icon:materialIcon="book_open"
+                        icon:materialIconColor="@color/white"
+                        icon:materialIconSize="24dp"
+                        android:scaleType="center"/>
+                    <carbon.widget.TextView
+                        android:id="@+id/pages"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/white"
+                        android:gravity="center_vertical"
+                        android:text="566页"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="24dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <net.steamcrafted.materialiconlib.MaterialIconView
+                        android:layout_width="36dp"
+                        android:layout_height="24dp"
+                        icon:materialIcon="currency_usd"
+                        icon:materialIconColor="@color/white"
+                        icon:materialIconSize="24dp"
+                        android:scaleType="center"/>
+                    <carbon.widget.TextView
+                        android:id="@+id/price"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/white"
+                        android:gravity="center_vertical"
+                        android:text="75.00元"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="24dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <net.steamcrafted.materialiconlib.MaterialIconView
+                        android:layout_width="36dp"
+                        android:layout_height="24dp"
+                        icon:materialIcon="calendar"
+                        icon:materialIconColor="@color/white"
+                        icon:materialIconSize="24dp"
+                        android:scaleType="center"/>
+                    <carbon.widget.TextView
+                        android:id="@+id/pubdate"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/white"
+                        android:gravity="center_vertical"
+                        android:text="2011-06-05 出版"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="24dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <net.steamcrafted.materialiconlib.MaterialIconView
+                        android:layout_width="36dp"
+                        android:layout_height="24dp"
+                        icon:materialIcon="barcode"
+                        icon:materialIconColor="@color/white"
+                        icon:materialIconSize="24dp"
+                        android:scaleType="center"/>
+                    <carbon.widget.TextView
+                        android:id="@+id/isbn"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/white"
+                        android:gravity="center_vertical"
+                        android:text="9787121124419"/>
+                </LinearLayout>
+            </LinearLayout>
 
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"

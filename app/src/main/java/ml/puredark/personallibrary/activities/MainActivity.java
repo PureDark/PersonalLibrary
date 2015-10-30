@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -190,6 +191,13 @@ public class MainActivity extends AppCompatActivity
                     collapseSearchBar();
             }
         });
+    }
+
+    public void replaceFragment(Fragment fragment){
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, fragment, FRAGMENT_INDEX)
+                .addToBackStack(getSupportFragmentManager().getBackStackEntryAt(0).getClass().getName())
+                .commit();
     }
 
     @Override
