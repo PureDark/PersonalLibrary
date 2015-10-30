@@ -61,13 +61,20 @@ public class LoginActivity extends AppCompatActivity {
     private CircularProgressButton btnLogin;
     private Button btnGoRegister;
     private Button btnGoForgot;
-    private CircularProgressButton btnRegister;
-    private CircularProgressButton btnForgot;
+
     private boolean isDefaultAvatar = true;
     private static Drawable defaultAvatar;
+
     private AutoCompleteTextView mRegisterCellphone;
     private EditText mRegisterPassword;
     private EditText mConfirePassword;
+    private CircularProgressButton btnRegister;
+
+    private EditText mForgotCellphone;
+    private EditText mVerifyNumber;
+    private Button btnSendVerifyNum;
+    private CircularProgressButton btnVerify;
+
     private ViewPager mViewPager;
     private List<View> views = new ArrayList<View>();
     private ViewPagerAdapter adpter;
@@ -76,7 +83,7 @@ public class LoginActivity extends AppCompatActivity {
     private int offSet;
     private int bmWidth;
     private View viewForgetPassword,viewLogin,viewRegister;
-
+    private boolean mSended = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -189,6 +196,24 @@ public class LoginActivity extends AppCompatActivity {
                 attemptRegister();
             }
         });
+        //配置忘记密码界面
+        mForgotCellphone = (EditText)viewForgetPassword.findViewById(R.id.fogot_cellphone);
+        mVerifyNumber = (EditText)viewForgetPassword.findViewById(R.id.verify_number);
+        btnSendVerifyNum = (Button)viewForgetPassword.findViewById(R.id.send_verify);
+        btnVerify = (CircularProgressButton)viewForgetPassword.findViewById(R.id.commit);
+
+        btnSendVerifyNum.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendVerifyNumber();
+            }
+        });
+        btnVerify.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                verify();
+            }
+        });
 
         //忘记密码界面跳转
         btnGoForgot = (Button)viewLogin.findViewById(R.id.btnGoForgot);
@@ -236,6 +261,53 @@ public class LoginActivity extends AppCompatActivity {
         // 加载头像
         mAvatarTask = new GetUserAvatarTask(cellphone);
         mAvatarTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+    /*
+    *输入手机号，发送验证码
+     */
+    private void sendVerifyNumber(){
+        //初始化错误信息
+        mForgotCellphone.setError(null);
+        //获取输入框中信息
+        String cellphone = mForgotCellphone.getText().toString();
+        boolean cancel = false;
+        View focusView = null;
+        //判断手机号格式是否正确
+        if(TextUtils.isEmpty(cellphone)){
+            mForgotCellphone.setError(getString(R.string.error_field_required));
+            focusView = mForgotCellphone;
+            cancel = true;
+        }else if(!isCellphoneValid(cellphone)){
+            mForgotCellphone.setError(getString(R.string.error_invalid_cellphone));
+            focusView = mForgotCellphone;
+            cancel=true;
+        }
+        //若格式正确则发送验证码
+        if (cancel){
+            focusView.requestFocus();
+        }else{
+            //发送验证码
+            mSended = true;
+        }
+    }
+
+    private void verify(){
+        //对验证码进行确认，发送重置后的密码
+        mVerifyNumber.setError(null);
+        boolean cancle =false;
+        String verifyNum = mVerifyNumber.getText().toString();
+        if (TextUtils.isEmpty(verifyNum)){
+            mVerifyNumber.setError(getString(R.string.error_field_required));
+            cancle = true;
+        }else if (!mSended){
+            mVerifyNumber.setError(getString(R.string.error_send_requested));
+            cancle = true;
+        }
+        if (cancle){
+            mVerifyNumber.requestFocus();
+        }else{
+            //真正的验证
+        }
     }
     /*
     *尝试用用户手机号喝密码进行注册
