@@ -5,6 +5,5 @@
     android:clipChildren="false"
     android:clipToPadding="false"
     tools:context="ml.puredark.personallibrary.fragments.IndexFragment">
-
     <include layout="@layout/list_book" />
 </RelativeLayout>

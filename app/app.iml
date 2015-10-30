@@ -85,6 +85,7 @@
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.daimajia.easing/library/1.0.1/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.github.PureDark/circular-progress-button/5da765e82b/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.github.asyl.animation/arcanimator/1.0.0/jars" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.github.glomadrian/MaterialAnimatedSwitch/1.1/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.github.ozodrukh/CircularReveal/1.1.1/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.github.twyatt/vector-compat/87ae4c2598/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.h6ah4i.android.widget.advrecyclerview/advrecyclerview/0.8.2/jars" />
@@ -115,6 +116,7 @@
     <orderEntry type="library" exported="" name="arcanimator-1.0.0" level="project" />
     <orderEntry type="library" exported="" name="transitionseverywhere-1.6.0" level="project" />
     <orderEntry type="library" exported="" name="mrvector-0.2.0" level="project" />
+    <orderEntry type="library" exported="" name="MaterialAnimatedSwitch-1.1" level="project" />
     <orderEntry type="library" exported="" name="palette-v7-23.1.0" level="project" />
     <orderEntry type="library" exported="" name="core-3.2.0" level="project" />
     <orderEntry type="library" exported="" name="appcompat-v7-23.1.0" level="project" />

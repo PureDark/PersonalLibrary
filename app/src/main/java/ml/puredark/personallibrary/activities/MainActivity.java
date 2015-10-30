@@ -3,9 +3,11 @@ package ml.puredark.personallibrary.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.AppBarLayout;
@@ -24,6 +26,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 
+import com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch;
 import com.google.gson.Gson;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -36,6 +39,8 @@ import com.wnafee.vector.compat.ResourcesCompat;
 
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.ObjectAnimator;
+
+import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
 
 import carbon.widget.ProgressBar;
 import io.codetail.animation.SupportAnimator;
@@ -63,7 +68,6 @@ import ml.puredark.personallibrary.utils.ViewUtils;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         OnFragmentInteractionListener {
-    private View rootLayout;
     // Fragment的标签
     private static final String FRAGMENT_INDEX = "index";
 
@@ -81,6 +85,7 @@ public class MainActivity extends AppCompatActivity
     private RevealFrameLayout revealLayout;
     private View revealView, extendBar, blank;
     private ProgressBar loading;
+    private MaterialAnimatedSwitch listSwitch;
     //revealView是否展开
     private boolean revealed = false;
     //是否动画中
@@ -96,8 +101,6 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        rootLayout = findViewById(R.id.drawer_layout);
-        //ActivityTransition.with(getIntent()).to(findViewById(R.id.avatar)).start(savedInstanceState);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, IndexFragment.getInstance(), FRAGMENT_INDEX)
@@ -137,6 +140,18 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.setCheckedItem(R.id.nav_index);
+        listSwitch = (MaterialAnimatedSwitch) findViewById(R.id.list_switch);
+        listSwitch.setOnCheckedChangeListener(new MaterialAnimatedSwitch.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(boolean right) {
+                if(right)
+                    IndexFragment.getInstance().setRecyclerViewToGrid();
+                else
+                    IndexFragment.getInstance().setRecyclerViewToList();
+                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                drawer.closeDrawer(GravityCompat.START);
+            }
+        });
 
         //为FAB加载图标
         Animatable crossStartIcon = (Animatable) ResourcesCompat.getDrawable(this, R.drawable.vector_animated_cross_0_to_45);
@@ -204,10 +219,11 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
+        if(animating||getting)return;
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if(revealed&&!animating&&!getting){
+        } else if(revealed){
             new AnimationFabtoCamera().reverse();
         } else {
             super.onBackPressed();
@@ -224,27 +240,28 @@ public class MainActivity extends AppCompatActivity
 //                        snackbar.dismiss();
 //                    }
 //                }).show();
+
             new Handler().postDelayed(new Runnable() {
                 public void run() {
                     loading.setVisibility(View.VISIBLE);
                 }
-            }, 1000);
+            }, 500);
             getting = true;
             DoubanRestAPI.getBookByISBN(result.getContents(), new CallBack() {
                 @Override
-                public void action(Object obj) {
+                public void action(final Object obj) {
                     getting = false;
-                    if (obj instanceof Book) {
-                        Book book = (Book) obj;
-                        startBookDetailActivity(book);
-                    } else {
-                        new Handler().postDelayed(new Runnable() {
-                            public void run() {
+                    new Handler().postDelayed(new Runnable() {
+                        public void run() {
+                            if (obj instanceof Book) {
+                                Book book = (Book) obj;
+                                startBookDetailActivity(book);
+                            } else {
                                 loading.setVisibility(View.INVISIBLE);
                                 new AnimationFabtoCamera().reverse();
                             }
-                        }, 500);
-                    }
+                        }
+                    }, 500);
                 }
             });
             return;
@@ -385,15 +402,14 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-
         if (id == R.id.nav_index) {
-
+            listSwitch.setVisibility(View.VISIBLE);
         } else if (id == R.id.nav_borrow) {
-
+            listSwitch.setVisibility(View.INVISIBLE);
         } else if (id == R.id.nav_friend) {
-
+            listSwitch.setVisibility(View.INVISIBLE);
         } else if (id == R.id.nav_whatshot) {
-
+            listSwitch.setVisibility(View.INVISIBLE);
         } else if (id == R.id.nav_logout) {
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
