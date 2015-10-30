@@ -85,6 +85,8 @@ public class MainActivity extends AppCompatActivity
     private boolean revealed = false;
     //是否动画中
     private boolean animating = false;
+    //是否正在从网络获取数据
+    private boolean getting = false;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -205,7 +207,7 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if(revealed&&!animating){
+        } else if(revealed&&!animating&&!getting){
             new AnimationFabtoCamera().reverse();
         } else {
             super.onBackPressed();
@@ -222,17 +224,23 @@ public class MainActivity extends AppCompatActivity
 //                        snackbar.dismiss();
 //                    }
 //                }).show();
-            //TODO: 获取书籍信息时显示载入动画
-            loading.setVisibility(View.VISIBLE);
+            new Handler().postDelayed(new Runnable() {
+                public void run() {
+                    loading.setVisibility(View.VISIBLE);
+                }
+            }, 1000);
+            getting = true;
             DoubanRestAPI.getBookByISBN(result.getContents(), new CallBack() {
                 @Override
                 public void action(Object obj) {
+                    getting = false;
                     if (obj instanceof Book) {
                         Book book = (Book) obj;
                         startBookDetailActivity(book);
                     } else {
                         new Handler().postDelayed(new Runnable() {
                             public void run() {
+                                loading.setVisibility(View.INVISIBLE);
                                 new AnimationFabtoCamera().reverse();
                             }
                         }, 500);
@@ -247,6 +255,7 @@ public class MainActivity extends AppCompatActivity
                 BookListItem item = new BookListItem(book.id, book.isbn13, book.images.get("large"), book.title, author, book.summary);
                 IndexFragment.getInstance().addNewBook(0, item);
             }
+            loading.setVisibilityImmediate(View.INVISIBLE);
             new Handler().postDelayed(new Runnable() {
                 public void run() {
                     ObjectAnimator bgColorAnimator = ObjectAnimator.ofObject(revealView,
@@ -266,7 +275,6 @@ public class MainActivity extends AppCompatActivity
             }, 500);
             return;
         }else if(requestCode==2){
-
             return;
         }
         new Handler().postDelayed(new Runnable() {
@@ -305,6 +313,7 @@ public class MainActivity extends AppCompatActivity
                         final Intent intent = new Intent(MainActivity.this, BookDetailActivity.class);
                         Bundle bundle = new Bundle();
                         bundle.putInt("topColor", top.getRgb());
+                        bundle.putInt("topTextColor", top.getTitleTextColor());
                         bundle.putInt("bottomColor", bottom.getRgb());
                         bundle.putInt("bottomTextColor", bottom.getBodyTextColor());
                         bundle.putInt("titleBarColor", vibrant.getRgb());
@@ -312,8 +321,8 @@ public class MainActivity extends AppCompatActivity
                         bundle.putInt("fabColor", fabColor.getRgb());
                         intent.putExtras(bundle);
                         intent.putExtra("scaned", scaned);
-                        loading.setVisibility(View.INVISIBLE);
                         if (scaned) {
+                            loading.setVisibility(View.INVISIBLE);
                             ObjectAnimator bgColorAnimator = ObjectAnimator.ofObject(revealView,
                                     "backgroundColor",
                                     new ArgbEvaluator(),
@@ -483,7 +492,7 @@ public class MainActivity extends AppCompatActivity
             SupportAnimator animator = ViewAnimationUtils.createCircularReveal(revealView,
                     (int) ViewUtils.centerX(fabAdd), (int) ViewUtils.centerY(fabAdd),
                     fabAdd.getWidth() / 2f, finalRadius);
-            animator.setDuration(400);
+            animator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
             animator.setInterpolator(ACCELERATE);
             animator.addListener(new SimpleListener() {
                 @Override
@@ -503,7 +512,7 @@ public class MainActivity extends AppCompatActivity
             SupportAnimator animator = ViewAnimationUtils.createCircularReveal(revealView,
                     (int)ViewUtils.centerX(fabAdd), (int)ViewUtils.centerY(fabAdd),
                     finalRadius, fabAdd.getWidth() / 2f);
-            animator.setDuration(400);
+            animator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
             animator.addListener(new SimpleListener() {
                 @Override
                 public void onAnimationEnd() {

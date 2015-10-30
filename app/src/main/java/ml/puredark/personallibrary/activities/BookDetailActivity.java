@@ -46,15 +46,11 @@ import ml.puredark.personallibrary.helpers.FastBlur;
 import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 
 public class BookDetailActivity extends AppCompatActivity {
-    private TextView bookTitle, bookSummary;
-    private ImageView bookCover, backdrop;
-    private View hover;
-    private LinearLayout titleBar;
+    private ImageView bookCover;
     private MyCoordinatorLayout mCoordinatorLayout;
     private AppBarLayout mAppBarLayout;
     private CollapsingToolbarLayout toolbarLayout;
     private Toolbar toolbar;
-    private NestedScrollView summaryLayout;
     private ActivityTransitionHelper transitionHelper;
     private boolean scaned = false;
 
@@ -86,13 +82,13 @@ public class BookDetailActivity extends AppCompatActivity {
         blank = findViewById(R.id.blank);
         backButton = (ImageView) findViewById(R.id.back_button);
 
-        titleBar = (LinearLayout) findViewById(R.id.title_bar);
-        bookTitle = (TextView) findViewById(R.id.book_title);
-        bookSummary = (TextView) findViewById(R.id.book_summary);
+        LinearLayout titleBar = (LinearLayout) findViewById(R.id.title_bar);
+        TextView bookTitle = (TextView) findViewById(R.id.book_title);
+        TextView bookSummary = (TextView) findViewById(R.id.book_summary);
         bookCover = (ImageView) findViewById(R.id.book_cover);
-        backdrop = (ImageView) findViewById(R.id.backdrop);
-        hover = findViewById(R.id.hover);
-        summaryLayout = (NestedScrollView) findViewById(R.id.summary_layout);
+        final ImageView backdrop = (ImageView) findViewById(R.id.backdrop);
+        View hover = findViewById(R.id.hover);
+        NestedScrollView summaryLayout = (NestedScrollView) findViewById(R.id.summary_layout);
         fabAction = (MyFloatingActionButton) findViewById(R.id.fab_action);
 
         final Intent intent = getIntent();
@@ -157,18 +153,12 @@ public class BookDetailActivity extends AppCompatActivity {
         bookSummary.setText(book.summary);
         bookCover.setImageBitmap(cover);
         backdrop.setImageBitmap(cover);
-
-        /* 让背景的封面大图上下来回缓慢移动 */
-        float targetY = (backdrop.getHeight()>backdrop.getWidth())?-0.4f:0f;
-        Animation translateAnimation = new TranslateAnimation(TranslateAnimation.RELATIVE_TO_SELF, 0f,
-        TranslateAnimation.RELATIVE_TO_SELF, 0f,
-        TranslateAnimation.RELATIVE_TO_SELF, 0f,
-        TranslateAnimation.RELATIVE_TO_SELF, targetY);
-        translateAnimation.setDuration(30000);
-        translateAnimation.setRepeatCount(-1);
-        translateAnimation.setRepeatMode(Animation.REVERSE);
-        translateAnimation.setInterpolator(new LinearInterpolator());
-        backdrop.startAnimation(translateAnimation);
+        String author = (book.author.length>0)?book.author[0]:(book.translator.length>0)?book.translator[0]+"[译]":"";
+        ((TextView)findViewById(R.id.author)).setText(author);
+        ((TextView)findViewById(R.id.pages)).setText(book.pages + "页");
+        ((TextView)findViewById(R.id.price)).setText(book.price);
+        ((TextView)findViewById(R.id.pubdate)).setText(book.pubdate + "出版");
+        ((TextView)findViewById(R.id.isbn)).setText(book.isbn13);
 
         /* 修改UI颜色 */
         titleBar.setBackgroundColor(bundle.getInt("titleBarColor"));
@@ -177,6 +167,9 @@ public class BookDetailActivity extends AppCompatActivity {
         hover.setBackgroundColor(bundle.getInt("topColor"));
         summaryLayout.setBackgroundColor(bundle.getInt("bottomColor"));
         bookSummary.setTextColor(bundle.getInt("bottomTextColor"));
+        setInfoIconColor(bundle.getInt("topTextColor"));
+        setInfoTextColor(bundle.getInt("topTextColor"));
+
         int fabColor = bundle.getInt("fabColor");
         float[] hsv = new float[3];
         Color.colorToHSV(fabColor, hsv);
@@ -198,6 +191,18 @@ public class BookDetailActivity extends AppCompatActivity {
                     public void run() {
                         backdrop.setImageBitmap(overlay);
                         fabAction.setImageDrawable(fabIcon);
+                        /* 让背景的封面大图来回缓慢移动 */
+                        float targetX = (backdrop.getHeight()>backdrop.getWidth())?0f:-0.4f;
+                        float targetY = (backdrop.getHeight()>backdrop.getWidth())?-0.4f:0f;
+                        Animation translateAnimation = new TranslateAnimation(TranslateAnimation.RELATIVE_TO_SELF, 0f,
+                                TranslateAnimation.RELATIVE_TO_SELF, targetX,
+                                TranslateAnimation.RELATIVE_TO_SELF, 0f,
+                                TranslateAnimation.RELATIVE_TO_SELF, targetY);
+                        translateAnimation.setDuration(30000);
+                        translateAnimation.setRepeatCount(-1);
+                        translateAnimation.setRepeatMode(Animation.REVERSE);
+                        translateAnimation.setInterpolator(new LinearInterpolator());
+                        backdrop.startAnimation(translateAnimation);
                     }
                 });
             }
@@ -338,7 +343,7 @@ public class BookDetailActivity extends AppCompatActivity {
                 @Override
                 public void onAnimationEnd(android.animation.Animator animation) {
                     AnimatorSet animatorSet = new AnimatorSet();
-                    animatorSet.playTogether(headerAnimator, extendBarAnimator, contentAnimator, backAnimator);
+                    animatorSet.playTogether(headerAnimator, extendBarAnimator, contentAnimator);
                     animatorSet.addListener(new SimpleListener() {
                         @Override
                         public void onAnimationEnd(com.nineoldandroids.animation.Animator animation) {
@@ -352,6 +357,7 @@ public class BookDetailActivity extends AppCompatActivity {
                 }
             });
             bgAnim.start();
+            backAnimator.start();
         }
 
         ValueAnimator getArrowAnimator(boolean show){

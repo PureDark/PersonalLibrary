@@ -134,8 +134,7 @@ public class IndexFragment extends Fragment {
                 Snackbar snackbar = Snackbar.make(
                         findViewById(R.id.container),
                         R.string.item_removed,
-                        Snackbar.LENGTH_LONG);
-
+                        Snackbar.LENGTH_INDEFINITE);
                 snackbar.setAction(R.string.snack_bar_action_undo, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
