@@ -34,10 +34,11 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import java.util.ArrayList;
 import java.util.List;
 
+import carbon.widget.Button;
 import ml.puredark.personallibrary.adapters.ViewPagerAdapter;
 import ml.puredark.personallibrary.helpers.BgViewAware;
 import ml.puredark.personallibrary.R;
-
+import ml.puredark.personallibrary.customs.NoScrollViewPager;
 /**
  * 通过 手机号/密码 登录的登录界面
  */
@@ -54,7 +55,8 @@ public class LoginActivity extends AppCompatActivity {
     private EditText mPasswordView;
     private ImageView mAvatarView;
     private CircularProgressButton btnLogin;
-
+    private Button btnRegister;
+    private Button btnForgot;
     private boolean isDefaultAvatar = true;
     private static Drawable defaultAvatar;
 
@@ -81,7 +83,7 @@ public class LoginActivity extends AppCompatActivity {
         views.add(viewLogin);
         views.add(viewRegister);
         adpter = new ViewPagerAdapter(views);
-        viewPager = (ViewPager) findViewById(R.id.viewPager);
+        viewPager = ( ViewPager) findViewById(R.id.viewPager);
         viewPager.setAdapter(adpter);
         viewPager.setCurrentItem(1);
 
@@ -136,9 +138,32 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         mAvatarView = (ImageView)viewLogin.findViewById(R.id.avatar);
-
+        //忘记密码界面跳转
+        btnForgot = (Button)viewLogin.findViewById(R.id.btnForgot);
+        btnForgot.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                viewPager.setCurrentItem(0);
+            }
+        });
+        //注册界面跳转
+        btnRegister = (Button)viewLogin.findViewById(R.id.btnRegister);
+        btnRegister.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                viewPager.setCurrentItem(2);
+            }
+        });
     }
-
+    @Override
+    public void onBackPressed(){
+        int page = viewPager.getCurrentItem();
+        if(page == 1){
+            super.onBackPressed();
+        }else {
+            viewPager.setCurrentItem(1);
+        }
+    }
 
     /* 根据输入的手机号来获取对应用户头像
      */
@@ -211,6 +236,7 @@ public class LoginActivity extends AppCompatActivity {
             mAuthTask = new UserLoginTask(cellphone, password);
             mAuthTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
+
     }
 
     private boolean isCellphoneValid(String cellphone) {
