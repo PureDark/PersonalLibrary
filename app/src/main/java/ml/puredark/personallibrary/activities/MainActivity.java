@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -23,6 +24,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 
+import com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch;
 import com.google.gson.Gson;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -62,7 +64,6 @@ import ml.puredark.personallibrary.utils.ViewUtils;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         OnFragmentInteractionListener {
-    private View rootLayout;
     // Fragment的标签
     private static final String FRAGMENT_INDEX = "index";
 
@@ -80,10 +81,13 @@ public class MainActivity extends AppCompatActivity
     private RevealFrameLayout revealLayout;
     private View revealView, extendBar, blank;
     private ProgressBar loading;
+    private MaterialAnimatedSwitch listSwitch;
     //revealView是否展开
     private boolean revealed = false;
     //是否动画中
     private boolean animating = false;
+    //是否正在从网络获取数据
+    private boolean getting = false;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -93,8 +97,6 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        rootLayout = findViewById(R.id.drawer_layout);
-        //ActivityTransition.with(getIntent()).to(findViewById(R.id.avatar)).start(savedInstanceState);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, IndexFragment.getInstance(), FRAGMENT_INDEX)
@@ -134,6 +136,18 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.setCheckedItem(R.id.nav_index);
+        listSwitch = (MaterialAnimatedSwitch) findViewById(R.id.list_switch);
+        listSwitch.setOnCheckedChangeListener(new MaterialAnimatedSwitch.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(boolean right) {
+                if(right)
+                    IndexFragment.getInstance().setRecyclerViewToGrid();
+                else
+                    IndexFragment.getInstance().setRecyclerViewToList();
+                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                drawer.closeDrawer(GravityCompat.START);
+            }
+        });
 
         //为FAB加载图标
         Animatable crossStartIcon = (Animatable) ResourcesCompat.getDrawable(this, R.drawable.vector_animated_cross_0_to_45);
@@ -192,12 +206,20 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    public void replaceFragment(Fragment fragment){
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, fragment, FRAGMENT_INDEX)
+                .addToBackStack(getSupportFragmentManager().getBackStackEntryAt(0).getClass().getName())
+                .commit();
+    }
+
     @Override
     public void onBackPressed() {
+        if(animating||getting)return;
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if(revealed&&!animating){
+        } else if(revealed){
             new AnimationFabtoCamera().reverse();
         } else {
             super.onBackPressed();
@@ -214,21 +236,28 @@ public class MainActivity extends AppCompatActivity
 //                        snackbar.dismiss();
 //                    }
 //                }).show();
-            //TODO: 获取书籍信息时显示载入动画
-            loading.setVisibility(View.VISIBLE);
+
+            new Handler().postDelayed(new Runnable() {
+                public void run() {
+                    loading.setVisibility(View.VISIBLE);
+                }
+            }, 500);
+            getting = true;
             DoubanRestAPI.getBookByISBN(result.getContents(), new CallBack() {
                 @Override
-                public void action(Object obj) {
-                    if (obj instanceof Book) {
-                        Book book = (Book) obj;
-                        startBookDetailActivity(book);
-                    } else {
-                        new Handler().postDelayed(new Runnable() {
-                            public void run() {
+                public void action(final Object obj) {
+                    getting = false;
+                    new Handler().postDelayed(new Runnable() {
+                        public void run() {
+                            if (obj instanceof Book) {
+                                Book book = (Book) obj;
+                                startBookDetailActivity(book);
+                            } else {
+                                loading.setVisibility(View.INVISIBLE);
                                 new AnimationFabtoCamera().reverse();
                             }
-                        }, 500);
-                    }
+                        }
+                    }, 500);
                 }
             });
             return;
@@ -239,6 +268,7 @@ public class MainActivity extends AppCompatActivity
                 BookListItem item = new BookListItem(book.id, book.isbn13, book.images.get("large"), book.title, author, book.summary);
                 IndexFragment.getInstance().addNewBook(0, item);
             }
+            loading.setVisibilityImmediate(View.INVISIBLE);
             new Handler().postDelayed(new Runnable() {
                 public void run() {
                     ObjectAnimator bgColorAnimator = ObjectAnimator.ofObject(revealView,
@@ -258,7 +288,6 @@ public class MainActivity extends AppCompatActivity
             }, 500);
             return;
         }else if(requestCode==2){
-
             return;
         }
         new Handler().postDelayed(new Runnable() {
@@ -297,6 +326,7 @@ public class MainActivity extends AppCompatActivity
                         final Intent intent = new Intent(MainActivity.this, BookDetailActivity.class);
                         Bundle bundle = new Bundle();
                         bundle.putInt("topColor", top.getRgb());
+                        bundle.putInt("topTextColor", top.getTitleTextColor());
                         bundle.putInt("bottomColor", bottom.getRgb());
                         bundle.putInt("bottomTextColor", bottom.getBodyTextColor());
                         bundle.putInt("titleBarColor", vibrant.getRgb());
@@ -304,8 +334,8 @@ public class MainActivity extends AppCompatActivity
                         bundle.putInt("fabColor", fabColor.getRgb());
                         intent.putExtras(bundle);
                         intent.putExtra("scaned", scaned);
-                        loading.setVisibility(View.INVISIBLE);
                         if (scaned) {
+                            loading.setVisibility(View.INVISIBLE);
                             ObjectAnimator bgColorAnimator = ObjectAnimator.ofObject(revealView,
                                     "backgroundColor",
                                     new ArgbEvaluator(),
@@ -368,15 +398,14 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-
         if (id == R.id.nav_index) {
-
+            listSwitch.setVisibility(View.VISIBLE);
         } else if (id == R.id.nav_borrow) {
-
+            listSwitch.setVisibility(View.INVISIBLE);
         } else if (id == R.id.nav_friend) {
-
+            listSwitch.setVisibility(View.INVISIBLE);
         } else if (id == R.id.nav_whatshot) {
-
+            listSwitch.setVisibility(View.INVISIBLE);
         } else if (id == R.id.nav_logout) {
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
@@ -475,7 +504,7 @@ public class MainActivity extends AppCompatActivity
             SupportAnimator animator = ViewAnimationUtils.createCircularReveal(revealView,
                     (int) ViewUtils.centerX(fabAdd), (int) ViewUtils.centerY(fabAdd),
                     fabAdd.getWidth() / 2f, finalRadius);
-            animator.setDuration(400);
+            animator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
             animator.setInterpolator(ACCELERATE);
             animator.addListener(new SimpleListener() {
                 @Override
@@ -495,7 +524,7 @@ public class MainActivity extends AppCompatActivity
             SupportAnimator animator = ViewAnimationUtils.createCircularReveal(revealView,
                     (int)ViewUtils.centerX(fabAdd), (int)ViewUtils.centerY(fabAdd),
                     finalRadius, fabAdd.getWidth() / 2f);
-            animator.setDuration(400);
+            animator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
             animator.addListener(new SimpleListener() {
                 @Override
                 public void onAnimationEnd() {

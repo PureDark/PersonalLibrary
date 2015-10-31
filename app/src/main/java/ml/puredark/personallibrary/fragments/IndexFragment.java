@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -48,7 +49,7 @@ public class IndexFragment extends Fragment {
 
     //首页书籍列表
     private RecyclerView mRecyclerView;
-    private RecyclerView.LayoutManager mLayoutManager;
+    private RecyclerView.LayoutManager mLinearLayoutManager,mGridLayoutManager;
     private RecyclerView.Adapter mWrappedAdapter;
     private BookListAdapter mBookAdapter;
     private RecyclerViewDragDropManager mRecyclerViewDragDropManager;
@@ -90,8 +91,6 @@ public class IndexFragment extends Fragment {
         //初始化书籍列表相关变量
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
         mRecyclerView.setHasFixedSize(true);
-        //指定为线性列表
-        mLayoutManager = new LinearLayoutManager(this.getContext(), LinearLayoutManager.VERTICAL, false);
 
         List<BookListItem> myBooks = new ArrayList<>();
         String data = (String) SharedPreferencesUtil.getData(this.getContext(), "books", "");
@@ -134,8 +133,7 @@ public class IndexFragment extends Fragment {
                 Snackbar snackbar = Snackbar.make(
                         findViewById(R.id.container),
                         R.string.item_removed,
-                        Snackbar.LENGTH_LONG);
-
+                        Snackbar.LENGTH_INDEFINITE);
                 snackbar.setAction(R.string.snack_bar_action_undo, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -145,7 +143,7 @@ public class IndexFragment extends Fragment {
                         }
                     }
                 });
-                snackbar.setActionTextColor(ContextCompat.getColor(PLApplication.mContext, R.color.white));
+                snackbar.setActionTextColor(ContextCompat.getColor(PLApplication.mContext, R.color.colorAccentDark));
                 snackbar.show();
             }
         });
@@ -161,7 +159,11 @@ public class IndexFragment extends Fragment {
         // Disable the change animation in order to make turning back animation of swiped item works properly.
         animator.setSupportsChangeAnimations(false);
 
-        mRecyclerView.setLayoutManager(mLayoutManager);
+        //指定为线性列表
+        mLinearLayoutManager = new LinearLayoutManager(this.getContext(), LinearLayoutManager.VERTICAL, false);
+        mGridLayoutManager = new GridLayoutManager(this.getContext(), 3);
+
+        mRecyclerView.setLayoutManager(mLinearLayoutManager);
         mRecyclerView.setAdapter(mWrappedAdapter);  // 设置的是处理过的mWrappedAdapter
         mRecyclerView.setItemAnimator(animator);
 
@@ -191,6 +193,17 @@ public class IndexFragment extends Fragment {
     public void notifyItemInserted(int position) {
         mBookAdapter.notifyItemInserted(position);
         mRecyclerView.scrollToPosition(position);
+    }
+
+    public void setRecyclerViewToList() {
+        mBookAdapter.setIsGrid(false);
+        mRecyclerView.setLayoutManager(mLinearLayoutManager);
+        mRecyclerView.setAdapter(mWrappedAdapter);
+    }
+    public void setRecyclerViewToGrid() {
+        mBookAdapter.setIsGrid(true);
+        mRecyclerView.setLayoutManager(mGridLayoutManager);
+        mRecyclerView.setAdapter(mWrappedAdapter);
     }
 
     @Override

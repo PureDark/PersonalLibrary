@@ -23,7 +23,7 @@ import ml.puredark.personallibrary.beans.BookListItem;
 public abstract class AbstractDataProvider {
 
     public static abstract class Data {
-        public abstract long getId();
+        public abstract int getId();
     }
 
     public abstract int getCount();

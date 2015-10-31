@@ -30,6 +30,7 @@ public class BookListAdapter
     private AbstractDataProvider mProvider;
     private EventListener mEventListener;
     private MyItemClickListener mItemClickListener;
+    private boolean isGrid = false;
 
     public interface EventListener {
         void onItemRemoved(int position);
@@ -46,7 +47,6 @@ public class BookListAdapter
         public LinearLayout container;
         public ImageView cover;
         public TextView title,author,description;
-        public carbon.widget.LinearLayout coverLayout;
         private MyItemClickListener mListener;
 
         public BookViewHolder(View view, MyItemClickListener onClickListener) {
@@ -57,7 +57,6 @@ public class BookListAdapter
             title = (TextView)view.findViewById(R.id.title);
             author = (TextView)view.findViewById(R.id.author);
             description = (TextView)view.findViewById(R.id.description);
-            coverLayout = (carbon.widget.LinearLayout) view.findViewById(R.id.book_cover_layout);
             mListener = onClickListener;
             cover.setOnClickListener(this);
             rippleLayout.setOnClickListener(this);
@@ -83,8 +82,9 @@ public class BookListAdapter
 
     @Override
     public BookListAdapter.BookViewHolder onCreateViewHolder(ViewGroup parent,int viewType) {
+        int layout = (isGrid)?R.layout.item_book_grid:R.layout.item_book_list;
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_book, parent, false);
+                .inflate(layout, parent, false);
         // 在这里对View的参数进行设置
         BookViewHolder vh = new BookViewHolder(v, mItemClickListener);
         return vh;
@@ -205,6 +205,10 @@ public class BookListAdapter
                 mEventListener.onItemRemoved(position);
             }
         }
+    }
+
+    public void setIsGrid(boolean isGrid){
+        this.isGrid = isGrid;
     }
 
     public EventListener getEventListener() {

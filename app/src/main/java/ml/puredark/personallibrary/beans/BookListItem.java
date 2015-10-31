@@ -16,7 +16,7 @@ public final class BookListItem extends AbstractDataProvider.Data {
     }
 
     @Override
-    public long getId() {
+    public int getId() {
         return id;
     }
 }
