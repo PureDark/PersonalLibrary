@@ -198,10 +198,12 @@ public class IndexFragment extends Fragment {
     public void setRecyclerViewToList() {
         mBookAdapter.setIsGrid(false);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
+        mRecyclerView.setAdapter(mWrappedAdapter);
     }
     public void setRecyclerViewToGrid() {
         mBookAdapter.setIsGrid(true);
         mRecyclerView.setLayoutManager(mGridLayoutManager);
+        mRecyclerView.setAdapter(mWrappedAdapter);
     }
 
     @Override
