@@ -28,7 +28,7 @@ public abstract class AbstractDataProvider {
 
     public abstract int getCount();
 
-    public abstract List<BookListItem> getItems();
+    public abstract List getItems();
 
     public abstract Data getItem(int index);
 

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:carbon="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="1px"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:background="@drawable/rounded_bg_2dp">
+    <carbon.widget.LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <carbon.widget.ImageView
+            android:id="@+id/avatar"
+            android:layout_width="@dimen/avatar_size_normal"
+            android:layout_height="@dimen/avatar_size_normal"
+            android:src="@drawable/avatar"
+            android:scaleType="fitXY"
+            app:carbon_cornerRadius="@dimen/avatar_size_normal_half"
+            android:longClickable="false"/>
+        <com.balysv.materialripple.MaterialRippleLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/rippleLayout"
+            app:mrl_rippleOverlay="true"
+            app:mrl_rippleColor="?attr/carbon_rippleColor"
+            app:mrl_rippleDimension="10dp"
+            app:mrl_rippleHover="true"
+            app:mrl_rippleDuration="250"
+            app:mrl_rippleFadeDuration="75"
+            app:mrl_rippleDelayClick="true">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+                <View
+                    android:layout_width="3dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/shadow_right" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="@dimen/carbon_padding"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:textColor="@color/black"
+                        android:textSize="27sp"
+                        android:text="小明"
+                        android:id="@+id/name" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:src="@drawable/list_divider_h"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:lines="2"
+                        android:ellipsize="end"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:text="个人简介个人简介个人简介"
+                        android:id="@+id/description" />
+                </LinearLayout>
+            </RelativeLayout>
+        </com.balysv.materialripple.MaterialRippleLayout>
+    </carbon.widget.LinearLayout>
+</RelativeLayout>

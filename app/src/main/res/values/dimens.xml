@@ -22,6 +22,8 @@
     <dimen name="avatar_size_medium_half">28dp</dimen>
     <dimen name="avatar_size_large">144dp</dimen>
     <dimen name="avatar_size_large_half">72dp</dimen>
+    <dimen name="avatar_size_normal">96dp</dimen>
+    <dimen name="avatar_size_normal_half">48dp</dimen>
 
     <dimen name="book_detail_app_bar_height">240dp</dimen>
     <dimen name="book_detail_title_bar_height">64dp</dimen>
