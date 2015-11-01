@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 
+import com.gc.materialdesign.views.ProgressBarCircularIndeterminate;
 import com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch;
 import com.google.gson.Gson;
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -38,7 +39,6 @@ import com.wnafee.vector.compat.ResourcesCompat;
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.ObjectAnimator;
 
-import carbon.widget.ProgressBar;
 import io.codetail.animation.SupportAnimator;
 import io.codetail.animation.ViewAnimationUtils;
 import io.codetail.animation.arcanimator.ArcAnimator;
@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity
     private MyFloatingActionButton fabAdd;
     private RevealFrameLayout revealLayout;
     private View revealView, extendBar, blank;
-    private ProgressBar loading;
+    private ProgressBarCircularIndeterminate loading;
     private MaterialAnimatedSwitch listSwitch;
     //revealView是否展开
     private boolean revealed = false;
@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity
         revealView = findViewById(R.id.reveal_view);
         extendBar = findViewById(R.id.animator_view);
         blank = findViewById(R.id.blank);
-        loading = (ProgressBar) findViewById(R.id.loading);
+        loading = (ProgressBarCircularIndeterminate) findViewById(R.id.loading);
         revealLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -268,7 +268,7 @@ public class MainActivity extends AppCompatActivity
                 BookListItem item = new BookListItem(book.id, book.isbn13, book.images.get("large"), book.title, author, book.summary);
                 IndexFragment.getInstance().addNewBook(0, item);
             }
-            loading.setVisibilityImmediate(View.INVISIBLE);
+            loading.setVisibility(View.INVISIBLE);
             new Handler().postDelayed(new Runnable() {
                 public void run() {
                     ObjectAnimator bgColorAnimator = ObjectAnimator.ofObject(revealView,

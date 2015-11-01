@@ -17,6 +17,7 @@ import com.h6ah4i.android.widget.advrecyclerview.swipeable.LegacySwipeableItemAd
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.SwipeableItemConstants;
 import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractDraggableSwipeableItemViewHolder;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.zhy.android.percent.support.PercentRelativeLayout;
 
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.beans.BookListItem;
@@ -44,22 +45,24 @@ public class BookListAdapter
 
     public class BookViewHolder extends AbstractDraggableSwipeableItemViewHolder implements View.OnClickListener {
         public MaterialRippleLayout rippleLayout;
-        public LinearLayout container;
+        public View container;
         public ImageView cover;
         public TextView title,author,description;
         private MyItemClickListener mListener;
 
         public BookViewHolder(View view, MyItemClickListener onClickListener) {
             super(view);
-            container = (LinearLayout)view.findViewById(R.id.container);
+            container = view.findViewById(R.id.container);
             cover = (ImageView)view.findViewById(R.id.cover);
             rippleLayout = (MaterialRippleLayout) view.findViewById(R.id.rippleLayout);
             title = (TextView)view.findViewById(R.id.title);
             author = (TextView)view.findViewById(R.id.author);
             description = (TextView)view.findViewById(R.id.description);
             mListener = onClickListener;
-            cover.setOnClickListener(this);
-            rippleLayout.setOnClickListener(this);
+            if(cover!=null)
+                cover.setOnClickListener(this);
+            if(rippleLayout!=null)
+                rippleLayout.setOnClickListener(this);
         }
 
         @Override
@@ -99,9 +102,11 @@ public class BookListAdapter
             ImageLoader.getInstance().displayImage(book.cover, holder.cover);
             holder.cover.setTag(book.cover);
         }
-        holder.title.setText(book.title);
-        holder.author.setText(book.author);
-        holder.description.setText(book.description);
+        if(!isGrid) {
+            holder.title.setText(book.title);
+            holder.author.setText(book.author);
+            holder.description.setText(book.description);
+        }
 
         // set swiping properties
         holder.setSwipeItemHorizontalSlideAmount(0);
@@ -164,20 +169,24 @@ public class BookListAdapter
 
     @Override
     public void onSetSwipeBackground(BookViewHolder holder, int position, int type) {
-        int bgRes = 0;
+        int rootViewBgRes = 0;
+        int containerBgRes = 0;
         switch (type) {
             case Swipeable.DRAWABLE_SWIPE_NEUTRAL_BACKGROUND:
-                bgRes = R.drawable.rounded_bg_2dp;
+                rootViewBgRes = R.drawable.carview_radius_bg;
+                containerBgRes = R.color.transparent;
                 break;
             case Swipeable.DRAWABLE_SWIPE_LEFT_BACKGROUND:
-                bgRes = R.drawable.bg_swipe_item_right;
+                rootViewBgRes = R.drawable.bg_swipe_item_right;
+                containerBgRes = R.drawable.carview_radius_bg;
                 break;
             case Swipeable.DRAWABLE_SWIPE_RIGHT_BACKGROUND:
-                bgRes = R.drawable.bg_swipe_item_left;
+                rootViewBgRes = R.drawable.bg_swipe_item_left;
+                containerBgRes = R.drawable.carview_radius_bg;
                 break;
         }
-
-        holder.itemView.setBackgroundResource(bgRes);
+            holder.itemView.setBackgroundResource(rootViewBgRes);
+            holder.container.setBackgroundResource(containerBgRes);
     }
 
     @Override
