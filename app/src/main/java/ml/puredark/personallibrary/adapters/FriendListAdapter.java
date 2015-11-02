@@ -68,7 +68,7 @@ public class FriendListAdapter
     @Override
     public FriendListAdapter.FriendViewHolder onCreateViewHolder(ViewGroup parent,int viewType) {
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_book, parent, false);
+                .inflate(R.layout.item_friend, parent, false);
         // 在这里对View的参数进行设置
         FriendViewHolder vh = new FriendViewHolder(v, mItemClickListener);
         return vh;

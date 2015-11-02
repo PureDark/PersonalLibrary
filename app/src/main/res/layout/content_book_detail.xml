@@ -45,7 +45,7 @@
                 android:alpha="0.8"
                 android:scaleType="fitXY"/>
 
-            <LinearLayout
+            <com.dd.ShadowLayout
                 android:id="@+id/book_cover_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -53,14 +53,18 @@
                 android:clipChildren="false"
                 android:clipToPadding="false"
                 android:layout_marginBottom="@dimen/activity_vertical_margin"
-                android:layout_marginLeft="32dp">
+                android:layout_marginLeft="32dp"
+                app:sl_shadowRadius="2dp"
+                app:sl_shadowColor="#AA000000"
+                app:sl_dx="1dp"
+                app:sl_dy="1dp">
                 <ImageView
                     android:id="@+id/book_cover"
                     android:layout_width="114dp"
                     android:layout_height="160dp"
                     android:src="@drawable/cover"
                     android:scaleType="fitXY"/>
-            </LinearLayout>
+            </com.dd.ShadowLayout>
 
             <LinearLayout
                 android:id="@+id/book_info_layout"

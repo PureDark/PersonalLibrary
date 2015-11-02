@@ -20,9 +20,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.view.animation.Animation;
-import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
@@ -36,12 +34,11 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import carbon.widget.Button;
+import com.gc.materialdesign.views.ButtonFlat;
 import ml.puredark.personallibrary.adapters.ViewPagerAdapter;
 import ml.puredark.personallibrary.customs.FixedSpeedScroller;
 import ml.puredark.personallibrary.helpers.BgViewAware;
 import ml.puredark.personallibrary.R;
-import ml.puredark.personallibrary.customs.NoScrollViewPager;
 /**
  * 通过 手机号/密码 登录的登录界面
  */
@@ -59,8 +56,8 @@ public class LoginActivity extends AppCompatActivity {
     private EditText mPasswordView;
     private ImageView mAvatarView;
     private CircularProgressButton btnLogin;
-    private Button btnGoRegister;
-    private Button btnGoForgot;
+    private ButtonFlat btnGoRegister;
+    private ButtonFlat btnGoForgot;
 
     private boolean isDefaultAvatar = true;
     private static Drawable defaultAvatar;
@@ -72,16 +69,12 @@ public class LoginActivity extends AppCompatActivity {
 
     private EditText mForgotCellphone;
     private EditText mVerifyNumber;
-    private Button btnSendVerifyNum;
+    private ButtonFlat btnSendVerifyNum;
     private CircularProgressButton btnVerify;
 
     private ViewPager mViewPager;
     private List<View> views = new ArrayList<View>();
     private ViewPagerAdapter adpter;
-    private int currentItem;
-    private Animation animation;
-    private int offSet;
-    private int bmWidth;
     private View viewForgetPassword,viewLogin,viewRegister;
     private boolean mSended = false;
     @Override
@@ -197,9 +190,9 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
         //配置忘记密码界面
-        mForgotCellphone = (EditText)viewForgetPassword.findViewById(R.id.fogot_cellphone);
-        mVerifyNumber = (EditText)viewForgetPassword.findViewById(R.id.verify_number);
-        btnSendVerifyNum = (Button)viewForgetPassword.findViewById(R.id.send_verify);
+        mForgotCellphone = (EditText)viewForgetPassword.findViewById(R.id.cellphone);
+        mVerifyNumber = (EditText)viewForgetPassword.findViewById(R.id.verify);
+        btnSendVerifyNum = (ButtonFlat)viewForgetPassword.findViewById(R.id.send_verify);
         btnVerify = (CircularProgressButton)viewForgetPassword.findViewById(R.id.commit);
 
         btnSendVerifyNum.setOnClickListener(new OnClickListener() {
@@ -216,7 +209,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         //忘记密码界面跳转
-        btnGoForgot = (Button)viewLogin.findViewById(R.id.btnGoForgot);
+        btnGoForgot = (ButtonFlat)viewLogin.findViewById(R.id.btnForgot);
         btnGoForgot.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -224,7 +217,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
         //注册界面跳转
-        btnGoRegister = (Button)viewLogin.findViewById(R.id.btnGoRegister);
+        btnGoRegister = (ButtonFlat)viewLogin.findViewById(R.id.btnRegister);
         btnGoRegister.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {

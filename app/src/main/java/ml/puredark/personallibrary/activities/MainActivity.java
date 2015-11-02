@@ -486,7 +486,7 @@ public class MainActivity extends AppCompatActivity
             int endFabY = (int) (revealView.getHeight()*0.5f);
             ArcAnimator arcAnimator = ArcAnimator.createArcAnimator(fabAdd,
                     endFabX, endFabY, 90, Side.LEFT)
-                    .setDuration(300);
+                    .setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
             arcAnimator.setInterpolator(ACCELERATE_DECELERATE);
             arcAnimator.addListener(new SimpleListener(){
                 @Override
@@ -542,7 +542,7 @@ public class MainActivity extends AppCompatActivity
             fabAdd.setVisibility(View.VISIBLE);
             ArcAnimator arcAnimator = ArcAnimator.createArcAnimator(fabAdd,
                     startFabX, startFabY, 90, Side.RIGHT)
-                    .setDuration(300);
+                    .setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
             arcAnimator.setInterpolator(ACCELERATE_DECELERATE);
             arcAnimator.addListener(new SimpleListener(){
                 @Override

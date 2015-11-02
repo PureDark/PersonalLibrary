@@ -92,14 +92,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentLeft="true"
-                        android:textColor="@color/colorPrimaryDark"
+                        android:textColor="@color/cpb_blue"
                         android:text="忘记密码" />
                     <com.gc.materialdesign.views.ButtonFlat
                         android:id="@+id/btnRegister"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentRight="true"
-                        android:textColor="@color/colorPrimaryDark"
+                        android:textColor="@color/cpb_blue"
                         android:text="注册新用户" />
                 </RelativeLayout>
             </LinearLayout>
@@ -112,10 +112,10 @@
         android:layout_alignTop="@id/formLogin"
         android:layout_marginTop="-32dp"
         android:layout_centerHorizontal="true"
-        app:sl_shadowRadius="4dp"
+        app:sl_shadowRadius="2dp"
         app:sl_shadowColor="#AA000000"
-        app:sl_dx="0dp"
-        app:sl_dy="1dp"
+        app:sl_dx="1px"
+        app:sl_dy="1px"
         app:sl_cornerRadius="1000dp">
         <com.makeramen.roundedimageview.RoundedImageView
             android:id="@+id/avatar"
