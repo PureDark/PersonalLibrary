@@ -52,6 +52,7 @@ import ml.puredark.personallibrary.beans.BookListItem;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
 import ml.puredark.personallibrary.customs.MyEditText;
 import ml.puredark.personallibrary.customs.MyFloatingActionButton;
+import ml.puredark.personallibrary.fragments.FriendFragment;
 import ml.puredark.personallibrary.fragments.IndexFragment;
 import ml.puredark.personallibrary.fragments.OnFragmentInteractionListener;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper;
@@ -64,13 +65,15 @@ import ml.puredark.personallibrary.utils.ViewUtils;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         OnFragmentInteractionListener {
-    // Fragment的标签
-    private static final String FRAGMENT_INDEX = "index";
+    public final static int FRAGMENT_ACTION_START_BOOK_DETAIL_ACTIVITY = 1;
+    public final static int FRAGMENT_ACTION_SET_NAVIGATION_ITEM = 2;
+    public final static int FRAGMENT_ACTION_SET_TITLE = 3;
 
-    //下拉刷新
+    //主要元素
     private MyCoordinatorLayout mCoordinatorLayout;
     private AppBarLayout mAppBarLayout;
     private CollapsingToolbarLayout mCollapsingToolbar;
+    private NavigationView navigationView;
 
     //搜索栏是否展开
     private boolean expanded = false;
@@ -97,9 +100,10 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, IndexFragment.getInstance(), FRAGMENT_INDEX)
+                    .add(R.id.container, IndexFragment.getInstance(), IndexFragment.getInstance().getClass().getName())
                     .commit();
         }
         mCoordinatorLayout = (MyCoordinatorLayout) findViewById(R.id.content);
@@ -133,9 +137,7 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
         //初始化侧边栏
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        navigationView.setCheckedItem(R.id.nav_index);
         listSwitch = (MaterialAnimatedSwitch) findViewById(R.id.list_switch);
         listSwitch.setOnCheckedChangeListener(new MaterialAnimatedSwitch.OnCheckedChangeListener() {
             @Override
@@ -208,8 +210,8 @@ public class MainActivity extends AppCompatActivity
 
     public void replaceFragment(Fragment fragment){
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, fragment, FRAGMENT_INDEX)
-                .addToBackStack(getSupportFragmentManager().getBackStackEntryAt(0).getClass().getName())
+                .replace(R.id.container, fragment, fragment.getClass().getName())
+                .addToBackStack(fragment.getClass().getName())
                 .commit();
     }
 
@@ -221,6 +223,8 @@ public class MainActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         } else if(revealed){
             new AnimationFabtoCamera().reverse();
+        } else if(getSupportFragmentManager().getBackStackEntryCount()>0){
+            getSupportFragmentManager().popBackStack();
         } else {
             super.onBackPressed();
         }
@@ -400,10 +404,12 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         if (id == R.id.nav_index) {
             listSwitch.setVisibility(View.VISIBLE);
+            replaceFragment(IndexFragment.getInstance());
         } else if (id == R.id.nav_borrow) {
             listSwitch.setVisibility(View.INVISIBLE);
         } else if (id == R.id.nav_friend) {
             listSwitch.setVisibility(View.INVISIBLE);
+            replaceFragment(FriendFragment.getInstance());
         } else if (id == R.id.nav_whatshot) {
             listSwitch.setVisibility(View.INVISIBLE);
         } else if (id == R.id.nav_logout) {
@@ -420,13 +426,17 @@ public class MainActivity extends AppCompatActivity
     }
     @Override
     public void onFragmentInteraction(int action, Object data, View view) {
-        if(action==1&&data instanceof BookListItem){
+        if(action==FRAGMENT_ACTION_START_BOOK_DETAIL_ACTIVITY && data instanceof BookListItem){
                 BookListItem item = (BookListItem) data;
                 String bookString = (String) SharedPreferencesUtil.getData(this, "isbn13_"+item.isbn13, "");
                 if(!bookString.equals("")){
                     Book book = new Gson().fromJson(bookString, Book.class);
                     startBookDetailActivity(book, view);
                 }
+        }else if(action==FRAGMENT_ACTION_SET_NAVIGATION_ITEM && data instanceof Integer){
+            navigationView.setCheckedItem((int)data);
+        }else if(action==FRAGMENT_ACTION_SET_TITLE && data instanceof String){
+            mCollapsingToolbar.setTitle((String)data);
         }
     }
 

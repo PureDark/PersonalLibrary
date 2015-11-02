@@ -80,6 +80,10 @@ public class FriendFragment extends Fragment {
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_friend, container, false);
 
+        mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_SET_TITLE, getResources().getString(R.string.title_fragment_friend), null);
+        mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_SET_NAVIGATION_ITEM, R.id.nav_friend, null);
+        ((MainActivity)getActivity()).setToolbarUncollapsible();
+
         //初始化书籍列表相关变量
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
         mRecyclerView.setHasFixedSize(true);
@@ -120,7 +124,6 @@ public class FriendFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        ((MainActivity)activity).setToolbarCollapsible();
         try {
             mListener = (OnFragmentInteractionListener) activity;
         } catch (ClassCastException e) {
@@ -147,9 +150,14 @@ public class FriendFragment extends Fragment {
     }
 
     @Override
+    public void onDestroyView() {
+        SharedPreferencesUtil.saveData(this.getContext(), "friends", new Gson().toJson(mFriendAdapter.getDataProvider().getItems()));
+        super.onDestroyView();
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
-        SharedPreferencesUtil.saveData(this.getContext(), "books", new Gson().toJson(mFriendAdapter.getDataProvider().getItems()));
     }
 
 }
