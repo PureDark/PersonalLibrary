@@ -52,6 +52,7 @@ import ml.puredark.personallibrary.beans.BookListItem;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
 import ml.puredark.personallibrary.customs.MyEditText;
 import ml.puredark.personallibrary.customs.MyFloatingActionButton;
+import ml.puredark.personallibrary.fragments.FriendFragment;
 import ml.puredark.personallibrary.fragments.IndexFragment;
 import ml.puredark.personallibrary.fragments.OnFragmentInteractionListener;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper;
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity
         OnFragmentInteractionListener {
     // Fragment的标签
     private static final String FRAGMENT_INDEX = "index";
-
+    private static final String FRAGMENT_FRIEND = "friend";
     //下拉刷新
     private MyCoordinatorLayout mCoordinatorLayout;
     private AppBarLayout mAppBarLayout;
@@ -88,7 +89,6 @@ public class MainActivity extends AppCompatActivity
     private boolean animating = false;
     //是否正在从网络获取数据
     private boolean getting = false;
-
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(MrVector.wrap(newBase));
@@ -274,7 +274,7 @@ public class MainActivity extends AppCompatActivity
                     ObjectAnimator bgColorAnimator = ObjectAnimator.ofObject(revealView,
                             "backgroundColor",
                             new ArgbEvaluator(),
-                            ((ColorDrawable)revealView.getBackground()).getColor(),
+                            ((ColorDrawable) revealView.getBackground()).getColor(),
                             getResources().getColor(R.color.colorAccent));
                     bgColorAnimator.setDuration(700);
                     bgColorAnimator.start();
@@ -400,10 +400,16 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         if (id == R.id.nav_index) {
             listSwitch.setVisibility(View.VISIBLE);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, IndexFragment.getInstance(), FRAGMENT_INDEX).addToBackStack(null)
+                    .commit();
         } else if (id == R.id.nav_borrow) {
             listSwitch.setVisibility(View.INVISIBLE);
         } else if (id == R.id.nav_friend) {
             listSwitch.setVisibility(View.INVISIBLE);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, FriendFragment.getInstance(), FRAGMENT_FRIEND).addToBackStack(null)
+                    .commit();
         } else if (id == R.id.nav_whatshot) {
             listSwitch.setVisibility(View.INVISIBLE);
         } else if (id == R.id.nav_logout) {

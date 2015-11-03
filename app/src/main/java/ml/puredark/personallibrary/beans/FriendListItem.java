@@ -17,7 +17,7 @@ public final class FriendListItem  extends AbstractDataProvider.Data{
         this.signature = signature;
         this.birthday = birthday;
     }
-    public long getId(){
+    public int getId(){
         return id;
     }
 }

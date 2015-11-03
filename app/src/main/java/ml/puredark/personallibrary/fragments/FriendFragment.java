@@ -43,12 +43,12 @@ public class FriendFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    //首页书籍列表
+    //首页好友列表
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private RecyclerView.Adapter mWrappedAdapter;
     private FriendListAdapter mFriendAdapter;
-    //书籍已点击(避免多次点击同时打开多个Activity)
+    //好友已点击(避免多次点击同时打开多个Activity)
     private boolean friendItemClicked = false;
 
     public static FriendFragment newInstance() {
@@ -91,7 +91,9 @@ public class FriendFragment extends Fragment {
         if(data!=null&&!data.equals(""))
             myFriends = new Gson().fromJson(data, new TypeToken<List<FriendListItem>>(){}.getType());
 
-
+        myFriends.add(new FriendListItem(1,1,"","kevin1","do it better","991104"));
+        myFriends.add(new FriendListItem(2,1,"","kevin2","do it better","991104"));
+        myFriends.add(new FriendListItem(3,1,"","kevin3","do it better","991104"));
         FriendListDataProvider mFriendListDataProvider = new FriendListDataProvider(myFriends);
         mFriendAdapter = new FriendListAdapter(mFriendListDataProvider);
         mFriendAdapter.setOnItemClickListener(new FriendListAdapter.MyItemClickListener() {
@@ -149,7 +151,7 @@ public class FriendFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        SharedPreferencesUtil.saveData(this.getContext(), "books", new Gson().toJson(mFriendAdapter.getDataProvider().getItems()));
+        SharedPreferencesUtil.saveData(this.getContext(), "friend", new Gson().toJson(mFriendAdapter.getDataProvider().getItems()));
     }
 
 }
