@@ -94,7 +94,9 @@ public class FriendFragment extends Fragment {
         String data = (String) SharedPreferencesUtil.getData(this.getContext(), "friends", "");
         if(data!=null&&!data.equals(""))
             myFriends = new Gson().fromJson(data, new TypeToken<List<FriendListItem>>(){}.getType());
-
+        myFriends.add(new FriendListItem(1,1,"","kevin0","do it better","991104"));
+        myFriends.add(new FriendListItem(2,1,"","kevin1","do it better","991104"));
+        myFriends.add(new FriendListItem(3,1,"","kevin2","do it better","991104"));
 
         FriendListDataProvider mFriendListDataProvider = new FriendListDataProvider(myFriends);
         mFriendAdapter = new FriendListAdapter(mFriendListDataProvider);

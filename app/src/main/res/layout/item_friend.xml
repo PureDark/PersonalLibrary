@@ -8,7 +8,7 @@
     android:clipChildren="false"
     android:clipToPadding="false">
 
-    <carbon.widget.LinearLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <com.makeramen.roundedimageview.RoundedImageView
@@ -72,5 +72,5 @@
                 </LinearLayout>
             </RelativeLayout>
         </com.balysv.materialripple.MaterialRippleLayout>
-    </carbon.widget.LinearLayout>
+    </LinearLayout>
 </RelativeLayout>
