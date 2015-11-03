@@ -232,6 +232,7 @@ public class IndexFragment extends Fragment {
 
     @Override
     public void onPause() {
+        SharedPreferencesUtil.saveData(this.getContext(), "books", new Gson().toJson(mBookAdapter.getDataProvider().getItems()));
         mRecyclerViewDragDropManager.cancelDrag();
         super.onPause();
     }

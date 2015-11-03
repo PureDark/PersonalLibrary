@@ -401,14 +401,14 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_index) {
             listSwitch.setVisibility(View.VISIBLE);
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, IndexFragment.getInstance(), FRAGMENT_INDEX).addToBackStack(null)
+                    .replace(R.id.container, IndexFragment.getInstance(), FRAGMENT_INDEX)
                     .commit();
         } else if (id == R.id.nav_borrow) {
             listSwitch.setVisibility(View.INVISIBLE);
         } else if (id == R.id.nav_friend) {
             listSwitch.setVisibility(View.INVISIBLE);
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, FriendFragment.getInstance(), FRAGMENT_FRIEND).addToBackStack(null)
+                    .replace(R.id.container, FriendFragment.getInstance(), FRAGMENT_FRIEND)
                     .commit();
         } else if (id == R.id.nav_whatshot) {
             listSwitch.setVisibility(View.INVISIBLE);
