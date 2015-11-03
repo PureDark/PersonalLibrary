@@ -1,31 +1,32 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:carbon="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <carbon.widget.LinearLayout
+    <LinearLayout
         android:id="@+id/formRegiter"
         android:layout_centerInParent="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <carbon.widget.CardView
+        <android.support.v7.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:alpha="0.85"
-            android:layout_margin="24dp"
-            android:background="@color/carbon_white"
-            android:padding="@dimen/activity_horizontal_margin"
-            carbon:carbon_elevation="8dp"
-            carbon:carbon_cornerRadius="12dp">
+            card_view:cardElevation="24dp"
+            card_view:cardBackgroundColor="#FFFFFF"
+            card_view:cardCornerRadius="12dp"
+            card_view:cardPreventCornerOverlap="true"
+            card_view:cardUseCompatPadding="true"
+            card_view:contentPadding="@dimen/activity_horizontal_margin">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:textAppearance="@style/carbon_TextAppearance.Title"
+                android:textAppearance="?android:textAppearanceLarge"
                 android:textColor="@color/colorPrimary"
                 android:text="注  册"/>
             <LinearLayout
@@ -107,7 +108,7 @@
                     app:cpb_textIdle="@string/action_register" />
             </LinearLayout>
 
-        </carbon.widget.CardView>
-    </carbon.widget.LinearLayout>
+        </android.support.v7.widget.CardView>
+    </LinearLayout>
 
 </RelativeLayout>

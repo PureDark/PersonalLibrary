@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 
+import com.gc.materialdesign.views.ProgressBarCircularIndeterminate;
 import com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch;
 import com.google.gson.Gson;
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -38,7 +39,6 @@ import com.wnafee.vector.compat.ResourcesCompat;
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.ObjectAnimator;
 
-import carbon.widget.ProgressBar;
 import io.codetail.animation.SupportAnimator;
 import io.codetail.animation.ViewAnimationUtils;
 import io.codetail.animation.arcanimator.ArcAnimator;
@@ -65,13 +65,15 @@ import ml.puredark.personallibrary.utils.ViewUtils;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         OnFragmentInteractionListener {
-    // Fragment的标签
-    private static final String FRAGMENT_INDEX = "index";
-    private static final String FRAGMENT_FRIEND = "friend";
-    //下拉刷新
+    public final static int FRAGMENT_ACTION_START_BOOK_DETAIL_ACTIVITY = 1;
+    public final static int FRAGMENT_ACTION_SET_NAVIGATION_ITEM = 2;
+    public final static int FRAGMENT_ACTION_SET_TITLE = 3;
+
+    //主要元素
     private MyCoordinatorLayout mCoordinatorLayout;
     private AppBarLayout mAppBarLayout;
     private CollapsingToolbarLayout mCollapsingToolbar;
+    private NavigationView navigationView;
 
     //搜索栏是否展开
     private boolean expanded = false;
@@ -81,7 +83,7 @@ public class MainActivity extends AppCompatActivity
     private MyFloatingActionButton fabAdd;
     private RevealFrameLayout revealLayout;
     private View revealView, extendBar, blank;
-    private ProgressBar loading;
+    private ProgressBarCircularIndeterminate loading;
     private MaterialAnimatedSwitch listSwitch;
     //revealView是否展开
     private boolean revealed = false;
@@ -89,6 +91,7 @@ public class MainActivity extends AppCompatActivity
     private boolean animating = false;
     //是否正在从网络获取数据
     private boolean getting = false;
+
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(MrVector.wrap(newBase));
@@ -97,9 +100,10 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, IndexFragment.getInstance(), FRAGMENT_INDEX)
+                    .add(R.id.container, IndexFragment.getInstance(), IndexFragment.getInstance().getClass().getName())
                     .commit();
         }
         mCoordinatorLayout = (MyCoordinatorLayout) findViewById(R.id.content);
@@ -112,7 +116,7 @@ public class MainActivity extends AppCompatActivity
         revealView = findViewById(R.id.reveal_view);
         extendBar = findViewById(R.id.animator_view);
         blank = findViewById(R.id.blank);
-        loading = (ProgressBar) findViewById(R.id.loading);
+        loading = (ProgressBarCircularIndeterminate) findViewById(R.id.loading);
         revealLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -133,9 +137,7 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
         //初始化侧边栏
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        navigationView.setCheckedItem(R.id.nav_index);
         listSwitch = (MaterialAnimatedSwitch) findViewById(R.id.list_switch);
         listSwitch.setOnCheckedChangeListener(new MaterialAnimatedSwitch.OnCheckedChangeListener() {
             @Override
@@ -208,8 +210,8 @@ public class MainActivity extends AppCompatActivity
 
     public void replaceFragment(Fragment fragment){
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, fragment, FRAGMENT_INDEX)
-                .addToBackStack(getSupportFragmentManager().getBackStackEntryAt(0).getClass().getName())
+                .replace(R.id.container, fragment, fragment.getClass().getName())
+                .addToBackStack(fragment.getClass().getName())
                 .commit();
     }
 
@@ -221,6 +223,8 @@ public class MainActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         } else if(revealed){
             new AnimationFabtoCamera().reverse();
+        } else if(getSupportFragmentManager().getBackStackEntryCount()>0){
+            getSupportFragmentManager().popBackStack();
         } else {
             super.onBackPressed();
         }
@@ -268,13 +272,13 @@ public class MainActivity extends AppCompatActivity
                 BookListItem item = new BookListItem(book.id, book.isbn13, book.images.get("large"), book.title, author, book.summary);
                 IndexFragment.getInstance().addNewBook(0, item);
             }
-            loading.setVisibilityImmediate(View.INVISIBLE);
+            loading.setVisibility(View.INVISIBLE);
             new Handler().postDelayed(new Runnable() {
                 public void run() {
                     ObjectAnimator bgColorAnimator = ObjectAnimator.ofObject(revealView,
                             "backgroundColor",
                             new ArgbEvaluator(),
-                            ((ColorDrawable) revealView.getBackground()).getColor(),
+                            ((ColorDrawable)revealView.getBackground()).getColor(),
                             getResources().getColor(R.color.colorAccent));
                     bgColorAnimator.setDuration(700);
                     bgColorAnimator.start();
@@ -400,16 +404,12 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         if (id == R.id.nav_index) {
             listSwitch.setVisibility(View.VISIBLE);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, IndexFragment.getInstance(), FRAGMENT_INDEX)
-                    .commit();
+            replaceFragment(IndexFragment.getInstance());
         } else if (id == R.id.nav_borrow) {
             listSwitch.setVisibility(View.INVISIBLE);
         } else if (id == R.id.nav_friend) {
             listSwitch.setVisibility(View.INVISIBLE);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, FriendFragment.getInstance(), FRAGMENT_FRIEND)
-                    .commit();
+            replaceFragment(FriendFragment.getInstance());
         } else if (id == R.id.nav_whatshot) {
             listSwitch.setVisibility(View.INVISIBLE);
         } else if (id == R.id.nav_logout) {
@@ -426,13 +426,17 @@ public class MainActivity extends AppCompatActivity
     }
     @Override
     public void onFragmentInteraction(int action, Object data, View view) {
-        if(action==1&&data instanceof BookListItem){
+        if(action==FRAGMENT_ACTION_START_BOOK_DETAIL_ACTIVITY && data instanceof BookListItem){
                 BookListItem item = (BookListItem) data;
                 String bookString = (String) SharedPreferencesUtil.getData(this, "isbn13_"+item.isbn13, "");
                 if(!bookString.equals("")){
                     Book book = new Gson().fromJson(bookString, Book.class);
                     startBookDetailActivity(book, view);
                 }
+        }else if(action==FRAGMENT_ACTION_SET_NAVIGATION_ITEM && data instanceof Integer){
+            navigationView.setCheckedItem((int)data);
+        }else if(action==FRAGMENT_ACTION_SET_TITLE && data instanceof String){
+            mCollapsingToolbar.setTitle((String)data);
         }
     }
 
@@ -492,7 +496,7 @@ public class MainActivity extends AppCompatActivity
             int endFabY = (int) (revealView.getHeight()*0.5f);
             ArcAnimator arcAnimator = ArcAnimator.createArcAnimator(fabAdd,
                     endFabX, endFabY, 90, Side.LEFT)
-                    .setDuration(300);
+                    .setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
             arcAnimator.setInterpolator(ACCELERATE_DECELERATE);
             arcAnimator.addListener(new SimpleListener(){
                 @Override
@@ -548,7 +552,7 @@ public class MainActivity extends AppCompatActivity
             fabAdd.setVisibility(View.VISIBLE);
             ArcAnimator arcAnimator = ArcAnimator.createArcAnimator(fabAdd,
                     startFabX, startFabY, 90, Side.RIGHT)
-                    .setDuration(300);
+                    .setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
             arcAnimator.setInterpolator(ACCELERATE_DECELERATE);
             arcAnimator.addListener(new SimpleListener(){
                 @Override

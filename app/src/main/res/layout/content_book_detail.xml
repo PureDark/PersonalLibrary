@@ -45,7 +45,7 @@
                 android:alpha="0.8"
                 android:scaleType="fitXY"/>
 
-            <carbon.widget.LinearLayout
+            <com.dd.ShadowLayout
                 android:id="@+id/book_cover_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -53,15 +53,18 @@
                 android:clipChildren="false"
                 android:clipToPadding="false"
                 android:layout_marginBottom="@dimen/activity_vertical_margin"
-                android:layout_marginLeft="32dp">
-                <carbon.widget.ImageView
+                android:layout_marginLeft="32dp"
+                app:sl_shadowRadius="2dp"
+                app:sl_shadowColor="#AA000000"
+                app:sl_dx="1dp"
+                app:sl_dy="1dp">
+                <ImageView
                     android:id="@+id/book_cover"
                     android:layout_width="114dp"
                     android:layout_height="160dp"
                     android:src="@drawable/cover"
-                    android:scaleType="fitXY"
-                    carbon:carbon_elevation="8dp"/>
-            </carbon.widget.LinearLayout>
+                    android:scaleType="fitXY"/>
+            </com.dd.ShadowLayout>
 
             <LinearLayout
                 android:id="@+id/book_info_layout"
@@ -85,7 +88,7 @@
                         icon:materialIconColor="@color/white"
                         icon:materialIconSize="24dp"
                         android:scaleType="center"/>
-                    <carbon.widget.TextView
+                    <TextView
                         android:id="@+id/author"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -106,7 +109,7 @@
                         icon:materialIconColor="@color/white"
                         icon:materialIconSize="24dp"
                         android:scaleType="center"/>
-                    <carbon.widget.TextView
+                    <TextView
                         android:id="@+id/pages"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -127,7 +130,7 @@
                         icon:materialIconColor="@color/white"
                         icon:materialIconSize="24dp"
                         android:scaleType="center"/>
-                    <carbon.widget.TextView
+                    <TextView
                         android:id="@+id/price"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -148,7 +151,7 @@
                         icon:materialIconColor="@color/white"
                         icon:materialIconSize="24dp"
                         android:scaleType="center"/>
-                    <carbon.widget.TextView
+                    <TextView
                         android:id="@+id/pubdate"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -169,7 +172,7 @@
                         icon:materialIconColor="@color/white"
                         icon:materialIconSize="24dp"
                         android:scaleType="center"/>
-                    <carbon.widget.TextView
+                    <TextView
                         android:id="@+id/isbn"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -189,7 +192,7 @@
                 app:layout_collapseMode="pin"
                 app:popupTheme="@style/AppTheme.PopupOverlay">
 
-                <carbon.widget.LinearLayout
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:clipChildren="false"
@@ -201,7 +204,7 @@
                         android:scaleType="fitXY"
                         android:padding="16dp"
                         android:background="@drawable/button_pressed"/>
-                </carbon.widget.LinearLayout>
+                </LinearLayout>
             </android.support.v7.widget.Toolbar>
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
@@ -212,13 +215,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="false">
-        <carbon.widget.LinearLayout
+        <LinearLayout
             android:id="@+id/title_bar"
             android:layout_width="match_parent"
             android:layout_height="@dimen/book_detail_title_bar_height"
             android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:background="@color/colorPrimaryLight"
-            carbon:carbon_elevation="4dp">
+            android:background="@color/colorPrimaryLight">
             <TextView
                 android:id="@+id/book_title"
                 android:layout_width="match_parent"
@@ -227,7 +229,7 @@
                 android:gravity="center_vertical"
                 android:textAppearance="?android:textAppearanceLarge"
                 android:text="标题"/>
-        </carbon.widget.LinearLayout>
+        </LinearLayout>
 
         <android.support.v4.widget.NestedScrollView
             android:id="@+id/summary_layout"

@@ -23,6 +23,8 @@
 
     <!-- Strings related to index -->
     <string name="title_activity_main">我的藏书</string>
+    <string name="title_fragment_index">我的藏书</string>
+    <string name="title_fragment_friend">我的书友</string>
 
     <string name="navigation_drawer_open">打开抽屉</string>
     <string name="navigation_drawer_close">关闭抽屉</string>

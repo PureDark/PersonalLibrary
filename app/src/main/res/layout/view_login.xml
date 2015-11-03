@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<carbon.widget.RelativeLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:carbon="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <carbon.widget.LinearLayout
+    <LinearLayout
         android:id="@+id/formLogin"
         android:layout_centerInParent="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <carbon.widget.CardView
+        <android.support.v7.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:alpha="0.85"
-            android:layout_margin="24dp"
-            android:background="@color/carbon_white"
-            android:padding="@dimen/activity_horizontal_margin"
-            carbon:carbon_elevation="8dp"
-            carbon:carbon_cornerRadius="12dp">
+            card_view:cardElevation="24dp"
+            card_view:cardBackgroundColor="#FFFFFF"
+            card_view:cardCornerRadius="12dp"
+            card_view:cardPreventCornerOverlap="true"
+            card_view:cardUseCompatPadding="true"
+            card_view:contentPadding="@dimen/activity_horizontal_margin"
+            >
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -86,37 +87,43 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp">
-                    <carbon.widget.Button
-                        android:id="@+id/btnGoForgot"
-                        style="@style/carbon_Button.Flat"
+                    <com.gc.materialdesign.views.ButtonFlat
+                        android:id="@+id/btnForgot"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentLeft="true"
-                        android:textColor="@color/colorPrimaryDark"
+                        android:textColor="@color/cpb_blue"
                         android:text="忘记密码" />
-                    <carbon.widget.Button
-                        android:id="@+id/btnGoRegister"
-                        style="@style/carbon_Button.Flat"
+                    <com.gc.materialdesign.views.ButtonFlat
+                        android:id="@+id/btnRegister"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentRight="true"
-                        android:textColor="@color/colorPrimaryDark"
+                        android:textColor="@color/cpb_blue"
                         android:text="注册新用户" />
                 </RelativeLayout>
             </LinearLayout>
 
-        </carbon.widget.CardView>
-    </carbon.widget.LinearLayout>
-    <carbon.widget.ImageView
-        android:id="@+id/avatar"
-        android:layout_width="@dimen/avatar_size_large"
-        android:layout_height="@dimen/avatar_size_large"
+        </android.support.v7.widget.CardView>
+    </LinearLayout>
+    <com.dd.ShadowLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignTop="@id/formLogin"
         android:layout_marginTop="-32dp"
         android:layout_centerHorizontal="true"
-        android:scaleType="centerCrop"
-        android:src="@drawable/avatar"
-        carbon:carbon_cornerRadius="@dimen/avatar_size_large_half"
-        carbon:carbon_elevation="4dp"/>
+        app:sl_shadowRadius="2dp"
+        app:sl_shadowColor="#AA000000"
+        app:sl_dx="1px"
+        app:sl_dy="1px"
+        app:sl_cornerRadius="1000dp">
+        <com.makeramen.roundedimageview.RoundedImageView
+            android:id="@+id/avatar"
+            android:layout_width="@dimen/avatar_size_large"
+            android:layout_height="@dimen/avatar_size_large"
+            android:scaleType="centerCrop"
+            android:src="@drawable/avatar"
+            app:riv_corner_radius="1000dp"/>
+    </com.dd.ShadowLayout>
 
-</carbon.widget.RelativeLayout>
+</RelativeLayout>

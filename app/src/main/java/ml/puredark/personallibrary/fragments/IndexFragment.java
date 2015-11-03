@@ -86,7 +86,11 @@ public class IndexFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        ((MainActivity)getActivity()).setToolbarCollapsible();
         rootView = inflater.inflate(R.layout.fragment_index, container, false);
+
+        mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_SET_TITLE, getResources().getString(R.string.title_fragment_index), null);
+        mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_SET_NAVIGATION_ITEM, R.id.nav_index, null);
 
         //初始化书籍列表相关变量
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
@@ -123,7 +127,7 @@ public class IndexFragment extends Fragment {
             public void onItemClick(View view, int postion) {
                 if (bookItemClicked == false) {
                     bookItemClicked = true;
-                    mListener.onFragmentInteraction(1, mBookAdapter.getDataProvider().getItem(postion), view);
+                    mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_START_BOOK_DETAIL_ACTIVITY, mBookAdapter.getDataProvider().getItem(postion), view);
                 }
             }
         });
@@ -209,7 +213,6 @@ public class IndexFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        ((MainActivity)activity).setToolbarCollapsible();
         try {
             mListener = (OnFragmentInteractionListener) activity;
         } catch (ClassCastException e) {
@@ -238,9 +241,14 @@ public class IndexFragment extends Fragment {
     }
 
     @Override
+    public void onDestroyView() {
+        SharedPreferencesUtil.saveData(this.getContext(), "books", new Gson().toJson(mBookAdapter.getDataProvider().getItems()));
+        super.onDestroyView();
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
-        SharedPreferencesUtil.saveData(this.getContext(), "books", new Gson().toJson(mBookAdapter.getDataProvider().getItems()));
     }
 
 }

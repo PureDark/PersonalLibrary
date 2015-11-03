@@ -34,11 +34,8 @@
             android:background="@color/colorPrimaryLight"
             android:visibility="invisible"/>
 
-        <carbon.widget.ProgressBar
+        <com.gc.materialdesign.views.ProgressBarCircularIndeterminate
             android:id="@+id/loading"
-            app:carbon_progressStyle="circular_indeterminate"
-            app:carbon_tint="@color/white"
-            app:carbon_barWidth="4dp"
             android:layout_gravity="center"
             android:layout_width="@dimen/loading_size"
             android:layout_height="@dimen/loading_size"

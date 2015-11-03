@@ -43,12 +43,12 @@ public class FriendFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    //首页好友列表
+    //首页书籍列表
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private RecyclerView.Adapter mWrappedAdapter;
     private FriendListAdapter mFriendAdapter;
-    //好友已点击(避免多次点击同时打开多个Activity)
+    //书籍已点击(避免多次点击同时打开多个Activity)
     private boolean friendItemClicked = false;
 
     public static FriendFragment newInstance() {
@@ -80,6 +80,10 @@ public class FriendFragment extends Fragment {
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_friend, container, false);
 
+        mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_SET_TITLE, getResources().getString(R.string.title_fragment_friend), null);
+        mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_SET_NAVIGATION_ITEM, R.id.nav_friend, null);
+        ((MainActivity)getActivity()).setToolbarUncollapsible();
+
         //初始化书籍列表相关变量
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
         mRecyclerView.setHasFixedSize(true);
@@ -91,9 +95,7 @@ public class FriendFragment extends Fragment {
         if(data!=null&&!data.equals(""))
             myFriends = new Gson().fromJson(data, new TypeToken<List<FriendListItem>>(){}.getType());
 
-        myFriends.add(new FriendListItem(1,1,"","kevin1","do it better","991104"));
-        myFriends.add(new FriendListItem(2,1,"","kevin2","do it better","991104"));
-        myFriends.add(new FriendListItem(3,1,"","kevin3","do it better","991104"));
+
         FriendListDataProvider mFriendListDataProvider = new FriendListDataProvider(myFriends);
         mFriendAdapter = new FriendListAdapter(mFriendListDataProvider);
         mFriendAdapter.setOnItemClickListener(new FriendListAdapter.MyItemClickListener() {
@@ -122,7 +124,6 @@ public class FriendFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        ((MainActivity)activity).setToolbarCollapsible();
         try {
             mListener = (OnFragmentInteractionListener) activity;
         } catch (ClassCastException e) {
@@ -149,9 +150,14 @@ public class FriendFragment extends Fragment {
     }
 
     @Override
+    public void onDestroyView() {
+        SharedPreferencesUtil.saveData(this.getContext(), "friends", new Gson().toJson(mFriendAdapter.getDataProvider().getItems()));
+        super.onDestroyView();
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
-        SharedPreferencesUtil.saveData(this.getContext(), "friend", new Gson().toJson(mFriendAdapter.getDataProvider().getItems()));
     }
 
 }

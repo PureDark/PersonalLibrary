@@ -162,7 +162,7 @@
     <color name="bgColor">#1e3344</color>
 
     <color name="bg_grey">#e3e3e3</color>
-    <color name="transparent">#00458489</color>
+    <color name="transparent">@android:color/transparent</color>
     <color name="button_pressed">#33ffffff</color>
 
     <color name="cpb_grey">#ffdedede</color>

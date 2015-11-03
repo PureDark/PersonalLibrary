@@ -2,30 +2,29 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:carbon="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="1px"
     android:clipChildren="false"
-    android:clipToPadding="false"
-    android:background="@drawable/rounded_bg_2dp">
+    android:clipToPadding="false">
+
     <carbon.widget.LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <carbon.widget.ImageView
+        <com.makeramen.roundedimageview.RoundedImageView
             android:id="@+id/avatar"
             android:layout_width="@dimen/avatar_size_normal"
             android:layout_height="@dimen/avatar_size_normal"
-            android:src="@drawable/avatar"
-            android:scaleType="fitXY"
-            app:carbon_cornerRadius="@dimen/avatar_size_normal_half"
-            android:longClickable="false"/>
+            android:scaleType="centerCrop"
+            android:src="@drawable/myavatar"
+            app:riv_corner_radius="1000dp"/>
         <com.balysv.materialripple.MaterialRippleLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/rippleLayout"
             app:mrl_rippleOverlay="true"
-            app:mrl_rippleColor="?attr/carbon_rippleColor"
+            app:mrl_rippleColor="@color/black"
+            app:mrl_rippleAlpha="0.1"
             app:mrl_rippleDimension="10dp"
             app:mrl_rippleHover="true"
             app:mrl_rippleDuration="250"
@@ -42,7 +41,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="@dimen/carbon_padding"
+                    android:padding="@dimen/activity_horizontal_margin"
                     android:orientation="vertical">
 
                     <TextView
