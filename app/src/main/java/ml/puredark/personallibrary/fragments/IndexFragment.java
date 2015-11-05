@@ -86,9 +86,10 @@ public class IndexFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        ((MainActivity)getActivity()).setToolbarCollapsible();
         rootView = inflater.inflate(R.layout.fragment_index, container, false);
 
+        ((MainActivity)getActivity()).setToolbarCollapsible();
+        ((MainActivity)getActivity()).setCurrFragment(MainActivity.FRAGMENT_INDEX);
         mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_SET_TITLE, getResources().getString(R.string.title_fragment_index), null);
         mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_SET_NAVIGATION_ITEM, R.id.nav_index, null);
 
@@ -235,7 +236,6 @@ public class IndexFragment extends Fragment {
 
     @Override
     public void onPause() {
-        SharedPreferencesUtil.saveData(this.getContext(), "books", new Gson().toJson(mBookAdapter.getDataProvider().getItems()));
         mRecyclerViewDragDropManager.cancelDrag();
         super.onPause();
     }

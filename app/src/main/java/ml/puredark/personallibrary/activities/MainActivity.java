@@ -69,6 +69,13 @@ public class MainActivity extends AppCompatActivity
     public final static int FRAGMENT_ACTION_SET_NAVIGATION_ITEM = 2;
     public final static int FRAGMENT_ACTION_SET_TITLE = 3;
 
+
+    public final static int FRAGMENT_INDEX = 1;
+    public final static int FRAGMENT_FRIEND = 3;
+
+    //记录当前加载的是哪个Fragment
+    private int currFragment = FRAGMENT_INDEX;
+
     //主要元素
     private MyCoordinatorLayout mCoordinatorLayout;
     private AppBarLayout mAppBarLayout;
@@ -208,10 +215,14 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    public void setCurrFragment(int curr){
+        currFragment = curr;
+    }
+
     public void replaceFragment(Fragment fragment){
         getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
                 .replace(R.id.container, fragment, fragment.getClass().getName())
-                .addToBackStack(fragment.getClass().getName())
                 .commit();
     }
 
@@ -223,12 +234,43 @@ public class MainActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         } else if(revealed){
             new AnimationFabtoCamera().reverse();
-        } else if(getSupportFragmentManager().getBackStackEntryCount()>0){
-            getSupportFragmentManager().popBackStack();
+        } else if(currFragment==FRAGMENT_INDEX){
+            finish();
+        } else if(currFragment==FRAGMENT_FRIEND){
+            replaceFragment(IndexFragment.getInstance());
         } else {
             super.onBackPressed();
         }
     }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+        if (id == R.id.nav_index) {
+            listSwitch.setVisibility(View.VISIBLE);
+            replaceFragment(IndexFragment.getInstance());
+        } else if (id == R.id.nav_borrow) {
+            listSwitch.setVisibility(View.INVISIBLE);
+        } else if (id == R.id.nav_friend) {
+            listSwitch.setVisibility(View.INVISIBLE);
+            replaceFragment(FriendFragment.getInstance());
+        } else if (id == R.id.nav_whatshot) {
+            listSwitch.setVisibility(View.INVISIBLE);
+        } else if (id == R.id.nav_logout) {
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        } else if (id == R.id.nav_exit) {
+            finish();
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
@@ -395,34 +437,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-        if (id == R.id.nav_index) {
-            listSwitch.setVisibility(View.VISIBLE);
-            replaceFragment(IndexFragment.getInstance());
-        } else if (id == R.id.nav_borrow) {
-            listSwitch.setVisibility(View.INVISIBLE);
-        } else if (id == R.id.nav_friend) {
-            listSwitch.setVisibility(View.INVISIBLE);
-            replaceFragment(FriendFragment.getInstance());
-        } else if (id == R.id.nav_whatshot) {
-            listSwitch.setVisibility(View.INVISIBLE);
-        } else if (id == R.id.nav_logout) {
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (id == R.id.nav_exit) {
-            finish();
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
     }
     @Override
     public void onFragmentInteraction(int action, Object data, View view) {

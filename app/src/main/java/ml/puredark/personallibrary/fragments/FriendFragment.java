@@ -80,9 +80,10 @@ public class FriendFragment extends Fragment {
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_friend, container, false);
 
+        ((MainActivity)getActivity()).setToolbarUncollapsible();
+        ((MainActivity)getActivity()).setCurrFragment(MainActivity.FRAGMENT_FRIEND);
         mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_SET_TITLE, getResources().getString(R.string.title_fragment_friend), null);
         mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_SET_NAVIGATION_ITEM, R.id.nav_friend, null);
-        ((MainActivity)getActivity()).setToolbarUncollapsible();
 
         //初始化书籍列表相关变量
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
@@ -91,12 +92,12 @@ public class FriendFragment extends Fragment {
         mLayoutManager = new LinearLayoutManager(this.getContext(), LinearLayoutManager.VERTICAL, false);
 
         List<FriendListItem> myFriends = new ArrayList<>();
-        String data = (String) SharedPreferencesUtil.getData(this.getContext(), "friends", "");
-        if(data!=null&&!data.equals(""))
-            myFriends = new Gson().fromJson(data, new TypeToken<List<FriendListItem>>(){}.getType());
-        myFriends.add(new FriendListItem(1,1,"","kevin0","do it better","991104"));
-        myFriends.add(new FriendListItem(2,1,"","kevin1","do it better","991104"));
-        myFriends.add(new FriendListItem(3,1,"","kevin2","do it better","991104"));
+//        String data = (String) SharedPreferencesUtil.getData(this.getContext(), "friends", "");
+//        if(data!=null&&!data.equals(""))
+//            myFriends = new Gson().fromJson(data, new TypeToken<List<FriendListItem>>(){}.getType());
+        myFriends.add(new FriendListItem(1,1,"http://i0.hdslb.com/account/face/308446/8478c071/myface.png","突破天际的金闪闪","这梗玩腻了","991104"));
+        myFriends.add(new FriendListItem(2,1,"http://i1.hdslb.com/user/2279/227933/myface.jpg","坂本叔","微博 weibo.com/BanBenShu 懒懒的up主一枚 主攻解说 实况 希望多给我提意见 谢谢 (*ﾟ∇ﾟ) ノ","991104"));
+        myFriends.add(new FriendListItem(3,1,"http://i2.hdslb.com/account/face/2937432/4bfbe528/myface.png","夜沽澄","表示微博网址太长，建个群试试吧 群号：386441107 欢迎来暖场","991104"));
 
         FriendListDataProvider mFriendListDataProvider = new FriendListDataProvider(myFriends);
         mFriendAdapter = new FriendListAdapter(mFriendListDataProvider);
