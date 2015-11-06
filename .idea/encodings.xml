@@ -2,6 +2,10 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/app/src/main/res/anim" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/anim/fab_scale_down.xml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/anim/fab_scale_up.xml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/anim/hide_to_bottom.xml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/anim/show_from_bottom.xml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/app/src/main/res/drawable/vector_animated_cross_0_to_45.xml" charset="GBK" />
     <file url="file://$PROJECT_DIR$/app/src/main/res/drawable/vector_animated_cross_45_to_0.xml" charset="GBK" />
     <file url="file://$PROJECT_DIR$/app/src/main/res/drawable/vector_cross.xml" charset="GBK" />

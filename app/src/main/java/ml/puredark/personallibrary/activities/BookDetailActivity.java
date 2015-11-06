@@ -5,6 +5,8 @@ import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.StateListDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.AppBarLayout;
@@ -17,20 +19,22 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.daimajia.easing.linear.Linear;
+import com.github.clans.fab.FloatingActionButton;
+import com.github.clans.fab.FloatingActionMenu;
 import com.google.gson.Gson;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.animation.ValueAnimator;
+import com.telly.mrvector.MrVector;
 import com.transitionseverywhere.utils.ViewGroupOverlayUtils;
 
-import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
 import net.steamcrafted.materialiconlib.MaterialIconView;
 
 import io.codetail.widget.RevealFrameLayout;
@@ -45,7 +49,7 @@ import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimat
 import ml.puredark.personallibrary.helpers.FastBlur;
 import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 
-public class BookDetailActivity extends AppCompatActivity {
+public class BookDetailActivity extends AppCompatActivity implements AppBarLayout.OnOffsetChangedListener {
     private ImageView bookCover;
     private MyCoordinatorLayout mCoordinatorLayout;
     private AppBarLayout mAppBarLayout;
@@ -56,7 +60,8 @@ public class BookDetailActivity extends AppCompatActivity {
 
     //动画相关元素
     private ViewGroup rootView;
-    private MyFloatingActionButton fabAction;
+    private FloatingActionButton fabAction;
+    private FloatingActionMenu fabMenu;
     private RevealFrameLayout animationView;
     private View revealView, extendBar, blank;
     private ImageView backButton;
@@ -89,10 +94,27 @@ public class BookDetailActivity extends AppCompatActivity {
         final ImageView backdrop = (ImageView) findViewById(R.id.backdrop);
         View hover = findViewById(R.id.hover);
         NestedScrollView summaryLayout = (NestedScrollView) findViewById(R.id.summary_layout);
-        fabAction = (MyFloatingActionButton) findViewById(R.id.fab_action);
+        fabAction = (FloatingActionButton) findViewById(R.id.fab_action);
+        fabMenu = (FloatingActionMenu) findViewById(R.id.fab_menu);
+
+        final Book book = (Book) PLApplication.temp;
+        Bitmap cover = PLApplication.bitmap;
+        fabAction.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferencesUtil.saveData(getBaseContext(), "isbn13_" + book.isbn13, new Gson().toJson(book));
+                setResult(RESULT_OK);
+                finishActivity();
+            }
+        });
 
         final Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
+        scaned = intent.getBooleanExtra("scaned", false);
+        if(scaned)
+            fabMenu.setVisibility(View.GONE);
+        else
+            fabAction.setVisibility(View.GONE);
 
         Object data = PLApplication.temp;
         if(data==null||!(data instanceof Book)){
@@ -102,9 +124,19 @@ public class BookDetailActivity extends AppCompatActivity {
             return;
         }
 
-        //为返回按钮加载图标
-//        Animatable backStartIcon = (Animatable) ResourcesCompat.getDrawable(this, R.drawable.ic_drawer_to_arrow);
-//        Animatable backEndIcon = (Animatable) ResourcesCompat.getDrawable(this, R.drawable.ic_arrow_to_drawer);
+        /* 修改界面文字 */
+        bookTitle.setText(book.title);
+        bookSummary.setText(book.summary);
+        bookCover.setImageBitmap(cover);
+        backdrop.setImageBitmap(cover);
+        String author = (book.author.length>0)?book.author[0]:(book.translator.length>0)?book.translator[0]+"[译]":"";
+        ((TextView)findViewById(R.id.author)).setText(author);
+        ((TextView)findViewById(R.id.pages)).setText(book.pages + "页");
+        ((TextView)findViewById(R.id.price)).setText(book.price + "元");
+        ((TextView)findViewById(R.id.pubdate)).setText(book.pubdate + "出版");
+        ((TextView)findViewById(R.id.isbn)).setText(book.isbn13);
+
+        /* 为返回按钮加载图标 */
         backButtonIcon = new DrawerArrowDrawable(this);
         backButtonIcon.setColor(getResources().getColor(R.color.white));
         backButton.setImageDrawable(backButtonIcon);
@@ -120,7 +152,6 @@ public class BookDetailActivity extends AppCompatActivity {
         blank.setBackgroundColor(bundle.getInt("bottomColor"));
         revealView.setBackgroundColor(bundle.getInt("topColor"));
         extendBar.setBackgroundColor(bundle.getInt("titleBarColor"));
-        scaned = intent.getBooleanExtra("scaned", false);
         if(!scaned) {
             mCoordinatorLayout.setAlpha(0);
             animating = true;
@@ -138,28 +169,6 @@ public class BookDetailActivity extends AppCompatActivity {
             }, 200);
         }
 
-        final Book book = (Book) PLApplication.temp;
-        Bitmap cover = PLApplication.bitmap;
-        fabAction.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SharedPreferencesUtil.saveData(getBaseContext(), "isbn13_" + book.isbn13, new Gson().toJson(book));
-                setResult(RESULT_OK);
-                finishActivity();
-            }
-        });
-
-        bookTitle.setText(book.title);
-        bookSummary.setText(book.summary);
-        bookCover.setImageBitmap(cover);
-        backdrop.setImageBitmap(cover);
-        String author = (book.author.length>0)?book.author[0]:(book.translator.length>0)?book.translator[0]+"[译]":"";
-        ((TextView)findViewById(R.id.author)).setText(author);
-        ((TextView)findViewById(R.id.pages)).setText(book.pages + "页");
-        ((TextView)findViewById(R.id.price)).setText(book.price);
-        ((TextView)findViewById(R.id.pubdate)).setText(book.pubdate + "出版");
-        ((TextView)findViewById(R.id.isbn)).setText(book.isbn13);
-
         /* 修改UI颜色 */
         titleBar.setBackgroundColor(bundle.getInt("titleBarColor"));
         bookTitle.setTextColor(bundle.getInt("titleTextColor"));
@@ -176,26 +185,28 @@ public class BookDetailActivity extends AppCompatActivity {
         hsv[2] *= 0.8f;
         int fabColorPressed = Color.HSVToColor(hsv);
         setFloatingActionButtonColors(fabAction, fabColor, fabColorPressed);
+        setFloatingActionMenuColors(fabMenu, fabColor, fabColorPressed);
         new Thread(new Runnable() {
             @Override
             public void run() {
                 /* 给背景封面加上高斯模糊 */
                 final Bitmap overlay = FastBlur.doBlur(PLApplication.bitmap.copy(Bitmap.Config.ARGB_8888, true), 2, true);
-                final Drawable fabIcon = MaterialDrawableBuilder.with(BookDetailActivity.this)
-                                                                .setIcon(MaterialDrawableBuilder.IconValue.STAR)
-                                                                .setSizeDp(24)
-                                                                .setColor(Color.WHITE)
-                                                                .build();
+                final Drawable iconStar = MrVector.inflate(getResources(), R.drawable.ic_star_white_24dp);
+                final Drawable iconPencil = MrVector.inflate(getResources(),R.drawable.ic_pencil_white_24dp);
+                final Drawable iconPaperclip = MrVector.inflate(getResources(),R.drawable.ic_paperclip_white_24dp);
+                final Drawable iconLibraryBooks = MrVector.inflate(getResources(),R.drawable.ic_library_books_white_24dp);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         backdrop.setImageBitmap(overlay);
-                        fabAction.setImageDrawable(fabIcon);
+                        fabAction.setImageDrawable(iconStar);
+                        ((FloatingActionButton)fabMenu.getChildAt(0)).setImageDrawable(iconPencil);
+                        ((FloatingActionButton)fabMenu.getChildAt(1)).setImageDrawable(iconPaperclip);
+                        ((FloatingActionButton)fabMenu.getChildAt(2)).setImageDrawable(iconLibraryBooks);
                         /* 让背景的封面大图来回缓慢移动 */
-                        float targetX = (backdrop.getHeight()>backdrop.getWidth())?0f:-0.4f;
                         float targetY = (backdrop.getHeight()>backdrop.getWidth())?-0.4f:0f;
                         Animation translateAnimation = new TranslateAnimation(TranslateAnimation.RELATIVE_TO_SELF, 0f,
-                                TranslateAnimation.RELATIVE_TO_SELF, targetX,
+                                TranslateAnimation.RELATIVE_TO_SELF, 0f,
                                 TranslateAnimation.RELATIVE_TO_SELF, 0f,
                                 TranslateAnimation.RELATIVE_TO_SELF, targetY);
                         translateAnimation.setDuration(30000);
@@ -207,15 +218,6 @@ public class BookDetailActivity extends AppCompatActivity {
                 });
             }
         }).start();
-    }
-
-    @Override
-    public void onBackPressed() {
-        if(animating)return;
-        if(transitionHelper!=null)
-            finishActivity();
-        else
-            super.onBackPressed();
     }
 
     public void finishActivity(){
@@ -251,10 +253,9 @@ public class BookDetailActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
-        if(animating)return false;
-        return super.dispatchTouchEvent(event);
+    private void setFloatingActionButtonColors(FloatingActionButton fab, int primaryColor, int rippleColor) {
+        fab.setColorNormal(primaryColor);
+        fab.setColorPressed(rippleColor);
     }
 
     private void setFloatingActionButtonColors(MyFloatingActionButton fab, int primaryColor, int rippleColor) {
@@ -270,6 +271,14 @@ public class BookDetailActivity extends AppCompatActivity {
         fab.setBackgroundTintList(colorStateList);
     }
 
+    private void setFloatingActionMenuColors(FloatingActionMenu fab, int primaryColor, int rippleColor) {
+        fab.setMenuButtonColorNormal(primaryColor);
+        fab.setMenuButtonColorPressed(rippleColor);
+        for(int i=0;i<3;i++) {
+            ((FloatingActionButton) fab.getChildAt(i)).setColorNormal(primaryColor);
+            ((FloatingActionButton) fab.getChildAt(i)).setColorPressed(rippleColor);
+        }
+    }
 
     public void setToolbarCollapsible(){
         mAppBarLayout.setExpanded(true, true);
@@ -278,6 +287,53 @@ public class BookDetailActivity extends AppCompatActivity {
     public void setToolbarUncollapsible(){
         mAppBarLayout.setExpanded(false, true);
         mCoordinatorLayout.setAllowForScrool(false);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(animating)return;
+        if(transitionHelper!=null)
+            finishActivity();
+        else
+            super.onBackPressed();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if(animating)return false;
+        return super.dispatchTouchEvent(event);
+    }
+
+    @Override
+    public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+        if(verticalOffset!=0){
+            if(scaned)
+                fabAction.hide(true);
+            else
+                fabMenu.hideMenu(true);
+        }else{
+            if(scaned)
+                fabAction.show(true);
+            else
+                fabMenu.showMenu(true);
+        }
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mAppBarLayout.addOnOffsetChangedListener(this);
+    }
+    @Override
+    public void onPause() {
+        super.onPause();
+        mAppBarLayout.removeOnOffsetChangedListener(this);
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mAppBarLayout.removeOnOffsetChangedListener(this);
     }
 
     private class AnimationOnActivityStart extends CustomAnimator {
@@ -319,8 +375,13 @@ public class BookDetailActivity extends AppCompatActivity {
 
                 @Override
                 public void onAnimationEnd(com.nineoldandroids.animation.Animator animation) {
+                    bgAnim.addListener(new SimpleListener(){
+                        @Override
+                        public void onAnimationEnd(com.nineoldandroids.animation.Animator animation) {
+                            animating = false;
+                        }
+                    });
                     bgAnim.start();
-                    animating = false;
                     if (callBack != null)
                         callBack.onAnimationEnd();
                 }

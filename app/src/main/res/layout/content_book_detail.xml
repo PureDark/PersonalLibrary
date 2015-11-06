@@ -23,7 +23,7 @@
             android:layout_height="match_parent"
             android:clipChildren="false"
             android:clipToPadding="false"
-            app:layout_scrollFlags="scroll"
+            app:layout_scrollFlags="scroll|snap"
             app:contentScrim="?attr/colorPrimary">
             <ScrollView
                 android:layout_width="match_parent"
@@ -253,14 +253,53 @@
         </android.support.v4.widget.NestedScrollView>
     </RelativeLayout>
 
-    <ml.puredark.personallibrary.customs.MyFloatingActionButton
+    <com.github.clans.fab.FloatingActionButton
         android:id="@+id/fab_action"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/fab_margin"
-        app:layout_anchor="@id/book_detail_layout"
-        app:layout_anchorGravity="bottom|end"
-        app:borderWidth="0dp"
-        android:src="@null"/>
+        android:layout_gravity="bottom|right"
+        android:layout_marginBottom="12dp"
+        android:layout_marginRight="16dp"
+        android:src="@null"
+        app:fab_elevationCompat="4dp"/>
+
+    <com.github.clans.fab.FloatingActionMenu
+        android:id="@+id/fab_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:layout_marginBottom="12dp"
+        android:layout_marginRight="16dp"
+        app:menu_labels_ellipsize="end"
+        app:menu_labels_singleLine="true"
+        app:menu_fab_label="操作"
+        app:menu_fab_show_animation="@anim/show_from_bottom"
+        app:menu_fab_hide_animation="@anim/hide_to_bottom">
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fab_write"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@null"
+            app:fab_size="mini"
+            app:fab_label="写读书笔记" />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fab_borrow_lend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@null"
+            app:fab_size="mini"
+            app:fab_label="申请借书" />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fab_book_marks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@null"
+            app:fab_size="mini"
+            app:fab_label="查看读书笔记" />
+
+    </com.github.clans.fab.FloatingActionMenu>
 
 </ml.puredark.personallibrary.customs.MyCoordinatorLayout>

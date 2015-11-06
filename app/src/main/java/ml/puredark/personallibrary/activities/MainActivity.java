@@ -153,8 +153,12 @@ public class MainActivity extends AppCompatActivity
                     IndexFragment.getInstance().setRecyclerViewToGrid();
                 else
                     IndexFragment.getInstance().setRecyclerViewToList();
-                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-                drawer.closeDrawer(GravityCompat.START);
+                new Handler().postDelayed(new Runnable() {
+                    public void run() {
+                        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                        drawer.closeDrawer(GravityCompat.START);
+                    }
+                }, 600);
             }
         });
 
@@ -213,6 +217,13 @@ public class MainActivity extends AppCompatActivity
                     collapseSearchBar();
             }
         });
+
+        //测试
+//        Book book = new Book();
+//        book.id = 1; book.author = new String[]{"x"}; book.image="http://i2.hdslb.com/user/4333/433351/myface.jpg"; book.isbn13="xxx"; book.pages="";
+//        book.price="12"; book.pubdate="";book.summary=""; book.title="xxx"; book.translator = new String[]{};
+//        book.images = new HashMap<String, String>();
+//        startBookDetailActivity(book);
     }
 
     public void setCurrFragment(int curr){
@@ -237,6 +248,7 @@ public class MainActivity extends AppCompatActivity
         } else if(currFragment==FRAGMENT_INDEX){
             finish();
         } else if(currFragment==FRAGMENT_FRIEND){
+            listSwitch.setVisibility(View.VISIBLE);
             replaceFragment(IndexFragment.getInstance());
         } else {
             super.onBackPressed();
