@@ -12,7 +12,7 @@ public final class FriendListItem  extends AbstractDataProvider.Data{
     public int sex;
     public String avatar, nickName,signature;
     public String birthday;
-    public String charactor;
+    public String character;
     public FriendListItem(int id, int sex, String avatar, String nickName, String signature, String birthday){
         this.id = id;
         this.sex = sex;
@@ -21,10 +21,10 @@ public final class FriendListItem  extends AbstractDataProvider.Data{
         this.signature = signature;
         this.birthday = birthday;
         String[] temp = PinyinHelper.toHanyuPinyinStringArray(nickName.toCharArray()[0]);
-        charactor = new String(temp[0]);
-        charactor = charactor.substring(0,1);
-        charactor = charactor.toUpperCase();
-        Log.i("Friend",charactor);
+        character = new String(temp[0]);
+        character = character.substring(0,1);
+        character = character.toUpperCase();
+        Log.i("Friend",character);
     }
     public int getId(){
         return id;
