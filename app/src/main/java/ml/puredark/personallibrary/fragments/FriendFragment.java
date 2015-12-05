@@ -43,12 +43,12 @@ public class FriendFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    //首页书籍列表
+    //好友列表
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private RecyclerView.Adapter mWrappedAdapter;
     private FriendListAdapter mFriendAdapter;
-    //书籍已点击(避免多次点击同时打开多个Activity)
+    //好友已点击(避免多次点击同时打开多个Activity)
     private boolean friendItemClicked = false;
 
     public static FriendFragment newInstance() {
@@ -85,7 +85,7 @@ public class FriendFragment extends Fragment {
         mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_SET_TITLE, getResources().getString(R.string.title_fragment_friend), null);
         mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_SET_NAVIGATION_ITEM, R.id.nav_friend, null);
 
-        //初始化书籍列表相关变量
+        //初始化好友列表相关变量
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
         mRecyclerView.setHasFixedSize(true);
         //指定为线性列表
