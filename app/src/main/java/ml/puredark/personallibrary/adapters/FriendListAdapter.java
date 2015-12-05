@@ -18,6 +18,8 @@ import com.h6ah4i.android.widget.advrecyclerview.swipeable.SwipeableItemConstant
 import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractDraggableSwipeableItemViewHolder;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
+import org.w3c.dom.Text;
+
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.beans.BookListItem;
 import ml.puredark.personallibrary.beans.FriendListItem;
@@ -38,7 +40,7 @@ public class FriendListAdapter
         public ImageView avatar;
         public TextView nickname,description;
         private MyItemClickListener mListener;
-
+        public TextView character;
         public FriendViewHolder(View view, MyItemClickListener onClickListener) {
             super(view);
             container = (LinearLayout)view.findViewById(R.id.container);
@@ -46,6 +48,7 @@ public class FriendListAdapter
             rippleLayout = (MaterialRippleLayout) view.findViewById(R.id.rippleLayout);
             nickname = (TextView)view.findViewById(R.id.name);
             description = (TextView)view.findViewById(R.id.description);
+            character = (TextView)view.findViewById(R.id.character);
             mListener = onClickListener;
             avatar.setOnClickListener(this);
             rippleLayout.setOnClickListener(this);
@@ -85,6 +88,15 @@ public class FriendListAdapter
         }
         holder.nickname.setText(friend.nickName);
         holder.description.setText(friend.signature);
+        holder.character.setText(friend.character);
+        //判断与之前的好友前缀是否相同，相同则不重复显示
+        if(position>0){
+            FriendListItem preFriend = (FriendListItem) mProvider.getItem(position-1);
+            if(preFriend.character.equals(friend.character)){
+                holder.character.setText(" ");
+            }
+        }
+
 
     }
 

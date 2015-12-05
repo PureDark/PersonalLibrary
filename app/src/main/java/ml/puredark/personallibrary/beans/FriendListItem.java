@@ -24,7 +24,6 @@ public final class FriendListItem  extends AbstractDataProvider.Data{
         character = new String(temp[0]);
         character = character.substring(0,1);
         character = character.toUpperCase();
-        Log.i("Friend",character);
     }
     public int getId(){
         return id;

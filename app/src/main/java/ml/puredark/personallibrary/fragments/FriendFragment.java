@@ -96,6 +96,10 @@ public class FriendFragment extends Fragment {
 //        if(data!=null&&!data.equals(""))
 //            myFriends = new Gson().fromJson(data, new TypeToken<List<FriendListItem>>(){}.getType());
         myFriends.add(new FriendListItem(1,1,"http://i0.hdslb.com/account/face/308446/8478c071/myface.png","突破天际的金闪闪","这梗玩腻了","991104"));
+        myFriends.add(new FriendListItem(1,1,"http://i0.hdslb.com/account/face/308446/8478c071/myface.png","突破天际的金闪闪","这梗玩腻了","991104"));
+        myFriends.add(new FriendListItem(1,1,"http://i0.hdslb.com/account/face/308446/8478c071/myface.png","突破天际的金闪闪","这梗玩腻了","991104"));
+        myFriends.add(new FriendListItem(2,1,"http://i1.hdslb.com/user/2279/227933/myface.jpg","坂本叔","微博 weibo.com/BanBenShu 懒懒的up主一枚 主攻解说 实况 希望多给我提意见 谢谢 (*ﾟ∇ﾟ) ノ","991104"));
+        myFriends.add(new FriendListItem(2,1,"http://i1.hdslb.com/user/2279/227933/myface.jpg","坂本叔","微博 weibo.com/BanBenShu 懒懒的up主一枚 主攻解说 实况 希望多给我提意见 谢谢 (*ﾟ∇ﾟ) ノ","991104"));
         myFriends.add(new FriendListItem(2,1,"http://i1.hdslb.com/user/2279/227933/myface.jpg","坂本叔","微博 weibo.com/BanBenShu 懒懒的up主一枚 主攻解说 实况 希望多给我提意见 谢谢 (*ﾟ∇ﾟ) ノ","991104"));
         myFriends.add(new FriendListItem(3,1,"http://i2.hdslb.com/account/face/2937432/4bfbe528/myface.png","夜沽澄","表示微博网址太长，建个群试试吧 群号：386441107 欢迎来暖场","991104"));
 
