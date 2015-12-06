@@ -7,6 +7,8 @@ package ml.puredark.personallibrary;
 import android.annotation.TargetApi;
 import android.app.Application;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Build;
 
@@ -26,6 +28,9 @@ public class PLApplication extends Application {
     // 全局变量，用于跨Activity传输复杂对象
     public static Object temp;
     public static Bitmap bitmap;
+
+    //服务器地址
+    public static String serverHost = "http://192.168.100.100:8080";
 
     /**
      * 解决低API版本下对矢量图的绘制
@@ -76,4 +81,12 @@ public class PLApplication extends Application {
         // Initialize ImageLoader with configuration.
         ImageLoader.getInstance().init(config.build());
     }
+    public static String getVersionName() throws Exception
+    {
+        PackageManager packageManager = mContext.getPackageManager();
+        PackageInfo packInfo = packageManager.getPackageInfo(mContext.getPackageName(),0);
+        String version = packInfo.versionName;
+        return version;
+    }
+
 }

@@ -35,23 +35,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gc.materialdesign.views.ButtonFlat;
+
+import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.adapters.ViewPagerAdapter;
 import ml.puredark.personallibrary.customs.FixedSpeedScroller;
 import ml.puredark.personallibrary.helpers.BgViewAware;
 import ml.puredark.personallibrary.R;
+import ml.puredark.personallibrary.helpers.PLServerAPI;
+import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
+
 /**
  * 通过 手机号/密码 登录的登录界面
  */
 public class LoginActivity extends AppCompatActivity {
 
-    /**
-     * 将登录的AsyncTask保存下来以便需要时能取消
-     */
-    private UserLoginTask mAuthTask = null;
-    private GetUserAvatarTask mAvatarTask = null;
     //注册的AsyncTask
     //private UserRegisterTask mRegisterTask = null;
-    // UI相关引用
+    // 登录界面相关引用
     private AutoCompleteTextView mCellphoneView;
     private EditText mPasswordView;
     private ImageView mAvatarView;
@@ -60,17 +60,19 @@ public class LoginActivity extends AppCompatActivity {
     private ButtonFlat btnGoForgot;
 
     private boolean isDefaultAvatar = true;
-    private static Drawable defaultAvatar;
 
+    // 注册界面相关引用
     private AutoCompleteTextView mRegisterCellphone;
     private EditText mRegisterPassword;
     private EditText mConfirePassword;
     private CircularProgressButton btnRegister;
 
-    private EditText mForgotCellphone;
-    private EditText mVerifyNumber;
-    private ButtonFlat btnSendVerifyNum;
-    private CircularProgressButton btnVerify;
+    // 忘记密码界面相关引用
+    private EditText mForgetCellphone;
+    private EditText mForgetPassword;
+    private EditText mForgetCaptcha;
+    private ButtonFlat btnSendCaptchaForget;
+    private CircularProgressButton btnForgetPass;
 
     private ViewPager mViewPager;
     private List<View> views = new ArrayList<View>();
@@ -81,7 +83,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        defaultAvatar = getResources().getDrawable(R.drawable.avatar);
+
         //异步加载背景图
         ImageLoader.getInstance().displayImage("drawable://" + R.drawable.bg_login, new BgViewAware(findViewById(R.id.loginBackground)));
         viewForgetPassword = getLayoutInflater().inflate(R.layout.view_forget_password, null);
@@ -151,6 +153,7 @@ public class LoginActivity extends AppCompatActivity {
         mRegisterCellphone = (AutoCompleteTextView)viewRegister.findViewById(R.id.register_cellphone);
         mRegisterPassword = (EditText)viewRegister.findViewById(R.id.register_password);
         mConfirePassword = (EditText)viewRegister.findViewById(R.id.confirm_password);
+
         mRegisterCellphone.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -189,22 +192,24 @@ public class LoginActivity extends AppCompatActivity {
                 attemptRegister();
             }
         });
-        //配置忘记密码界面
-        mForgotCellphone = (EditText)viewForgetPassword.findViewById(R.id.cellphone);
-        mVerifyNumber = (EditText)viewForgetPassword.findViewById(R.id.verify);
-        btnSendVerifyNum = (ButtonFlat)viewForgetPassword.findViewById(R.id.send_verify);
-        btnVerify = (CircularProgressButton)viewForgetPassword.findViewById(R.id.commit);
 
-        btnSendVerifyNum.setOnClickListener(new OnClickListener() {
+        //配置忘记密码界面
+        mForgetCellphone = (EditText)viewForgetPassword.findViewById(R.id.cellphone);
+        mForgetPassword = (EditText)viewForgetPassword.findViewById(R.id.password);
+        mForgetCaptcha = (EditText)viewForgetPassword.findViewById(R.id.captcha_forget);
+        btnSendCaptchaForget = (ButtonFlat)viewForgetPassword.findViewById(R.id.send_captcha_forget);
+        btnForgetPass = (CircularProgressButton)viewForgetPassword.findViewById(R.id.commit);
+
+        btnSendCaptchaForget.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendVerifyNumber();
+                sendForgetCaptcha();
             }
         });
-        btnVerify.setOnClickListener(new OnClickListener() {
+        btnForgetPass.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                verify();
+                attemptForgetPassword();
             }
         });
 
@@ -230,7 +235,10 @@ public class LoginActivity extends AppCompatActivity {
     public void onBackPressed(){
         int page = mViewPager.getCurrentItem();
         if(page == 1){
-            super.onBackPressed();
+            //super.onBackPressed();
+            //在登录界面按返回则完全退出
+            android.os.Process.killProcess(android.os.Process.myPid());
+            System.exit(0);
         }else {
             mViewPager.setCurrentItem(1);
         }
@@ -239,40 +247,57 @@ public class LoginActivity extends AppCompatActivity {
     /* 根据输入的手机号来获取对应用户头像
      */
     private void attemptGetAvatar() {
-        if (mAvatarTask != null) {
-            mAvatarTask.cancel(true);
-        }
-
         String cellphone = mCellphoneView.getText().toString();
-
+        System.out.println("cellphone_length="+cellphone.length());
         // 检查手机号输入是否有效
         if (TextUtils.isEmpty(cellphone)||!isCellphoneValid(cellphone)) {
-            if(isDefaultAvatar)
-                return;
+            if(!isDefaultAvatar){
+                ImageLoader.getInstance().displayImage("Drawable://"+R.drawable.avatar, mAvatarView);
+                isDefaultAvatar = true;
+                System.out.println("setDefaultAvatar");
+            }
+            return;
         }
 
+        System.out.println("loadAvatar");
         // 加载头像
-        mAvatarTask = new GetUserAvatarTask(cellphone);
-        mAvatarTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        PLServerAPI.getUidByCellphone(cellphone, new PLServerAPI.onResponseListener() {
+            @Override
+            public void onSuccess(Object data) {
+                int uid = (int)data;
+
+                System.out.println("uid="+uid);
+                ImageLoader.getInstance().displayImage(PLApplication.serverHost + "/images/users/avatars/" + uid + ".png", mAvatarView);
+                isDefaultAvatar = false;
+
+                System.out.println(PLApplication.serverHost + "/images/users/avatars/" + uid + ".png");
+            }
+
+            @Override
+            public void onFailure(PLServerAPI.ApiError apiError) {
+                ImageLoader.getInstance().displayImage("Drawable://"+R.drawable.avatar, mAvatarView);
+                isDefaultAvatar = true;
+            }
+        });
     }
     /*
     *输入手机号，发送验证码
      */
-    private void sendVerifyNumber(){
+    private void sendForgetCaptcha(){
         //初始化错误信息
-        mForgotCellphone.setError(null);
+        mForgetCellphone.setError(null);
         //获取输入框中信息
-        String cellphone = mForgotCellphone.getText().toString();
+        String cellphone = mForgetCellphone.getText().toString();
         boolean cancel = false;
         View focusView = null;
         //判断手机号格式是否正确
         if(TextUtils.isEmpty(cellphone)){
-            mForgotCellphone.setError(getString(R.string.error_field_required));
-            focusView = mForgotCellphone;
+            mForgetCellphone.setError(getString(R.string.error_field_required));
+            focusView = mForgetCellphone;
             cancel = true;
         }else if(!isCellphoneValid(cellphone)){
-            mForgotCellphone.setError(getString(R.string.error_invalid_cellphone));
-            focusView = mForgotCellphone;
+            mForgetCellphone.setError(getString(R.string.error_invalid_cellphone));
+            focusView = mForgetCellphone;
             cancel=true;
         }
         //若格式正确则发送验证码
@@ -280,30 +305,93 @@ public class LoginActivity extends AppCompatActivity {
             focusView.requestFocus();
         }else{
             //发送验证码
+            PLServerAPI.sendCaptcha(cellphone, new PLServerAPI.onResponseListener() {
+                @Override
+                public void onSuccess(Object data) {
+                }
+                @Override
+                public void onFailure(PLServerAPI.ApiError apiError) {
+                }
+            });
             mSended = true;
         }
     }
 
-    private void verify(){
+    private void attemptForgetPassword(){
         //对验证码进行确认，发送重置后的密码
-        mVerifyNumber.setError(null);
-        boolean cancle =false;
-        String verifyNum = mVerifyNumber.getText().toString();
-        if (TextUtils.isEmpty(verifyNum)){
-            mVerifyNumber.setError(getString(R.string.error_field_required));
-            cancle = true;
+        mForgetCellphone.setError(null);
+        mForgetPassword.setError(null);
+        mForgetCaptcha.setError(null);
+        boolean cancel =false;
+        View focusView = null;
+        //存储忘记密码的手机号和密码
+        final String cellphone = mForgetCellphone.getText().toString();
+        final String password = mForgetPassword.getText().toString();
+        final String captcha = mForgetCaptcha.getText().toString();
+        if (TextUtils.isEmpty(captcha)){
+            mForgetCaptcha.setError(getString(R.string.error_field_required));
+            cancel = true;
         }else if (!mSended){
-            mVerifyNumber.setError(getString(R.string.error_send_requested));
-            cancle = true;
+            mForgetCaptcha.setError(getString(R.string.error_send_requested));
+            cancel = true;
+        }else if(TextUtils.isEmpty(cellphone)){
+            mRegisterCellphone.setError(getString(R.string.error_field_required));
+            focusView = mRegisterCellphone;
+            cancel = true;
+        }else if(!isCellphoneValid(cellphone)){
+            mRegisterCellphone.setError(getString(R.string.error_invalid_cellphone));
+            focusView = mRegisterCellphone;
+            cancel=true;
+        }else if (TextUtils.isEmpty(password)) {
+            mRegisterPassword.setError(getString(R.string.error_field_required));
+            focusView = mRegisterPassword;
+            cancel = true;
+        }else if (!isPasswordValid(password)) {
+            mRegisterPassword.setError(getString(R.string.error_invalid_password));
+            focusView = mRegisterPassword;
+            cancel = true;
         }
-        if (cancle){
-            mVerifyNumber.requestFocus();
+        if (cancel){
+            focusView.requestFocus();
         }else{
-            //真正的验证
+            toggleInput(false);
+            PLServerAPI.resetPassword(cellphone, password, captcha, new PLServerAPI.onResponseListener() {
+                @Override
+                public void onSuccess(Object data) {
+                    toggleInput(true);
+                    btnLogin.setProgress(100);
+                    mCellphoneView.setText(cellphone);
+                    mPasswordView.setText(password);
+                    mViewPager.setCurrentItem(1);
+                    attemptLogin();
+                }
+
+                @Override
+                public void onFailure(PLServerAPI.ApiError apiError) {
+                    if(apiError.getErrorCode()==1034) { //验证码
+                        mForgetCaptcha.setError(apiError.getErrorString());
+                        mForgetCaptcha.requestFocus();
+                    }else if(apiError.getErrorCode()==1012){ //用户不存在
+                        mForgetCellphone.setError(apiError.getErrorString());
+                        mForgetCellphone.requestFocus();
+                    }else{
+                        btnForgetPass.setError(apiError.getErrorString());
+                        btnForgetPass.requestFocus();
+                    }
+                    // 启用输入框
+                    toggleInput(true);
+                    btnForgetPass.setProgress(-1);
+                    new Handler().postDelayed(new Runnable() {
+                        public void run() {
+                            btnForgetPass.setProgress(0);
+                        }
+                    }, 1500);
+                }
+            });
         }
     }
     /*
-    *尝试用用户手机号喝密码进行注册
+    * 尝试用用户手机号和密码进行注册
     * 若存在错误（手机号格式不正确，密码太短，两次密码不一致等）
     * 则产生提示信息，不会真的进行注册尝试
     */
@@ -312,14 +400,14 @@ public class LoginActivity extends AppCompatActivity {
         mRegisterCellphone.setError(null);
         mRegisterPassword.setError(null);
         //存储尝试注册时的手机号和密码
-        String cellphone = mRegisterCellphone.getText().toString();
-        String password1 = mRegisterPassword.getText().toString();
-        String password2 = mConfirePassword.getText().toString();
+        final String cellphone = mRegisterCellphone.getText().toString();
+        final String password1 = mRegisterPassword.getText().toString();
+        final String password2 = mConfirePassword.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
 
-        //检查手机号喝密码输入是否有效
+        //检查手机号和密码输入是否有效
         if(TextUtils.isEmpty(cellphone)){
             mRegisterCellphone.setError(getString(R.string.error_field_required));
             focusView = mRegisterCellphone;
@@ -351,10 +439,45 @@ public class LoginActivity extends AppCompatActivity {
         } else {
             // 禁用输入框
             toggleInput(false);
-            // 进行登录调用
+            // 进行注册调用
             btnRegister.setProgress(50);
-            //mAuthTask = new UserLoginTask(cellphone, password);
-            //mAuthTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            PLServerAPI.register(cellphone, password1, "", new PLServerAPI.onResponseListener() {
+                @Override
+                public void onSuccess(Object data) {
+                    toggleInput(true);
+                    btnRegister.setProgress(100);
+                    mCellphoneView.setText(cellphone);
+                    mPasswordView.setText(password1);
+                    mViewPager.setCurrentItem(1);
+                    btnLogin.setProgress(50);
+                    attemptLogin();
+                }
+
+                @Override
+                public void onFailure(PLServerAPI.ApiError apiError) {
+                    if(apiError.getErrorCode()==1034) { //验证码
+                        //mRegisterCaptcha.setError(apiError.getErrorString());
+                        //mRegisterCaptcha.requestFocus();
+                    }else if(apiError.getErrorCode()==1012){ //用户不存在
+                        mRegisterCellphone.setError(apiError.getErrorString());
+                        mRegisterCellphone.requestFocus();
+                    }else if(apiError.getErrorCode()==1041){ //用户已存在
+                        mRegisterCellphone.setError(apiError.getErrorString());
+                        mRegisterCellphone.requestFocus();
+                    }else{
+                        mRegisterCellphone.setError(apiError.getErrorString());
+                        mRegisterCellphone.requestFocus();
+                    }
+                    // 启用输入框
+                    toggleInput(true);
+                    btnRegister.setProgress(-1);
+                    new Handler().postDelayed(new Runnable() {
+                        public void run() {
+                            btnRegister.setProgress(0);
+                        }
+                    }, 1500);
+                }
+            });
         }
 
     }
@@ -364,9 +487,6 @@ public class LoginActivity extends AppCompatActivity {
      * 则产生提示信息，不会真的进行登录尝试
      */
     private void attemptLogin() {
-        if (mAuthTask != null) {
-            return;
-        }
 
         // 重置错误
         mCellphoneView.setError(null);
@@ -406,8 +526,43 @@ public class LoginActivity extends AppCompatActivity {
             toggleInput(false);
             // 进行登录调用
             btnLogin.setProgress(50);
-            mAuthTask = new UserLoginTask(cellphone, password);
-            mAuthTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            PLServerAPI.login(cellphone, password, new PLServerAPI.onResponseListener() {
+                @Override
+                public void onSuccess(Object data) {
+                    // 启用输入框
+                    toggleInput(true);
+                    btnLogin.setProgress(100);
+                    new Handler().postDelayed(new Runnable() {
+                        public void run() {
+                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            startActivity(intent);
+                            finish();
+                        }
+                    }, 800);
+                }
+
+                @Override
+                public void onFailure(PLServerAPI.ApiError apiError) {
+                    if(apiError.getErrorCode()==1011) { //密码错误
+                        mPasswordView.setError(apiError.getErrorString());
+                        mPasswordView.requestFocus();
+                    }else if(apiError.getErrorCode()==1012){ //用户不存在
+                        mCellphoneView.setError(apiError.getErrorString());
+                        mCellphoneView.requestFocus();
+                    }else{
+                        mCellphoneView.setError(apiError.getErrorString());
+                        mCellphoneView.requestFocus();
+                    }
+                    // 启用输入框
+                    toggleInput(true);
+                    btnLogin.setProgress(-1);
+                    new Handler().postDelayed(new Runnable() {
+                        public void run() {
+                            btnLogin.setProgress(0);
+                        }
+                    }, 1500);
+                }
+            });
         }
 
     }
@@ -426,118 +581,14 @@ public class LoginActivity extends AppCompatActivity {
     private void toggleInput(final boolean enable) {
         mCellphoneView.setEnabled(enable);
         mPasswordView.setEnabled(enable);
+        mForgetCellphone.setEnabled(enable);
+        mForgetPassword.setEnabled(enable);
+        mForgetCaptcha.setEnabled(enable);
+        mRegisterCellphone.setEnabled(enable);
+        mRegisterPassword.setEnabled(enable);
+        mConfirePassword.setEnabled(enable);
     }
 
-    /**
-     * 异步尝试获取用户头像
-     */
-    public class GetUserAvatarTask extends AsyncTask<Void, Void, Drawable> {
-
-        private final String mCellphone;
-
-        GetUserAvatarTask(String cellphone) {
-            mCellphone = cellphone;
-        }
-
-        @Override
-        protected Drawable doInBackground(Void... params) {
-            if(isCancelled())
-                return null;
-            // TODO: 调用检查用户是否存在的接口
-
-            try {
-                // Simulate network access.
-                Thread.sleep(0);
-            } catch (InterruptedException e) {
-                return null;
-            }
-            Drawable avatarDrawable;
-            if(mCellphone.equals("13200000000")){
-                Bitmap myavatar =  BitmapFactory.decodeResource(getResources(), R.drawable.myavatar);
-                avatarDrawable = new BitmapDrawable(myavatar);
-                isDefaultAvatar = false;
-            }else{
-                avatarDrawable = defaultAvatar;
-                isDefaultAvatar = true;
-            }
-            return avatarDrawable;
-        }
-
-        @Override
-        protected void onPostExecute(final Drawable avatarDrawable) {
-            mAvatarTask = null;
-            mAvatarView.setImageDrawable(avatarDrawable);
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAvatarTask = null;
-        }
-    }
-
-    /**
-     * 异步发起调用登陆接口的请求
-     */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-
-        private final String mCellphone;
-        private final String mPassword;
-
-        UserLoginTask(String cellphone, String password) {
-            mCellphone = cellphone;
-            mPassword = password;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: 调用登陆接口
-
-            try {
-                // Simulate network access.
-                Thread.sleep(4000);
-            } catch (InterruptedException e) {
-                return false;
-            }
-
-            return mPassword.equals("123456");
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-            // 启用输入框
-            toggleInput(true);
-
-            if (success) {
-                btnLogin.setProgress(100);
-                new Handler().postDelayed(new Runnable() {
-                    public void run() {
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        //ActivityTransitionLauncher.with(LoginActivity.this).from(mAvatarView).launch(intent);
-                        startActivity(intent);
-                        finish();
-                    }
-                }, 500);
-            } else {
-                btnLogin.setProgress(-1);
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-                new Handler().postDelayed(new Runnable() {
-                    public void run() {
-                        btnLogin.setProgress(0);
-                    }
-                }, 1500);
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            btnLogin.setProgress(0);
-            // 启用输入框
-            toggleInput(true);
-        }
-    }
     private void setViewPagerScrollSpeed( ){
         try {
             Field mScroller = null;

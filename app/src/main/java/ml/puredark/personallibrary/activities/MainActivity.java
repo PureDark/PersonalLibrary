@@ -54,6 +54,7 @@ import ml.puredark.personallibrary.customs.MyEditText;
 import ml.puredark.personallibrary.customs.MyFloatingActionButton;
 import ml.puredark.personallibrary.fragments.FriendFragment;
 import ml.puredark.personallibrary.fragments.IndexFragment;
+import ml.puredark.personallibrary.fragments.NewsFragment;
 import ml.puredark.personallibrary.fragments.OnFragmentInteractionListener;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimator;
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity
 
     public final static int FRAGMENT_INDEX = 1;
     public final static int FRAGMENT_FRIEND = 3;
+    public final static int FRAGMENT_NEWS = 4;
 
     //记录当前加载的是哪个Fragment
     private int currFragment = FRAGMENT_INDEX;
@@ -148,17 +150,21 @@ public class MainActivity extends AppCompatActivity
         listSwitch = (MaterialAnimatedSwitch) findViewById(R.id.list_switch);
         listSwitch.setOnCheckedChangeListener(new MaterialAnimatedSwitch.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(boolean right) {
-                if(right)
-                    IndexFragment.getInstance().setRecyclerViewToGrid();
-                else
-                    IndexFragment.getInstance().setRecyclerViewToList();
+            public void onCheckedChanged(final boolean right) {
                 new Handler().postDelayed(new Runnable() {
                     public void run() {
-                        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-                        drawer.closeDrawer(GravityCompat.START);
+                        if(right)
+                            IndexFragment.getInstance().setRecyclerViewToGrid();
+                        else
+                            IndexFragment.getInstance().setRecyclerViewToList();
+                        new Handler().postDelayed(new Runnable() {
+                            public void run() {
+                                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                                drawer.closeDrawer(GravityCompat.START);
+                            }
+                        }, 200);
                     }
-                }, 600);
+                }, 300);
             }
         });
 
@@ -218,12 +224,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        //测试
-//        Book book = new Book();
-//        book.id = 1; book.author = new String[]{"x"}; book.image="http://i2.hdslb.com/user/4333/433351/myface.jpg"; book.isbn13="xxx"; book.pages="";
-//        book.price="12"; book.pubdate="";book.summary=""; book.title="xxx"; book.translator = new String[]{};
-//        book.images = new HashMap<String, String>();
-//        startBookDetailActivity(book);
     }
 
     public void setCurrFragment(int curr){
@@ -247,7 +247,7 @@ public class MainActivity extends AppCompatActivity
             new AnimationFabtoCamera().reverse();
         } else if(currFragment==FRAGMENT_INDEX){
             finish();
-        } else if(currFragment==FRAGMENT_FRIEND){
+        } else if(currFragment!=FRAGMENT_INDEX){
             listSwitch.setVisibility(View.VISIBLE);
             replaceFragment(IndexFragment.getInstance());
         } else {
@@ -270,6 +270,7 @@ public class MainActivity extends AppCompatActivity
             replaceFragment(FriendFragment.getInstance());
         } else if (id == R.id.nav_whatshot) {
             listSwitch.setVisibility(View.INVISIBLE);
+            replaceFragment(NewsFragment.getInstance());
         } else if (id == R.id.nav_logout) {
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
@@ -556,6 +557,7 @@ public class MainActivity extends AppCompatActivity
 
         void shrinkCameraLayout(){
             revealView.setVisibility(View.VISIBLE);
+            blank.setVisibility(View.INVISIBLE);
             float finalRadius = Math.max(revealView.getWidth(), revealView.getHeight()) * 1.5f;
             SupportAnimator animator = ViewAnimationUtils.createCircularReveal(revealView,
                     (int)ViewUtils.centerX(fabAdd), (int)ViewUtils.centerY(fabAdd),
@@ -565,7 +567,6 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onAnimationEnd() {
                     revealView.setVisibility(View.INVISIBLE);
-                    blank.setVisibility(View.INVISIBLE);
                     fabAdd.reverse();
                     fabToOrigin();
                 }

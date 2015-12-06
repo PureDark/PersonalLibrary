@@ -2,7 +2,6 @@ package ml.puredark.personallibrary.fragments;
 
 import android.app.Activity;
 import android.graphics.drawable.NinePatchDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;;
@@ -13,22 +12,16 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.h6ah4i.android.widget.advrecyclerview.animator.GeneralItemAnimator;
-import com.h6ah4i.android.widget.advrecyclerview.animator.RefactoredDefaultItemAnimator;
 import com.h6ah4i.android.widget.advrecyclerview.animator.SwipeDismissItemAnimator;
 import com.h6ah4i.android.widget.advrecyclerview.decoration.ItemShadowDecorator;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager;
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.RecyclerViewSwipeManager;
 import com.h6ah4i.android.widget.advrecyclerview.touchguard.RecyclerViewTouchActionGuardManager;
-import com.h6ah4i.android.widget.advrecyclerview.utils.WrapperAdapterUtils;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,8 +30,9 @@ import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.activities.MainActivity;
 import ml.puredark.personallibrary.adapters.BookListAdapter;
 import ml.puredark.personallibrary.beans.BookListItem;
-import ml.puredark.personallibrary.dataprovider.AbstractDataProvider;
+import ml.puredark.personallibrary.customs.EmptyRecyclerView;
 import ml.puredark.personallibrary.dataprovider.BookListDataProvider;
+import ml.puredark.personallibrary.helpers.PLServerAPI;
 import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 
 public class IndexFragment extends Fragment {
@@ -48,7 +42,7 @@ public class IndexFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     //首页书籍列表
-    private RecyclerView mRecyclerView;
+    private EmptyRecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLinearLayoutManager,mGridLayoutManager;
     private RecyclerView.Adapter mWrappedAdapter;
     private BookListAdapter mBookAdapter;
@@ -94,13 +88,29 @@ public class IndexFragment extends Fragment {
         mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_SET_NAVIGATION_ITEM, R.id.nav_index, null);
 
         //初始化书籍列表相关变量
-        mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
+        mRecyclerView = (EmptyRecyclerView) findViewById(R.id.my_recycler_view);
+        mRecyclerView.setEmptyView(rootView.findViewById(R.id.empty_view));
         mRecyclerView.setHasFixedSize(true);
 
+        //从本地载入书籍缓存
         List<BookListItem> myBooks = new ArrayList<>();
         String data = (String) SharedPreferencesUtil.getData(this.getContext(), "books", "");
         if(data!=null&&!data.equals(""))
             myBooks = new Gson().fromJson(data, new TypeToken<List<BookListItem>>(){}.getType());
+
+        //从服务器获取最新的书籍列表
+        PLServerAPI.getBookList(null, new PLServerAPI.onResponseListener() {
+            @Override
+            public void onSuccess(Object data) {
+                List<BookListItem> books = (List<BookListItem>) data;
+                mBookAdapter.setDataProvider(new BookListDataProvider(books));
+                mBookAdapter.notifyDataSetChanged();
+            }
+            @Override
+            public void onFailure(PLServerAPI.ApiError apiError) {
+                showSnackBar(getString(R.string.network_error));
+            }
+        });
 
         // touch guard manager  (this class is required to suppress scrolling while swipe-dismiss animation is running)
         mRecyclerViewTouchActionGuardManager = new RecyclerViewTouchActionGuardManager();
@@ -134,7 +144,16 @@ public class IndexFragment extends Fragment {
         });
         mBookAdapter.setEventListener(new BookListAdapter.EventListener() {
             @Override
-            public void onItemRemoved(int position) {
+            public void onItemRemoved(int position, BookListItem book) {
+                PLServerAPI.deleteBook(book.getId(), new PLServerAPI.onResponseListener() {
+                    @Override
+                    public void onSuccess(Object data) {
+                    }
+                    @Override
+                    public void onFailure(PLServerAPI.ApiError apiError) {
+                        showSnackBar(getString(R.string.network_error));
+                    }
+                });
                 Snackbar snackbar = Snackbar.make(
                         findViewById(R.id.container),
                         R.string.item_removed,
@@ -172,6 +191,13 @@ public class IndexFragment extends Fragment {
         mRecyclerView.setAdapter(mWrappedAdapter);  // 设置的是处理过的mWrappedAdapter
         mRecyclerView.setItemAnimator(animator);
 
+        mRecyclerView.setRecyclerListener(new RecyclerView.RecyclerListener() {
+            @Override
+            public void onViewRecycled(RecyclerView.ViewHolder holder) {
+
+            }
+        });
+
         mRecyclerView.addItemDecoration(new ItemShadowDecorator(
                 (NinePatchDrawable) ContextCompat.getDrawable(this.getContext(), R.drawable.material_shadow_z1)));
 
@@ -186,13 +212,30 @@ public class IndexFragment extends Fragment {
         return rootView;
     }
 
-    public void addNewBook(BookListItem book){
-        mBookAdapter.getDataProvider().addItem(book);
-        mBookAdapter.notifyDataSetChanged();
+    public void addNewBook(final int position, BookListItem book) {
+        PLServerAPI.addBook(book.isbn13, book.cover, book.title, book.author, book.description,
+            new PLServerAPI.onResponseListener() {
+                @Override
+                public void onSuccess(Object data) {
+                    BookListItem book = (BookListItem)data;
+                    mBookAdapter.getDataProvider().addItem(position, book);
+                    mBookAdapter.notifyDataSetChanged();
+                }
+
+                @Override
+                public void onFailure(PLServerAPI.ApiError apiError) {
+                    showSnackBar(getString(R.string.network_error));
+                }
+        });
     }
-    public void addNewBook(int position, BookListItem book) {
-        mBookAdapter.getDataProvider().addItem(position, book);
-        mBookAdapter.notifyDataSetChanged();
+
+    private void showSnackBar(String content){
+        Snackbar snackbar = Snackbar.make(
+                findViewById(R.id.container),
+                content,
+                Snackbar.LENGTH_LONG);
+        snackbar.setActionTextColor(ContextCompat.getColor(PLApplication.mContext, R.color.colorAccentDark));
+        snackbar.show();
     }
 
     public void notifyItemInserted(int position) {

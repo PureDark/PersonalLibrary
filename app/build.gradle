@@ -55,7 +55,7 @@ dependencies {
     compile 'com.balysv:material-ripple:1.0.2'
 //    compile 'de.hdodenhof:circleimageview:2.0.0'
     compile 'com.telly:mrvector:0.2.0'
-    compile 'net.steamcrafted:materialiconlib:1.0.5'
+    compile 'net.steamcrafted:materialiconlib:1.0.7'
 //    compile 'com.github.rey5137:material:1.2.1'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.daimajia.easing:library:1.0.1@aar'

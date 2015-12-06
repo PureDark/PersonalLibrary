@@ -258,19 +258,6 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
         fab.setColorPressed(rippleColor);
     }
 
-    private void setFloatingActionButtonColors(MyFloatingActionButton fab, int primaryColor, int rippleColor) {
-        int[][] states = {
-                {android.R.attr.state_enabled},
-                {android.R.attr.state_pressed},
-        };
-        int[] colors = {
-                primaryColor,
-                rippleColor,
-        };
-        ColorStateList colorStateList = new ColorStateList(states, colors);
-        fab.setBackgroundTintList(colorStateList);
-    }
-
     private void setFloatingActionMenuColors(FloatingActionMenu fab, int primaryColor, int rippleColor) {
         fab.setMenuButtonColorNormal(primaryColor);
         fab.setMenuButtonColorPressed(rippleColor);
@@ -377,7 +364,7 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
                 public void onAnimationEnd(com.nineoldandroids.animation.Animator animation) {
                     bgAnim.addListener(new SimpleListener(){
                         @Override
-                        public void onAnimationEnd(com.nineoldandroids.animation.Animator animation) {
+                        public void onAnimationEnd(android.animation.Animator animation) {
                             animating = false;
                         }
                     });

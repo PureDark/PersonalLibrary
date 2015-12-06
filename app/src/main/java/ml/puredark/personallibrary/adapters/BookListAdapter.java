@@ -34,7 +34,7 @@ public class BookListAdapter
     private boolean isGrid = false;
 
     public interface EventListener {
-        void onItemRemoved(int position);
+        void onItemRemoved(int position, BookListItem book);
     }
 
     // NOTE: 短名引用
@@ -83,11 +83,15 @@ public class BookListAdapter
         setHasStableIds(true);
     }
 
+    public void setDataProvider(AbstractDataProvider mProvider){
+        this.mProvider = mProvider;
+    }
+
     @Override
     public BookListAdapter.BookViewHolder onCreateViewHolder(ViewGroup parent,int viewType) {
         int layout = (isGrid)?R.layout.item_book_grid:R.layout.item_book_list;
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(layout, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
+
         // 在这里对View的参数进行设置
         BookViewHolder vh = new BookViewHolder(v, mItemClickListener);
         return vh;
@@ -114,6 +118,7 @@ public class BookListAdapter
 
     @Override
     public int getItemCount() {
+        int count = 1;
         return (mProvider!=null)?mProvider.getCount():0;
     }
 
@@ -208,10 +213,11 @@ public class BookListAdapter
     @Override
     public void onPerformAfterSwipeReaction(BookViewHolder holder, int position, int result, int reaction) {
         if (reaction == Swipeable.AFTER_SWIPE_REACTION_REMOVE_ITEM) {
+            BookListItem book = (BookListItem) getDataProvider().getItem(position);
             mProvider.removeItem(position);
             notifyItemRemoved(position);
             if (mEventListener != null) {
-                mEventListener.onItemRemoved(position);
+                mEventListener.onItemRemoved(position, book);
             }
         }
     }
