@@ -114,6 +114,7 @@
     <orderEntry type="jdk" jdkName="Android API 23 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="zxing-android-embedded-3.0.2" level="project" />
+    <orderEntry type="library" exported="" name="pinyin4j-2.5.0" level="project" />
     <orderEntry type="library" exported="" name="design-23.1.0" level="project" />
     <orderEntry type="library" exported="" name="arcanimator-1.0.0" level="project" />
     <orderEntry type="library" exported="" name="transitionseverywhere-1.6.0" level="project" />

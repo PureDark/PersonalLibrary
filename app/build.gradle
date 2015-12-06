@@ -91,4 +91,6 @@ dependencies {
 
     // gson library
     compile 'com.google.code.gson:gson:2.2.4'
+    //hanzi to pinyin library
+    compile 'com.github.belerweb:pinyin4j:2.5.0'
 }

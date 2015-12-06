@@ -7,20 +7,36 @@
     android:layout_marginTop="1px"
     android:clipChildren="false"
     android:clipToPadding="false">
-
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="@dimen/item_height">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            >
+            <TextView
+                android:id="@+id/character"
+                android:layout_width="@dimen/chrt_width"
+                android:layout_height="@dimen/chrt_height"
+                android:textSize="29sp"
+                android:layout_marginLeft="@dimen/normal_margin"
+                android:layout_marginRight="@dimen/normal_margin"
+                android:layout_marginTop="@dimen/top_margin"
+                android:textAlignment="center"
+                android:text="X"/>
+            </LinearLayout>
         <com.makeramen.roundedimageview.RoundedImageView
             android:id="@+id/avatar"
-            android:layout_width="@dimen/avatar_size_normal"
-            android:layout_height="@dimen/avatar_size_normal"
+            android:layout_width="@dimen/avatar_size_normal_half"
+            android:layout_height="@dimen/avatar_size_normal_half"
+            android:layout_marginTop="20dp"
             android:scaleType="centerCrop"
             android:src="@drawable/avatar"
             app:riv_corner_radius="1000dp"/>
         <com.balysv.materialripple.MaterialRippleLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:id="@+id/rippleLayout"
             app:mrl_rippleOverlay="true"
             app:mrl_rippleColor="@color/black"
@@ -34,10 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal">
-                <View
-                    android:layout_width="3dp"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/shadow_right" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -50,7 +63,7 @@
                         android:singleLine="true"
                         android:ellipsize="end"
                         android:textColor="@color/black"
-                        android:textSize="27sp"
+                        android:textSize="22sp"
                         android:text="小明"
                         android:id="@+id/name" />
 
@@ -63,14 +76,17 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:lines="2"
+                        android:layout_marginRight="@dimen/normal_margin"
+                        android:singleLine="true"
                         android:ellipsize="end"
+                        android:width="@dimen/sig_length"
                         android:textAppearance="?android:attr/textAppearanceSmall"
                         android:text="个人简介个人简介个人简介"
                         android:id="@+id/description" />
                 </LinearLayout>
             </RelativeLayout>
         </com.balysv.materialripple.MaterialRippleLayout>
+
     </LinearLayout>
+
 </RelativeLayout>
