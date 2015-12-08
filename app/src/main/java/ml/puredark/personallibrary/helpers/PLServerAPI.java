@@ -25,6 +25,7 @@ import ml.puredark.personallibrary.activities.LoginActivity;
 import ml.puredark.personallibrary.beans.BookListItem;
 import ml.puredark.personallibrary.beans.BookMark;
 import ml.puredark.personallibrary.beans.Friend;
+import ml.puredark.personallibrary.beans.Request;
 import ml.puredark.personallibrary.beans.Tag;
 import ml.puredark.personallibrary.beans.UserInfo;
 import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
@@ -294,26 +295,6 @@ public class PLServerAPI {
     }
 
 
-    public static void getFriendList(int page, final onResponseListener callBack) {
-        RequestParams params = new RequestParams();
-        params.put("module", "social");
-        params.put("action", "getFriendList");
-        params.put("page", page);
-        params.put("sessionid", User.getSessionid());
-
-        postReturnJsonElement(params, new onResponseListener() {
-            @Override
-            public void onSuccess(Object data) {
-                List<Friend> friends = new Gson().fromJson((JsonElement) data, new TypeToken<List<Friend>>() {}.getType());
-                callBack.onSuccess(friends);
-            }
-            @Override
-            public void onFailure(ApiError apiError) {
-                callBack.onFailure(apiError);
-            }
-        });
-    }
-
     public static void searchUser(String keyword, final onResponseListener callBack) {
         RequestParams params = new RequestParams();
         params.put("module", "social");
@@ -334,10 +315,76 @@ public class PLServerAPI {
         });
     }
 
+    public static void addRequest(int fid, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "social");
+        params.put("action", "addRequest");
+        params.put("fid", fid);
+        params.put("sessionid", User.getSessionid());
+        postNoReturnData(params, callBack);
+    }
+
+    public static void responseRequest(int rid, boolean accept, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "social");
+        params.put("action", "responseRequest");
+        params.put("rid", rid);
+        params.put("accept", accept);
+        params.put("sessionid", User.getSessionid());
+        postNoReturnData(params, callBack);
+    }
+
+    public static void deleteFriends(int fid, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "social");
+        params.put("action", "deleteFriends");
+        params.put("fid", fid);
+        params.put("sessionid", User.getSessionid());
+        postNoReturnData(params, callBack);
+    }
+
+    public static void getRequestList(int page, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "social");
+        params.put("action", "getRequestList");
+        params.put("page", page);
+        params.put("sessionid", User.getSessionid());
+
+        postReturnJsonElement(params, new onResponseListener() {
+            @Override
+            public void onSuccess(Object data) {
+                List<Request> requests = new Gson().fromJson((JsonElement) data, new TypeToken<List<Request>>() {}.getType());
+                callBack.onSuccess(requests);
+            }
+
+            @Override
+            public void onFailure(ApiError apiError) {
+                callBack.onFailure(apiError);
+            }
+        });
+    }
 
 
+    public static void getFriendList(int page, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "social");
+        params.put("action", "getFriendList");
+        params.put("page", page);
+        params.put("sessionid", User.getSessionid());
 
+        postReturnJsonElement(params, new onResponseListener() {
+            @Override
+            public void onSuccess(Object data) {
+                List<Friend> friends = new Gson().fromJson((JsonElement) data, new TypeToken<List<Friend>>() {}.getType());
+                callBack.onSuccess(friends);
+            }
 
+            @Override
+            public void onFailure(ApiError apiError) {
+                callBack.onFailure(apiError);
+            }
+        });
+    }
 
 
     public static void addBookMark(int bid, String title, String content, final onResponseListener callBack) {

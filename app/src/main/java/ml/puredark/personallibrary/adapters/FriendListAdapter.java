@@ -20,9 +20,6 @@ public class FriendListAdapter
     private AbstractDataProvider mProvider;
     private MyItemClickListener mItemClickListener;
 
-
-
-
     public class FriendViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public MaterialRippleLayout rippleLayout;
         public LinearLayout container;
@@ -70,12 +67,12 @@ public class FriendListAdapter
     public void onBindViewHolder(FriendViewHolder holder, int position) {
         final Friend friend = (Friend) mProvider.getItem(position);
 
-        if(holder.avatar.getTag()!=friend.avatar) {
+        if(holder.avatar.getTag()!=friend.uid) {
             ImageLoader.getInstance().displayImage(null, holder.avatar);
-            ImageLoader.getInstance().displayImage(friend.avatar, holder.avatar);
-            holder.avatar.setTag(friend.avatar);
+            //ImageLoader.getInstance().displayImage(friend.avatar, holder.avatar);
+            holder.avatar.setTag(friend.uid);
         }
-        holder.nickname.setText(friend.nickName);
+        holder.nickname.setText(friend.nickname);
         holder.description.setText(friend.signature);
         holder.character.setText(friend.character);
         //判断与之前的好友前缀是否相同，相同则不重复显示

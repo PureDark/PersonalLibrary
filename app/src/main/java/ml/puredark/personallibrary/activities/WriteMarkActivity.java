@@ -25,7 +25,6 @@ import java.util.List;
 import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.adapters.ViewPagerAdapter;
-import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.helpers.PLServerAPI;
 
 public class WriteMarkActivity extends AppCompatActivity {
@@ -33,6 +32,9 @@ public class WriteMarkActivity extends AppCompatActivity {
     private int bid = 0;
     private TabLayout mTabLayout;
     private ViewPager mViewPager;
+
+    // 正在提交标志
+    private boolean posting = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,17 +82,21 @@ public class WriteMarkActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(posting) return;
                 String title = ((EditText)viewWriteTitle.findViewById(R.id.inputTitle)).getText().toString();
                 String content = ((EditText)viewWriteMarks.findViewById(R.id.inputMarks)).getText().toString();
+                posting = true;
                 PLServerAPI.addBookMark(bid, title, content, new PLServerAPI.onResponseListener() {
                     @Override
                     public void onSuccess(Object data) {
                         finish();
                         Toast.makeText(WriteMarkActivity.this, "发表成功！", Toast.LENGTH_LONG);
+                        posting = false;
                     }
                     @Override
                     public void onFailure(PLServerAPI.ApiError apiError) {
                         showSnackBar(getString(R.string.network_error));
+                        posting = false;
                     }
                 });
             }
