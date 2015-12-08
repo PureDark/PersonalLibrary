@@ -50,8 +50,12 @@
                 android:layout_marginRight="@dimen/activity_vertical_margin"
                 android:layout_marginTop="@dimen/status_bar_padding_plus_standard"
                 android:layout_gravity="end"
+                android:imeActionId="@+id/search"
+                android:imeActionLabel="@string/action_search"
+                android:imeOptions="actionSearch"
                 android:background="@null"
                 android:textSize="16sp"
+                android:singleLine="true"
                 android:paddingLeft="4dp"
                 android:enabled="false"
                 app:layout_collapseMode="pin"/>

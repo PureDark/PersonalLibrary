@@ -28,6 +28,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.dd.CircularProgressButton;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.lang.reflect.Field;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gc.materialdesign.views.ButtonFlat;
+import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.adapters.ViewPagerAdapter;
@@ -92,7 +94,11 @@ public class LoginActivity extends AppCompatActivity {
         views.add(viewForgetPassword);
         views.add(viewLogin);
         views.add(viewRegister);
-        adpter = new ViewPagerAdapter(views);
+        List<String> titles = new ArrayList<String>();
+        titles.add("忘记密码");
+        titles.add("登录");
+        titles.add("注册");
+        adpter = new ViewPagerAdapter(views, titles);
         mViewPager = ( ViewPager) findViewById(R.id.viewPager);
         setViewPagerScrollSpeed();
         mViewPager.setAdapter(adpter);
@@ -248,7 +254,6 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void attemptGetAvatar() {
         String cellphone = mCellphoneView.getText().toString();
-        System.out.println("cellphone_length="+cellphone.length());
         // 检查手机号输入是否有效
         if (TextUtils.isEmpty(cellphone)||!isCellphoneValid(cellphone)) {
             if(!isDefaultAvatar){
@@ -266,11 +271,13 @@ public class LoginActivity extends AppCompatActivity {
             public void onSuccess(Object data) {
                 int uid = (int)data;
 
-                System.out.println("uid="+uid);
-                ImageLoader.getInstance().displayImage(PLApplication.serverHost + "/images/users/avatars/" + uid + ".png", mAvatarView);
+                DisplayImageOptions options = new DisplayImageOptions.Builder()
+                        .cacheInMemory(false)//设置下载的图片是否缓存在内存中
+                        .cacheOnDisc(false)//设置下载的图片是否缓存在SD卡中
+                        .displayer(new FadeInBitmapDisplayer(300))//是否图片加载好后渐入的动画时间
+                        .build();//构建完成
+                ImageLoader.getInstance().displayImage(PLApplication.serverHost + "/images/users/avatars/" + uid + ".png", mAvatarView, options);
                 isDefaultAvatar = false;
-
-                System.out.println(PLApplication.serverHost + "/images/users/avatars/" + uid + ".png");
             }
 
             @Override

@@ -3,9 +3,14 @@ package ml.puredark.personallibrary.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.media.Image;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.AppBarLayout;
@@ -18,11 +23,18 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.gc.materialdesign.views.ProgressBarCircularIndeterminate;
 import com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch;
@@ -31,13 +43,24 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ArgbEvaluator;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.telly.mrvector.MrVector;
 import com.wnafee.vector.compat.ResourcesCompat;
 
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.ObjectAnimator;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import io.codetail.animation.SupportAnimator;
 import io.codetail.animation.ViewAnimationUtils;
@@ -47,8 +70,10 @@ import io.codetail.animation.arcanimator.Side;
 import io.codetail.widget.RevealFrameLayout;
 import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
+import ml.puredark.personallibrary.User;
 import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.beans.BookListItem;
+import ml.puredark.personallibrary.beans.UserInfo;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
 import ml.puredark.personallibrary.customs.MyEditText;
 import ml.puredark.personallibrary.customs.MyFloatingActionButton;
@@ -60,20 +85,29 @@ import ml.puredark.personallibrary.helpers.ActivityTransitionHelper;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimator;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimatorListener;
 import ml.puredark.personallibrary.helpers.DoubanRestAPI;
+import ml.puredark.personallibrary.helpers.PLServerAPI;
+import ml.puredark.personallibrary.utils.BitmapUtils;
+import ml.puredark.personallibrary.utils.FileUtils;
 import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 import ml.puredark.personallibrary.utils.ViewUtils;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         OnFragmentInteractionListener {
+    //Fragment编号
+    public final static int FRAGMENT_INDEX = 1;
+    public final static int FRAGMENT_FRIEND = 3;
+    public final static int FRAGMENT_NEWS = 4;
+
+    //Fragment回调动作的定义
     public final static int FRAGMENT_ACTION_START_BOOK_DETAIL_ACTIVITY = 1;
     public final static int FRAGMENT_ACTION_SET_NAVIGATION_ITEM = 2;
     public final static int FRAGMENT_ACTION_SET_TITLE = 3;
 
-
-    public final static int FRAGMENT_INDEX = 1;
-    public final static int FRAGMENT_FRIEND = 3;
-    public final static int FRAGMENT_NEWS = 4;
+    //ActivityResult编号
+    public final static int RESULT_SCANBOOK = 1;
+    public final static int RESULT_BOOKDETAIL = 2;
+    public final static int RESULT_AVATAR = 3;
 
     //记录当前加载的是哪个Fragment
     private int currFragment = FRAGMENT_INDEX;
@@ -167,6 +201,65 @@ public class MainActivity extends AppCompatActivity
                 }, 300);
             }
         });
+        //初始化侧边栏里的个人信息
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                ImageView avatar = (ImageView) findViewById(R.id.avatar);
+                DisplayImageOptions options = new DisplayImageOptions.Builder()
+                        .cacheInMemory(false)//设置下载的图片是否缓存在内存中
+                        .cacheOnDisc(false)//设置下载的图片是否缓存在SD卡中
+                        .build();//构建完成
+                ImageLoader.getInstance()
+                        .displayImage(PLApplication.serverHost + "/images/users/avatars/" + User.getUid() + ".png", avatar, options);
+
+                avatar.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                            Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                            startActivityForResult(intent, RESULT_AVATAR);
+                    }
+                });
+                final EditText nickname = (EditText) findViewById(R.id.nickname);
+                final EditText signature = (EditText) findViewById(R.id.signature);
+                nickname.setText(User.getNickname());
+                signature.setText(User.getSignature());
+                nickname.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        if (!hasFocus)
+                            PLServerAPI.modifyUserInfo(nickname.getText().toString(), 0, null, null, new PLServerAPI.onResponseListener() {
+                                @Override
+                                public void onSuccess(Object data) {
+                                    User.setNickname(nickname.getText().toString());
+                                }
+
+                                @Override
+                                public void onFailure(PLServerAPI.ApiError apiError) {
+                                    Toast.makeText(MainActivity.this, getString(R.string.network_error), Toast.LENGTH_LONG);
+                                    nickname.setText(User.getNickname());
+                                }
+                            });
+                    }
+                });
+                signature.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        if(!hasFocus)
+                            PLServerAPI.modifyUserInfo(null, 0, signature.getText().toString(), null, new PLServerAPI.onResponseListener() {
+                                @Override
+                                public void onSuccess(Object data) {
+                                    User.setSignature(signature.getText().toString());
+                                }
+                                @Override
+                                public void onFailure(PLServerAPI.ApiError apiError) {
+                                    Toast.makeText(MainActivity.this, getString(R.string.network_error), Toast.LENGTH_LONG);
+                                    signature.setText(User.getSignature());
+                                }
+                            });
+                    }
+                });
+            }
+        }, 200);
 
         //为FAB加载图标
         Animatable crossStartIcon = (Animatable) ResourcesCompat.getDrawable(this, R.drawable.vector_animated_cross_0_to_45);
@@ -202,6 +295,22 @@ public class MainActivity extends AppCompatActivity
         inputSearch.setStartIcon(searchStartIcon);
         inputSearch.setEndIcon(searchEndIcon);
         searchStartIcon.start();
+
+        inputSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String keyword = inputSearch.getText().toString();
+                IndexFragment.getInstance().getBookList(keyword);
+            }
+        });
 
         //为搜索按钮绑定事件
         findViewById(R.id.search_button).setOnClickListener(new View.OnClickListener() {
@@ -288,14 +397,6 @@ public class MainActivity extends AppCompatActivity
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         if (result != null&&result.getContents()!=null) {
-//                final Snackbar snackbar = Snackbar.make(rootLayout, contents, Snackbar.LENGTH_LONG);
-//                snackbar.setAction("隐藏", new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        snackbar.dismiss();
-//                    }
-//                }).show();
-
             new Handler().postDelayed(new Runnable() {
                 public void run() {
                     loading.setVisibility(View.VISIBLE);
@@ -319,8 +420,7 @@ public class MainActivity extends AppCompatActivity
                     }, 500);
                 }
             });
-            return;
-        }else if(requestCode==1){
+        }else if(requestCode==RESULT_SCANBOOK){
             if(resultCode==RESULT_OK&& PLApplication.temp instanceof Book) {
                 Book book = (Book) PLApplication.temp;
                 String author = (book.author.length>0)?book.author[0]:"";
@@ -345,15 +445,86 @@ public class MainActivity extends AppCompatActivity
                     });
                 }
             }, 500);
-            return;
-        }else if(requestCode==2){
-            return;
-        }
-        new Handler().postDelayed(new Runnable() {
-            public void run() {
-                new AnimationFabtoCamera().reverse();
+        }else if(requestCode==RESULT_BOOKDETAIL){
+
+        }else if(requestCode==RESULT_AVATAR){
+            if (resultCode == RESULT_OK) {
+                final Uri uri = intent.getData();
+
+                // Get the File path from the Uri
+                String path = FileUtils.getPath(this, uri);
+
+                File cacheDir = getCacheDir();
+                final String cachePath = cacheDir.getPath();    //缓存路径
+
+                final String filePath = cachePath+"/"+User.getUid()+".png";
+
+                // Alternatively, use FileUtils.getFile(Context, Uri)
+                if (path != null && FileUtils.isLocal(path)) {
+                    BitmapFactory.Options options =new BitmapFactory.Options();
+                    options.inJustDecodeBounds =true;
+                    // 获取这个图片的宽和高
+                    Bitmap bitmap = BitmapFactory.decodeFile(path, options); //此时返回bm为空
+                    options.inJustDecodeBounds =false;
+                    //计算缩放比
+                    int be = (int)(options.outHeight/ (float)256);
+                    if (be <= 0)
+                        be = 1;
+                    options.inSampleSize = be;
+                    //重新读入图片，注意这次要把options.inJustDecodeBounds 设为 false
+                    bitmap=BitmapFactory.decodeFile(path,options);
+                    bitmap = BitmapUtils.cropToSquare(bitmap);
+                    ImageView iv=new ImageView(this);
+                    iv.setImageBitmap(bitmap);
+                    File file=new File(filePath);
+                    try {
+                        FileOutputStream out=new FileOutputStream(file);
+                        if(bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)){
+                            out.flush();
+                            out.close();
+                        }
+                    } catch (FileNotFoundException e){
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    FileInputStream fis = null;
+                    try {
+                        fis = new FileInputStream(filePath);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    int count = 0;
+                    try {
+                        while((count = fis.read(buffer)) >= 0){
+                            baos.write(buffer, 0, count);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    final ImageView avatar = (ImageView) findViewById(R.id.avatar);
+                    PLServerAPI.uploadAvatar(file, new PLServerAPI.onResponseListener() {
+                        @Override
+                        public void onSuccess(Object data){
+                            avatar.setImageDrawable(Drawable.createFromPath(filePath));
+                        }
+
+                        @Override
+                        public void onFailure(PLServerAPI.ApiError apiError) {
+                            Toast.makeText(MainActivity.this, getString(R.string.network_error), Toast.LENGTH_LONG);
+                        }
+                    });
+                }
             }
-        }, 500);
+        }else{
+            new Handler().postDelayed(new Runnable() {
+                public void run() {
+                    new AnimationFabtoCamera().reverse();
+                }
+            }, 500);
+        }
     }
     private void startBookDetailActivity(final Book book){
         startBookDetailActivity(book, true, null);
@@ -406,13 +577,13 @@ public class MainActivity extends AppCompatActivity
                             new AnimationShowBookDetail().start(new CustomAnimatorListener() {
                                 @Override
                                 public void onAnimationEnd() {
-                                    startActivityForResult(intent, 1);
+                                    startActivityForResult(intent, RESULT_SCANBOOK);
                                     MainActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                                 }
                             });
                         } else {
                             ActivityTransitionHelper.with(MainActivity.this)
-                                    .fromView(fromView).startActivityForResult(intent, 2);
+                                    .fromView(fromView).startActivityForResult(intent, RESULT_BOOKDETAIL);
                         }
                     }
                 });
@@ -452,13 +623,32 @@ public class MainActivity extends AppCompatActivity
         super.onDestroy();
     }
     @Override
-    public void onFragmentInteraction(int action, Object data, View view) {
+    public void onFragmentInteraction(int action, Object data, final View view) {
         if(action==FRAGMENT_ACTION_START_BOOK_DETAIL_ACTIVITY && data instanceof BookListItem){
-                BookListItem item = (BookListItem) data;
+                final BookListItem item = (BookListItem) data;
                 String bookString = (String) SharedPreferencesUtil.getData(this, "isbn13_"+item.isbn13, "");
                 if(!bookString.equals("")){
                     Book book = new Gson().fromJson(bookString, Book.class);
+                    book.id = item.getId();
                     startBookDetailActivity(book, view);
+                }else{
+                    getting = true;
+                    DoubanRestAPI.getBookByISBN(item.isbn13, new CallBack() {
+                        @Override
+                        public void action(final Object obj) {
+                            getting = false;
+                            new Handler().postDelayed(new Runnable() {
+                                public void run() {
+                                    if (obj instanceof Book) {
+                                        Book book = (Book) obj;
+                                        book.id = item.getId();
+                                        startBookDetailActivity(book, view);
+                                        SharedPreferencesUtil.saveData(getBaseContext(), "isbn13_" + book.isbn13, new Gson().toJson(book));
+                                    }
+                                }
+                            }, 500);
+                        }
+                    });
                 }
         }else if(action==FRAGMENT_ACTION_SET_NAVIGATION_ITEM && data instanceof Integer){
             navigationView.setCheckedItem((int)data);

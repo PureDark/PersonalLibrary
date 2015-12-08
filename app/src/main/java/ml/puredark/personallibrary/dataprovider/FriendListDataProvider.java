@@ -18,15 +18,14 @@ package ml.puredark.personallibrary.dataprovider;
 
 import java.util.List;
 
-import ml.puredark.personallibrary.beans.BookListItem;
-import ml.puredark.personallibrary.beans.FriendListItem;
+import ml.puredark.personallibrary.beans.Friend;
 
 public class FriendListDataProvider extends AbstractDataProvider {
-    private List<FriendListItem> myFriends;
-    private FriendListItem mLastRemovedFriend;
+    private List<Friend> myFriends;
+    private Friend mLastRemovedFriend;
     private int mLastRemovedPosition = -1;
 
-    public FriendListDataProvider(List<FriendListItem> myFriends) {
+    public FriendListDataProvider(List<Friend> myFriends) {
         this.myFriends = myFriends;
     }
 
@@ -36,7 +35,7 @@ public class FriendListDataProvider extends AbstractDataProvider {
     }
 
     @Override
-    public List<FriendListItem> getItems() {
+    public List<Friend> getItems() {
         return myFriends;
     }
 
@@ -75,7 +74,7 @@ public class FriendListDataProvider extends AbstractDataProvider {
     @Override
     public void removeItem(int position) {
         //noinspection UnnecessaryLocalVariable
-        final FriendListItem removedItem = myFriends.remove(position);
+        final Friend removedItem = myFriends.remove(position);
 
         mLastRemovedFriend = removedItem;
         mLastRemovedPosition = position;
@@ -83,13 +82,13 @@ public class FriendListDataProvider extends AbstractDataProvider {
 
     @Override
     public void addItem(Data item) {
-        myFriends.add((FriendListItem)item);
+        myFriends.add((Friend)item);
         mLastRemovedPosition = -1;
     }
 
     @Override
     public void addItem(int position, Data item) {
-        myFriends.add(position, (FriendListItem)item);
+        myFriends.add(position, (Friend)item);
         mLastRemovedPosition = -1;
     }
     @Override

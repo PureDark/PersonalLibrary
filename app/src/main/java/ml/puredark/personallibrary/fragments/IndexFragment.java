@@ -99,18 +99,7 @@ public class IndexFragment extends Fragment {
             myBooks = new Gson().fromJson(data, new TypeToken<List<BookListItem>>(){}.getType());
 
         //从服务器获取最新的书籍列表
-        PLServerAPI.getBookList(null, new PLServerAPI.onResponseListener() {
-            @Override
-            public void onSuccess(Object data) {
-                List<BookListItem> books = (List<BookListItem>) data;
-                mBookAdapter.setDataProvider(new BookListDataProvider(books));
-                mBookAdapter.notifyDataSetChanged();
-            }
-            @Override
-            public void onFailure(PLServerAPI.ApiError apiError) {
-                showSnackBar(getString(R.string.network_error));
-            }
-        });
+        getBookList(null);
 
         // touch guard manager  (this class is required to suppress scrolling while swipe-dismiss animation is running)
         mRecyclerViewTouchActionGuardManager = new RecyclerViewTouchActionGuardManager();
@@ -144,7 +133,7 @@ public class IndexFragment extends Fragment {
         });
         mBookAdapter.setEventListener(new BookListAdapter.EventListener() {
             @Override
-            public void onItemRemoved(int position, BookListItem book) {
+            public void onItemRemoved(int position, final BookListItem book) {
                 PLServerAPI.deleteBook(book.getId(), new PLServerAPI.onResponseListener() {
                     @Override
                     public void onSuccess(Object data) {
@@ -165,6 +154,16 @@ public class IndexFragment extends Fragment {
                         if (position >= 0) {
                             notifyItemInserted(position);
                         }
+                        PLServerAPI.addBook(book.isbn13, book.cover, book.title, book.author, book.summary, new PLServerAPI.onResponseListener() {
+                            @Override
+                            public void onSuccess(Object data) {
+                            }
+
+                            @Override
+                            public void onFailure(PLServerAPI.ApiError apiError) {
+                                showSnackBar(getString(R.string.network_error));
+                            }
+                        });
                     }
                 });
                 snackbar.setActionTextColor(ContextCompat.getColor(PLApplication.mContext, R.color.colorAccentDark));
@@ -213,7 +212,7 @@ public class IndexFragment extends Fragment {
     }
 
     public void addNewBook(final int position, BookListItem book) {
-        PLServerAPI.addBook(book.isbn13, book.cover, book.title, book.author, book.description,
+        PLServerAPI.addBook(book.isbn13, book.cover, book.title, book.author, book.summary,
             new PLServerAPI.onResponseListener() {
                 @Override
                 public void onSuccess(Object data) {
@@ -229,7 +228,22 @@ public class IndexFragment extends Fragment {
         });
     }
 
-    private void showSnackBar(String content){
+    public void getBookList(String keyword){
+        PLServerAPI.getBookList(null, keyword, new PLServerAPI.onResponseListener() {
+            @Override
+            public void onSuccess(Object data) {
+                List<BookListItem> books = (List<BookListItem>) data;
+                mBookAdapter.setDataProvider(new BookListDataProvider(books));
+                mBookAdapter.notifyDataSetChanged();
+            }
+            @Override
+            public void onFailure(PLServerAPI.ApiError apiError) {
+                showSnackBar(getString(R.string.network_error));
+            }
+        });
+    }
+
+    public void showSnackBar(String content){
         Snackbar snackbar = Snackbar.make(
                 findViewById(R.id.container),
                 content,

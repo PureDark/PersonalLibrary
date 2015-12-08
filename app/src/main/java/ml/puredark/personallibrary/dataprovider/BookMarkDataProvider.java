@@ -18,25 +18,23 @@ package ml.puredark.personallibrary.dataprovider;
 
 import java.util.List;
 
-import ml.puredark.personallibrary.beans.NewsListItem;
+import ml.puredark.personallibrary.beans.BookMark;
 
-public class NewsListDataProvider extends AbstractDataProvider {
-    private List<NewsListItem> myNews;
-    private NewsListItem mLastRemovedFriend;
-    private int mLastRemovedPosition = -1;
+public class BookMarkDataProvider extends AbstractDataProvider {
+    private List<BookMark> myBookMarks;
 
-    public NewsListDataProvider(List<NewsListItem> myNews) {
-        this.myNews = myNews;
+    public BookMarkDataProvider(List<BookMark> myBookMarks) {
+        this.myBookMarks = myBookMarks;
     }
 
     @Override
     public int getCount() {
-        return myNews.size();
+        return myBookMarks.size();
     }
 
     @Override
-    public List<NewsListItem> getItems() {
-        return myNews;
+    public List<BookMark> getItems() {
+        return myBookMarks;
     }
 
     @Override
@@ -45,51 +43,28 @@ public class NewsListDataProvider extends AbstractDataProvider {
             throw new IndexOutOfBoundsException("index = " + index);
         }
 
-        return myNews.get(index);
+        return myBookMarks.get(index);
     }
 
     @Override
     public int undoLastRemoval() {
-        if (mLastRemovedFriend != null) {
-            int insertedPosition;
-            if (mLastRemovedPosition >= 0 && mLastRemovedPosition < myNews.size()) {
-                insertedPosition = mLastRemovedPosition;
-            } else {
-                insertedPosition = myNews.size();
-            }
-
-            myNews.add(insertedPosition, mLastRemovedFriend);
-
-            mLastRemovedFriend = null;
-            mLastRemovedPosition = -1;
-
-            return insertedPosition;
-        } else {
             return -1;
-        }
     }
 
 
 
     @Override
     public void removeItem(int position) {
-        //noinspection UnnecessaryLocalVariable
-        final NewsListItem removedItem = myNews.remove(position);
-
-        mLastRemovedFriend = removedItem;
-        mLastRemovedPosition = position;
     }
 
     @Override
     public void addItem(Data item) {
-        myNews.add((NewsListItem)item);
-        mLastRemovedPosition = -1;
+        myBookMarks.add((BookMark)item);
     }
 
     @Override
     public void addItem(int position, Data item) {
-        myNews.add(position, (NewsListItem)item);
-        mLastRemovedPosition = -1;
+        myBookMarks.add(position, (BookMark)item);
     }
     @Override
     public void moveItem(int fromPosition, int toPosition) {

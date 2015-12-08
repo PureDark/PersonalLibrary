@@ -23,6 +23,8 @@ import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.User;
 import ml.puredark.personallibrary.activities.LoginActivity;
 import ml.puredark.personallibrary.beans.BookListItem;
+import ml.puredark.personallibrary.beans.BookMark;
+import ml.puredark.personallibrary.beans.Friend;
 import ml.puredark.personallibrary.beans.Tag;
 import ml.puredark.personallibrary.beans.UserInfo;
 import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
@@ -36,35 +38,25 @@ public class PLServerAPI {
         params.put("action", "login");
         params.put("cellphone", cellphone);
         params.put("password", password);
-
-        PLServerAPIClient.post(params, new JsonHttpResponseHandler() {
+        postReturnJsonElement(params, new onResponseListener() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JsonParser parser = new JsonParser();
-                JsonObject result = parser.parse(response.toString()).getAsJsonObject();
-                if(result.get("status").getAsBoolean()) {
-                    JsonObject userData = result.get("data").getAsJsonObject();
-                    int uid = userData.get("uid").getAsInt();
-                    int sex = userData.get("sex").getAsInt();
-                    String nickname = (userData.get("nickname")==null)?"":userData.get("nickname").getAsString();
-                    String signature = (userData.get("signature")==null)?"":userData.get("signature").getAsString();
-                    String birthday = (userData.get("birthday")==null)?"":userData.get("birthday").getAsString();
-                    String sessionid = (userData.get("sessionid")==null)?null:userData.get("sessionid").getAsString();
-                    User.login(uid, sex, nickname, signature, birthday, sessionid);
-                    User.setAutoLogin(cellphone, password);
-                    SharedPreferencesUtil.saveData(PLApplication.mContext,"User",new Gson().toJson(new User()));
-                    callBack.onSuccess(userData);
-                }else{
-                    int errorCode = result.get("errorCode").getAsInt();
-                    if(errorCode==1002)
-                        checkLogin(callBack);
-                    else
-                        callBack.onFailure(new ApiError(result.get("errorCode").getAsInt()));
-                }
+            public void onSuccess(Object result) {
+                JsonObject userData = ((JsonElement) result).getAsJsonObject();
+                int uid = userData.get("uid").getAsInt();
+                int sex = userData.get("sex").getAsInt();
+                String nickname = (userData.get("nickname") == null) ? "" : userData.get("nickname").getAsString();
+                String signature = (userData.get("signature") == null) ? "" : userData.get("signature").getAsString();
+                String birthday = (userData.get("birthday") == null) ? "" : userData.get("birthday").getAsString();
+                String sessionid = (userData.get("sessionid") == null) ? null : userData.get("sessionid").getAsString();
+                User.login(uid, sex, nickname, signature, birthday, sessionid);
+                User.setAutoLogin(cellphone, password);
+                SharedPreferencesUtil.saveData(PLApplication.mContext, "User", new Gson().toJson(new User()));
+                callBack.onSuccess(userData);
             }
+
             @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                    callBack.onFailure(new ApiError(1009));
+            public void onFailure(ApiError apiError) {
+                callBack.onFailure(apiError);
             }
         });
     }
@@ -73,27 +65,7 @@ public class PLServerAPI {
         RequestParams params = new RequestParams();
         params.put("module", "user");
         params.put("action", "logout");
-
-        PLServerAPIClient.post(params, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JsonParser parser = new JsonParser();
-                JsonObject result = parser.parse(response.toString()).getAsJsonObject();
-                if(result.get("status").getAsBoolean())
-                    callBack.onSuccess(null);
-                else{
-                    int errorCode = result.get("errorCode").getAsInt();
-                    if(errorCode==1002)
-                        checkLogin(callBack);
-                    else
-                        callBack.onFailure(new ApiError(result.get("errorCode").getAsInt()));
-                }
-            }
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                callBack.onFailure(new ApiError(1009));
-            }
-        });
+        postNoReturnData(params, callBack);
     }
 
     public static void verifyCellphoneUnused(String cellphone, final onResponseListener callBack) {
@@ -101,27 +73,7 @@ public class PLServerAPI {
         params.put("module", "user");
         params.put("action", "verifyCellphoneUnused");
         params.put("cellphone", cellphone);
-
-        PLServerAPIClient.post(params, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JsonParser parser = new JsonParser();
-                JsonObject result = parser.parse(response.toString()).getAsJsonObject();
-                if (result.get("status").getAsBoolean())
-                    callBack.onSuccess(null);
-                else{
-                    int errorCode = result.get("errorCode").getAsInt();
-                    if(errorCode==1002)
-                        checkLogin(callBack);
-                    else
-                        callBack.onFailure(new ApiError(result.get("errorCode").getAsInt()));
-                }
-            }
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                callBack.onFailure(new ApiError(1009));
-            }
-        });
+        postNoReturnData(params, callBack);
     }
 
     public static void sendCaptcha(String cellphone, final onResponseListener callBack) {
@@ -129,29 +81,18 @@ public class PLServerAPI {
         params.put("module", "user");
         params.put("action", "sendCaptcha");
         params.put("cellphone", cellphone);
-
-        PLServerAPIClient.post( params, new JsonHttpResponseHandler() {
+        postReturnJsonElement(params, new onResponseListener() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JsonParser parser = new JsonParser();
-                JsonObject result = parser.parse(response.toString()).getAsJsonObject();
-                if(result.get("status").getAsBoolean()) {
-                    JsonObject userData = result.get("data").getAsJsonObject();
-                    String sessionid = userData.get("sessionid").getAsString();
-                    User.setSessionid(sessionid);
-                    callBack.onSuccess(userData);
-                }else{
-                    int errorCode = result.get("errorCode").getAsInt();
-                    if(errorCode==1002)
-                        checkLogin(callBack);
-                    else
-                        callBack.onFailure(new ApiError(result.get("errorCode").getAsInt()));
-                }
+            public void onSuccess(Object result) {
+                JsonObject data = ((JsonElement) result).getAsJsonObject();
+                String sessionid = data.get("sessionid").getAsString();
+                User.setSessionid(sessionid);
+                callBack.onSuccess(data);
             }
+
             @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                if(callBack!=null)
-                callBack.onFailure(new ApiError(1009));
+            public void onFailure(ApiError apiError) {
+                callBack.onFailure(apiError);
             }
         });
     }
@@ -164,27 +105,7 @@ public class PLServerAPI {
         params.put("password", password);
         params.put("captcha", captcha);
         params.put("sessionid", User.getSessionid());
-
-        PLServerAPIClient.post( params, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JsonParser parser = new JsonParser();
-                JsonObject result = parser.parse(response.toString()).getAsJsonObject();
-                if(result.get("status").getAsBoolean())
-                    callBack.onSuccess(null);
-                else{
-                    int errorCode = result.get("errorCode").getAsInt();
-                    if(errorCode==1002)
-                        checkLogin(callBack);
-                    else
-                        callBack.onFailure(new ApiError(result.get("errorCode").getAsInt()));
-                }
-            }
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                callBack.onFailure(new ApiError(1009));
-            }
-        });
+        postNoReturnData(params, callBack);
     }
 
     public static void changePassword(String oldpass, String newpass, final onResponseListener callBack) {
@@ -194,27 +115,7 @@ public class PLServerAPI {
         params.put("oldpass", oldpass);
         params.put("newpass", newpass);
         params.put("sessionid", User.getSessionid());
-
-        PLServerAPIClient.post( params, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JsonParser parser = new JsonParser();
-                JsonObject result = parser.parse(response.toString()).getAsJsonObject();
-                if(result.get("status").getAsBoolean())
-                    callBack.onSuccess(null);
-                else{
-                    int errorCode = result.get("errorCode").getAsInt();
-                    if(errorCode==1002)
-                        checkLogin(callBack);
-                    else
-                        callBack.onFailure(new ApiError(result.get("errorCode").getAsInt()));
-                }
-            }
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                callBack.onFailure(new ApiError(1009));
-            }
-        });
+        postNoReturnData(params, callBack);
     }
 
     public static void resetPassword(String cellphone, String password, String captcha, final onResponseListener callBack) {
@@ -225,68 +126,33 @@ public class PLServerAPI {
         params.put("password", password);
         params.put("captcha", captcha);
         params.put("sessionid", User.getSessionid());
-
-        PLServerAPIClient.post(params, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JsonParser parser = new JsonParser();
-                JsonObject result = parser.parse(response.toString()).getAsJsonObject();
-                if (result.get("status").getAsBoolean())
-                    callBack.onSuccess(null);
-                else{
-                    int errorCode = result.get("errorCode").getAsInt();
-                    if(errorCode==1002)
-                        checkLogin(callBack);
-                    else
-                        callBack.onFailure(new ApiError(result.get("errorCode").getAsInt()));
-                }
-            }
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                callBack.onFailure(new ApiError(1009));
-            }
-        });
+        postNoReturnData(params, callBack);
     }
 
-    public static void modifyUserInfo(String avatarPath, String nickname, int sex, String signature, String birthday,  final onResponseListener callBack) {
+    public static void modifyUserInfo(String nickname, int sex, String signature, String birthday,  final onResponseListener callBack) {
         RequestParams params = new RequestParams();
         params.put("module", "user");
         params.put("action", "modifyUserInfo");
-        if (avatarPath != null) {
-            try {
-                File avatar = new File(avatarPath);
-                params.put("avatar", avatar);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
         params.put("nickname", nickname);
         params.put("sex", sex);
         params.put("signature", signature);
         params.put("birthday", birthday);
         params.put("sessionid", User.getSessionid());
+        postNoReturnData(params, callBack);
+    }
 
-        PLServerAPIClient.post( params, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JsonParser parser = new JsonParser();
-                JsonObject result = parser.parse(response.toString()).getAsJsonObject();
-                if (result.get("status").getAsBoolean())
-                    callBack.onSuccess(null);
-                else{
-                    int errorCode = result.get("errorCode").getAsInt();
-                    if(errorCode==1002)
-                        checkLogin(callBack);
-                    else
-                        callBack.onFailure(new ApiError(result.get("errorCode").getAsInt()));
-                }
-            }
 
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                callBack.onFailure(new ApiError(1009));
-            }
-        });
+    public static void uploadAvatar(File avatar, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "user");
+        params.put("action", "uploadAvatar");
+        try {
+            params.put("avatar", avatar);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        params.put("sessionid", User.getSessionid());
+        postNoReturnData(params, callBack);
     }
 
     public static void getUserInfo(final onResponseListener callBack) {
@@ -294,26 +160,17 @@ public class PLServerAPI {
         params.put("module", "user");
         params.put("action", "getUserInfo");
         params.put("sessionid", User.getSessionid());
-
-        PLServerAPIClient.post( params, new JsonHttpResponseHandler() {
+        postReturnJsonElement(params, new onResponseListener() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JsonParser parser = new JsonParser();
-                JsonObject result = parser.parse(response.toString()).getAsJsonObject();
-                if(result.get("status").getAsBoolean()) {
-                    UserInfo userInfo = new Gson().fromJson(result.get("data"),UserInfo.class);
-                    callBack.onSuccess(userInfo);
-                }else{
-                    int errorCode = result.get("errorCode").getAsInt();
-                    if(errorCode==1002)
-                        checkLogin(callBack);
-                    else
-                        callBack.onFailure(new ApiError(result.get("errorCode").getAsInt()));
-                }
+            public void onSuccess(Object result) {
+                JsonObject data = ((JsonElement) result).getAsJsonObject();
+                UserInfo userInfo = new Gson().fromJson(data, UserInfo.class);
+                callBack.onSuccess(userInfo);
             }
+
             @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                callBack.onFailure(new ApiError(1009));
+            public void onFailure(ApiError apiError) {
+                callBack.onFailure(apiError);
             }
         });
     }
@@ -323,31 +180,22 @@ public class PLServerAPI {
         params.put("module", "user");
         params.put("action", "getUidByCellphone");
         params.put("cellphone", cellphone);
-
-        PLServerAPIClient.post( params, new JsonHttpResponseHandler() {
+        postReturnJsonElement(params, new onResponseListener() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JsonParser parser = new JsonParser();
-                JsonObject result = parser.parse(response.toString()).getAsJsonObject();
-                if(result.get("status").getAsBoolean()) {
-                    int uid = result.get("data").getAsJsonObject().get("uid").getAsInt();
-                    callBack.onSuccess(uid);
-                }else{
-                    int errorCode = result.get("errorCode").getAsInt();
-                    if(errorCode==1002)
-                        checkLogin(callBack);
-                    else
-                        callBack.onFailure(new ApiError(result.get("errorCode").getAsInt()));
-                }
+            public void onSuccess(Object result) {
+                JsonObject data = ((JsonElement) result).getAsJsonObject();
+                int uid = data.get("uid").getAsInt();
+                callBack.onSuccess(uid);
             }
+
             @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                callBack.onFailure(new ApiError(1009));
+            public void onFailure(ApiError apiError) {
+                callBack.onFailure(apiError);
             }
         });
     }
 
-    public static void addBook(final String isbn13, final String cover, final String title, final String author,final String description, final onResponseListener callBack) {
+    public static void addBook(final String isbn13, final String cover, final String title, final String author,final String summary, final onResponseListener callBack) {
         RequestParams params = new RequestParams();
         params.put("module", "library");
         params.put("action", "addBook");
@@ -355,30 +203,20 @@ public class PLServerAPI {
         params.put("cover", cover);
         params.put("title", title);
         params.put("author", author);
-        params.put("description", description);
+        params.put("summary", summary);
         params.put("sessionid", User.getSessionid());
-
-        PLServerAPIClient.post( params, new JsonHttpResponseHandler() {
+        postReturnJsonElement(params, new onResponseListener() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JsonParser parser = new JsonParser();
-                JsonObject result = parser.parse(response.toString()).getAsJsonObject();
-                if(result.get("status").getAsBoolean()){
-                    JsonObject data = result.get("data").getAsJsonObject();
-                    int bid = data.get("bid").getAsInt();
-                    BookListItem book = new BookListItem(bid, isbn13, cover, title, author, description);
-                    callBack.onSuccess(book);
-                }else{
-                    int errorCode = result.get("errorCode").getAsInt();
-                    if(errorCode==1002)
-                        checkLogin(callBack);
-                    else
-                        callBack.onFailure(new ApiError(result.get("errorCode").getAsInt()));
-                }
+            public void onSuccess(Object result) {
+                JsonObject data = ((JsonElement) result).getAsJsonObject();
+                int bid = data.get("bid").getAsInt();
+                BookListItem book = new BookListItem(bid, isbn13, cover, title, author, summary);
+                callBack.onSuccess(book);
             }
+
             @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                callBack.onFailure(new ApiError(1009));
+            public void onFailure(ApiError apiError) {
+                callBack.onFailure(apiError);
             }
         });
     }
@@ -389,27 +227,7 @@ public class PLServerAPI {
         params.put("action", "deleteBook");
         params.put("bid", bid);
         params.put("sessionid", User.getSessionid());
-
-        PLServerAPIClient.post( params, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JsonParser parser = new JsonParser();
-                JsonObject result = parser.parse(response.toString()).getAsJsonObject();
-                if(result.get("status").getAsBoolean())
-                    callBack.onSuccess(null);
-                else{
-                    int errorCode = result.get("errorCode").getAsInt();
-                    if(errorCode==1002)
-                        checkLogin(callBack);
-                    else
-                        callBack.onFailure(new ApiError(result.get("errorCode").getAsInt()));
-                }
-            }
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                callBack.onFailure(new ApiError(1009));
-            }
-        });
+        postNoReturnData(params, callBack);
     }
 
     public static void addTag(int bid, String tag, final onResponseListener callBack) {
@@ -419,27 +237,7 @@ public class PLServerAPI {
         params.put("bid", bid);
         params.put("tag", tag);
         params.put("sessionid", User.getSessionid());
-
-        PLServerAPIClient.post( params, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JsonParser parser = new JsonParser();
-                JsonObject result = parser.parse(response.toString()).getAsJsonObject();
-                if(result.get("status").getAsBoolean())
-                    callBack.onSuccess(null);
-                else{
-                    int errorCode = result.get("errorCode").getAsInt();
-                    if(errorCode==1002)
-                        checkLogin(callBack);
-                    else
-                        callBack.onFailure(new ApiError(result.get("errorCode").getAsInt()));
-                }
-            }
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                callBack.onFailure(new ApiError(1009));
-            }
-        });
+        postNoReturnData(params, callBack);
     }
 
     public static void deleteTag(int bid, int tid, final onResponseListener callBack) {
@@ -449,27 +247,7 @@ public class PLServerAPI {
         params.put("bid", bid);
         params.put("tid", tid);
         params.put("sessionid", User.getSessionid());
-
-        PLServerAPIClient.post( params, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JsonParser parser = new JsonParser();
-                JsonObject result = parser.parse(response.toString()).getAsJsonObject();
-                if(result.get("status").getAsBoolean())
-                    callBack.onSuccess(null);
-                else{
-                    int errorCode = result.get("errorCode").getAsInt();
-                    if(errorCode==1002)
-                        checkLogin(callBack);
-                    else
-                        callBack.onFailure(new ApiError(result.get("errorCode").getAsInt()));
-                }
-            }
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                callBack.onFailure(new ApiError(1009));
-            }
-        });
+        postNoReturnData(params, callBack);
     }
 
     public static void getTagList(final onResponseListener callBack) {
@@ -477,39 +255,177 @@ public class PLServerAPI {
         params.put("module", "library");
         params.put("action", "getTagList");
         params.put("sessionid", User.getSessionid());
-
-        PLServerAPIClient.post( params, new JsonHttpResponseHandler() {
+        postReturnJsonElement(params, new onResponseListener() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                JsonParser parser = new JsonParser();
-                JsonObject result = parser.parse(response.toString()).getAsJsonObject();
-                if(result.get("status").getAsBoolean()) {
-                    JsonElement data = result.get("data");
-                    List<Tag> tags = new Gson().fromJson(data, new TypeToken<List<Tag>>(){}.getType());
-                    callBack.onSuccess(tags);
-                }else{
-                    int errorCode = result.get("errorCode").getAsInt();
-                    if(errorCode==1002)
-                        checkLogin(callBack);
-                    else
-                        callBack.onFailure(new ApiError(result.get("errorCode").getAsInt()));
-                }
+            public void onSuccess(Object data) {
+                List<Tag> tags = new Gson().fromJson((JsonElement) data, new TypeToken<List<Tag>>() {
+                }.getType());
+                callBack.onSuccess(tags);
             }
+
             @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                callBack.onFailure(new ApiError(1009));
+            public void onFailure(ApiError apiError) {
+                callBack.onFailure(apiError);
             }
         });
     }
 
-    public static void getBookList(int[] tids, final onResponseListener callBack) {
+    public static void getBookList(int[] tids, String keyword, final onResponseListener callBack) {
         RequestParams params = new RequestParams();
         params.put("module", "library");
         params.put("action", "getBookList");
         if(tids!=null)
             params.put("tids", new Gson().toJson(tids));
+        params.put("keyword", keyword);
         params.put("sessionid", User.getSessionid());
 
+        postReturnJsonElement(params, new onResponseListener() {
+            @Override
+            public void onSuccess(Object data) {
+                List<BookListItem> books = new Gson().fromJson((JsonElement)data, new TypeToken<List<BookListItem>>() {}.getType());
+                callBack.onSuccess(books);
+            }
+
+            @Override
+            public void onFailure(ApiError apiError) {
+                callBack.onFailure(apiError);
+            }
+        });
+    }
+
+
+    public static void getFriendList(int page, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "social");
+        params.put("action", "getFriendList");
+        params.put("page", page);
+        params.put("sessionid", User.getSessionid());
+
+        postReturnJsonElement(params, new onResponseListener() {
+            @Override
+            public void onSuccess(Object data) {
+                List<Friend> friends = new Gson().fromJson((JsonElement) data, new TypeToken<List<Friend>>() {}.getType());
+                callBack.onSuccess(friends);
+            }
+            @Override
+            public void onFailure(ApiError apiError) {
+                callBack.onFailure(apiError);
+            }
+        });
+    }
+
+    public static void searchUser(String keyword, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "social");
+        params.put("action", "searchUser");
+        params.put("keyword", keyword);
+        params.put("sessionid", User.getSessionid());
+
+        postReturnJsonElement(params, new onResponseListener() {
+            @Override
+            public void onSuccess(Object data) {
+                List<Friend> friends = new Gson().fromJson((JsonElement) data, new TypeToken<List<Friend>>() {}.getType());
+                callBack.onSuccess(friends);
+            }
+            @Override
+            public void onFailure(ApiError apiError) {
+                callBack.onFailure(apiError);
+            }
+        });
+    }
+
+
+
+
+
+
+
+    public static void addBookMark(int bid, String title, String content, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "social");
+        params.put("action", "addBookMark");
+        params.put("bid", bid);
+        params.put("title", title);
+        params.put("content", content);
+        params.put("sessionid", User.getSessionid());
+        postNoReturnData(params, callBack);
+    }
+
+
+    public static void getBookMarkList(int bid, int uid, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "social");
+        params.put("action", "getBookList");
+        params.put("bid", bid);
+        params.put("uid", uid);
+        params.put("sessionid", User.getSessionid());
+
+        postReturnJsonElement(params, new onResponseListener() {
+            @Override
+            public void onSuccess(Object data) {
+                List<BookMark> bookmarks = new Gson().fromJson((JsonElement) data, new TypeToken<List<BookMark>>() {
+                }.getType());
+                callBack.onSuccess(bookmarks);
+            }
+
+            @Override
+            public void onFailure(ApiError apiError) {
+                callBack.onFailure(apiError);
+            }
+        });
+    }
+
+    public static void getRecentBookMarks(int uid, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "social");
+        params.put("action", "getRecentBookMarks");
+        params.put("uid", uid);
+        params.put("sessionid", User.getSessionid());
+
+        postReturnJsonElement(params, new onResponseListener() {
+            @Override
+            public void onSuccess(Object data) {
+                List<BookMark> bookmarks = new Gson().fromJson((JsonElement) data, new TypeToken<List<BookMark>>() {}.getType());
+                callBack.onSuccess(bookmarks);
+            }
+            @Override
+            public void onFailure(ApiError apiError) {
+                callBack.onFailure(apiError);
+            }
+        });
+    }
+
+
+    private static void postNoReturnData(RequestParams params, final onResponseListener callBack){
+        PLServerAPIClient.post(params, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                JsonParser parser = new JsonParser();
+                JsonObject result = parser.parse(response.toString()).getAsJsonObject();
+                if (result.get("status").getAsBoolean())
+                    callBack.onSuccess(null);
+                else {
+                    int errorCode = result.get("errorCode").getAsInt();
+                    if (errorCode == 1002)
+                        checkLogin(callBack);
+                    else
+                        callBack.onFailure(new ApiError(result.get("errorCode").getAsInt()));
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                callBack.onFailure(new ApiError(1009));
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                callBack.onFailure(new ApiError(1009));
+            }
+        });
+    }
+
+    private static void postReturnJsonElement(RequestParams params, final onResponseListener callBack){
         PLServerAPIClient.post( params, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
@@ -517,8 +433,7 @@ public class PLServerAPI {
                 JsonObject result = parser.parse(response.toString()).getAsJsonObject();
                 if(result.get("status").getAsBoolean()) {
                     JsonElement data = result.get("data");
-                    List<BookListItem> tags = new Gson().fromJson(data, new TypeToken<List<BookListItem>>(){}.getType());
-                    callBack.onSuccess(tags);
+                    callBack.onSuccess(data);
                 }else{
                     int errorCode = result.get("errorCode").getAsInt();
                     if(errorCode==1002)
@@ -531,13 +446,12 @@ public class PLServerAPI {
             public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
                 callBack.onFailure(new ApiError(1009));
             }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                callBack.onFailure(new ApiError(1009));
+            }
         });
     }
-
-
-
-
-
 
 
     public static void checkLogin(final onResponseListener callBack) {
@@ -565,6 +479,7 @@ public class PLServerAPI {
 
     public static class PLServerAPIClient {
         private static final String BASE_URL = PLApplication.serverHost+"/PersonalLibrary/servlet/manager";
+        private static final String DEBUG_URL = PLApplication.serverHost+"/PersonalLibrary/servlet/test";
         private static AsyncHttpClient client = new AsyncHttpClient();
 
         public static void get(RequestParams params, AsyncHttpResponseHandler responseHandler) {
@@ -572,7 +487,14 @@ public class PLServerAPI {
         }
 
         public static void post(RequestParams params, AsyncHttpResponseHandler responseHandler) {
-            client.post(BASE_URL, params, responseHandler);
+            post(params, responseHandler, false);
+        }
+
+        public static void post(RequestParams params, AsyncHttpResponseHandler responseHandler, boolean debug) {
+            if(!debug)
+                client.post(BASE_URL, params, responseHandler);
+            else
+                client.post(DEBUG_URL, params, responseHandler);
         }
     }
 
@@ -602,8 +524,11 @@ public class PLServerAPI {
                 case 1011:errorString="密码错误";break;
                 case 1012:errorString="用户不存在";break;
                 case 1021:errorString="用户无此书";break;
+                case 1022:errorString="书籍不存在";break;
                 case 1023:errorString="Tag不存在";break;
                 case 1032:errorString="用户信息不存在";break;
+                case 1041:errorString="用户名已被使用";break;
+                case 1051:errorString="书评不属于该用户";break;
                 default:errorString="未定义的错误码";break;
             }
         }

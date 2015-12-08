@@ -30,7 +30,7 @@ public class PLApplication extends Application {
     public static Bitmap bitmap;
 
     //服务器地址
-    public static String serverHost = "http://192.168.100.100:8080";
+    public static String serverHost = "http://115.28.135.76";
 
     /**
      * 解决低API版本下对矢量图的绘制

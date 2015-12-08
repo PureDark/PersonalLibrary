@@ -37,23 +37,34 @@ public class User{
     public static int getSex(){
         return User.sex;
     }
+    public static void setSex(int sex){
+        User.sex = sex;
+    }
 
     public static String getNickname(){
         return User.nickname;
+    }
+    public static void setNickname(String nickname){
+        User.nickname = nickname;
     }
 
     public static String getSignature(){
         return User.signature;
     }
+    public static void setSignature(String signature){
+        User.signature = signature;
+    }
 
     public static String getBirthday(){
         return User.birthday;
+    }
+    public static void setBirthday(String birthday){
+        User.birthday = birthday;
     }
 
     public static String getSessionid(){
         return User.sessionid;
     }
-
     public static void setSessionid(String sessionid){
         User.sessionid = sessionid;
     }

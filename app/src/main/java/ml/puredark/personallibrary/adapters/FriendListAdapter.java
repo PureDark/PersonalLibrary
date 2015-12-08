@@ -1,6 +1,5 @@
 package ml.puredark.personallibrary.adapters;
 
-import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,21 +9,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.balysv.materialripple.MaterialRippleLayout;
-import com.h6ah4i.android.widget.advrecyclerview.draggable.DraggableItemAdapter;
-import com.h6ah4i.android.widget.advrecyclerview.draggable.DraggableItemConstants;
-import com.h6ah4i.android.widget.advrecyclerview.draggable.ItemDraggableRange;
-import com.h6ah4i.android.widget.advrecyclerview.swipeable.LegacySwipeableItemAdapter;
-import com.h6ah4i.android.widget.advrecyclerview.swipeable.SwipeableItemConstants;
-import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractDraggableSwipeableItemViewHolder;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
-import org.w3c.dom.Text;
-
 import ml.puredark.personallibrary.R;
-import ml.puredark.personallibrary.beans.BookListItem;
-import ml.puredark.personallibrary.beans.FriendListItem;
+import ml.puredark.personallibrary.beans.Friend;
 import ml.puredark.personallibrary.dataprovider.AbstractDataProvider;
-import ml.puredark.personallibrary.utils.ViewUtils;
 
 public class FriendListAdapter
         extends RecyclerView.Adapter<FriendListAdapter.FriendViewHolder> {
@@ -79,7 +68,7 @@ public class FriendListAdapter
 
     @Override
     public void onBindViewHolder(FriendViewHolder holder, int position) {
-        final FriendListItem friend = (FriendListItem) mProvider.getItem(position);
+        final Friend friend = (Friend) mProvider.getItem(position);
 
         if(holder.avatar.getTag()!=friend.avatar) {
             ImageLoader.getInstance().displayImage(null, holder.avatar);
@@ -91,7 +80,7 @@ public class FriendListAdapter
         holder.character.setText(friend.character);
         //判断与之前的好友前缀是否相同，相同则不重复显示
         if(position>0){
-            FriendListItem preFriend = (FriendListItem) mProvider.getItem(position-1);
+            Friend preFriend = (Friend) mProvider.getItem(position-1);
             if(preFriend.character.equals(friend.character)){
                 holder.character.setText(" ");
             }

@@ -47,7 +47,7 @@ public class BookListAdapter
         public MaterialRippleLayout rippleLayout;
         public View container;
         public ImageView cover;
-        public TextView title,author,description;
+        public TextView title,author,summary;
         private MyItemClickListener mListener;
 
         public BookViewHolder(View view, MyItemClickListener onClickListener) {
@@ -57,7 +57,7 @@ public class BookListAdapter
             rippleLayout = (MaterialRippleLayout) view.findViewById(R.id.rippleLayout);
             title = (TextView)view.findViewById(R.id.title);
             author = (TextView)view.findViewById(R.id.author);
-            description = (TextView)view.findViewById(R.id.description);
+            summary = (TextView)view.findViewById(R.id.summary);
             mListener = onClickListener;
             if(cover!=null)
                 cover.setOnClickListener(this);
@@ -109,7 +109,7 @@ public class BookListAdapter
         if(!isGrid) {
             holder.title.setText(book.title);
             holder.author.setText(book.author);
-            holder.description.setText(book.description);
+            holder.summary.setText(book.summary);
         }
 
         // set swiping properties

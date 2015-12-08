@@ -86,7 +86,7 @@
                         android:ellipsize="end"
                         android:textAppearance="?android:attr/textAppearanceSmall"
                         tools:text="《夜莺与玫瑰》是英国唯美主义作家王尔德的童话作品之一，收录于《快乐王子及其他故事》。故事以夜莺受到大学生的爱情感动，培育玫瑰为主线。赞扬了爱情的可贵，鞭挞了世间的拜金主义。在一个寒冷的冬夜"
-                        android:id="@+id/description" />
+                        android:id="@+id/summary" />
                 </LinearLayout>
             </RelativeLayout>
         </com.balysv.materialripple.MaterialRippleLayout>

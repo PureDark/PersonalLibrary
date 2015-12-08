@@ -1,7 +1,6 @@
 package ml.puredark.personallibrary.fragments;
 
 import android.app.Activity;
-import android.graphics.drawable.NinePatchDrawable;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -13,13 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.h6ah4i.android.widget.advrecyclerview.animator.GeneralItemAnimator;
-import com.h6ah4i.android.widget.advrecyclerview.animator.SwipeDismissItemAnimator;
-import com.h6ah4i.android.widget.advrecyclerview.decoration.ItemShadowDecorator;
-import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager;
-import com.h6ah4i.android.widget.advrecyclerview.swipeable.RecyclerViewSwipeManager;
-import com.h6ah4i.android.widget.advrecyclerview.touchguard.RecyclerViewTouchActionGuardManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,12 +19,12 @@ import java.util.List;
 import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.activities.MainActivity;
-import ml.puredark.personallibrary.adapters.BookListAdapter;
 import ml.puredark.personallibrary.adapters.FriendListAdapter;
-import ml.puredark.personallibrary.beans.BookListItem;
-import ml.puredark.personallibrary.beans.FriendListItem;
-import ml.puredark.personallibrary.dataprovider.BookListDataProvider;
+import ml.puredark.personallibrary.beans.BookMark;
+import ml.puredark.personallibrary.beans.Friend;
+import ml.puredark.personallibrary.dataprovider.BookMarkDataProvider;
 import ml.puredark.personallibrary.dataprovider.FriendListDataProvider;
+import ml.puredark.personallibrary.helpers.PLServerAPI;
 import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 
 ;
@@ -91,17 +83,9 @@ public class FriendFragment extends Fragment {
         //指定为线性列表
         mLayoutManager = new LinearLayoutManager(this.getContext(), LinearLayoutManager.VERTICAL, false);
 
-        List<FriendListItem> myFriends = new ArrayList<>();
-//        String data = (String) SharedPreferencesUtil.getData(this.getContext(), "friends", "");
-//        if(data!=null&&!data.equals(""))
-//            myFriends = new Gson().fromJson(data, new TypeToken<List<FriendListItem>>(){}.getType());
-        myFriends.add(new FriendListItem(1,1,"http://i0.hdslb.com/account/face/308446/8478c071/myface.png","突破天际的金闪闪","这梗玩腻了","991104"));
-        myFriends.add(new FriendListItem(1,1,"http://i0.hdslb.com/account/face/308446/8478c071/myface.png","突破天际的金闪闪","这梗玩腻了","991104"));
-        myFriends.add(new FriendListItem(1,1,"http://i0.hdslb.com/account/face/308446/8478c071/myface.png","突破天际的金闪闪","这梗玩腻了","991104"));
-        myFriends.add(new FriendListItem(2,1,"http://i1.hdslb.com/user/2279/227933/myface.jpg","坂本叔","微博 weibo.com/BanBenShu 懒懒的up主一枚 主攻解说 实况 希望多给我提意见 谢谢 (*ﾟ∇ﾟ) ノ","991104"));
-        myFriends.add(new FriendListItem(2,1,"http://i1.hdslb.com/user/2279/227933/myface.jpg","坂本叔","微博 weibo.com/BanBenShu 懒懒的up主一枚 主攻解说 实况 希望多给我提意见 谢谢 (*ﾟ∇ﾟ) ノ","991104"));
-        myFriends.add(new FriendListItem(2,1,"http://i1.hdslb.com/user/2279/227933/myface.jpg","坂本叔","微博 weibo.com/BanBenShu 懒懒的up主一枚 主攻解说 实况 希望多给我提意见 谢谢 (*ﾟ∇ﾟ) ノ","991104"));
-        myFriends.add(new FriendListItem(3,1,"http://i2.hdslb.com/account/face/2937432/4bfbe528/myface.png","夜沽澄","表示微博网址太长，建个群试试吧 群号：386441107 欢迎来暖场","991104"));
+        List<Friend> myFriends = new ArrayList<>();
+
+
 
         FriendListDataProvider mFriendListDataProvider = new FriendListDataProvider(myFriends);
         mFriendAdapter = new FriendListAdapter(mFriendListDataProvider);
@@ -125,7 +109,28 @@ public class FriendFragment extends Fragment {
         return rootView;
     }
 
+    public void searchUser(String keyword){
+        PLServerAPI.searchUser(keyword, new PLServerAPI.onResponseListener() {
+            @Override
+            public void onSuccess(Object data) {
+                List<Friend> friends = (List<Friend>) data;
+            }
 
+            @Override
+            public void onFailure(PLServerAPI.ApiError apiError) {
+                showSnackBar(apiError.getErrorString());
+            }
+        });
+    }
+
+    public void showSnackBar(String content){
+        Snackbar snackbar = Snackbar.make(
+                findViewById(R.id.container),
+                content,
+                Snackbar.LENGTH_LONG);
+        snackbar.setActionTextColor(ContextCompat.getColor(PLApplication.mContext, R.color.colorAccentDark));
+        snackbar.show();
+    }
 
 
     @Override

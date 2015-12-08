@@ -12,13 +12,13 @@ import android.widget.TextView;
 import com.balysv.materialripple.MaterialRippleLayout;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
+import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
-import ml.puredark.personallibrary.beans.FriendListItem;
-import ml.puredark.personallibrary.beans.NewsListItem;
+import ml.puredark.personallibrary.beans.BookMark;
 import ml.puredark.personallibrary.dataprovider.AbstractDataProvider;
 
-public class NewsListAdapter
-        extends RecyclerView.Adapter<NewsListAdapter.NewsViewHolder> {
+public class BookMarkAdapter
+        extends RecyclerView.Adapter<BookMarkAdapter.NewsViewHolder> {
     private AbstractDataProvider mProvider;
     private MyItemClickListener mItemClickListener;
 
@@ -54,13 +54,17 @@ public class NewsListAdapter
         }
     }
 
-    public NewsListAdapter(AbstractDataProvider mProvider) {
+    public BookMarkAdapter(AbstractDataProvider mProvider) {
         this.mProvider = mProvider;
         setHasStableIds(true);
     }
 
+    public void setDataProvider(AbstractDataProvider mProvider){
+        this.mProvider = mProvider;
+    }
+
     @Override
-    public NewsListAdapter.NewsViewHolder onCreateViewHolder(ViewGroup parent,int viewType) {
+    public BookMarkAdapter.NewsViewHolder onCreateViewHolder(ViewGroup parent,int viewType) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_news, parent, false);
         // 在这里对View的参数进行设置
@@ -70,26 +74,26 @@ public class NewsListAdapter
 
     @Override
     public void onBindViewHolder(NewsViewHolder holder, int position) {
-        final NewsListItem news = (NewsListItem) mProvider.getItem(position);
+        final BookMark bookMark = (BookMark) mProvider.getItem(position);
 
-        if(holder.avatar.getTag()!=news.avatar) {
+        if(holder.avatar.getTag()!=bookMark.bid) {
             ImageLoader.getInstance().displayImage(null, holder.avatar);
-            ImageLoader.getInstance().displayImage(news.avatar, holder.avatar);
-            holder.avatar.setTag(news.avatar);
+            ImageLoader.getInstance().displayImage(PLApplication.serverHost + "/images/users/avatars/" + bookMark.uid + ".png", holder.avatar);
+            holder.avatar.setTag(bookMark.bid);
         }
-        if(holder.bookCover.getTag()!=news.book.cover) {
+        if(holder.bookCover.getTag()!=bookMark.book_cover) {
             ImageLoader.getInstance().displayImage(null, holder.bookCover);
-            ImageLoader.getInstance().displayImage(news.book.cover, holder.bookCover);
-            holder.avatar.setTag(news.book.cover);
+            ImageLoader.getInstance().displayImage(bookMark.book_cover, holder.bookCover);
+            holder.avatar.setTag(bookMark.book_cover);
         }
-        if (news.content.length() > 100)
-            holder.content.setText(Html.fromHtml(news.content.substring(0, 100) + "..."));
+        if (bookMark.summary.length() > 100)
+            holder.content.setText(Html.fromHtml(bookMark.summary.substring(0, 100) + "..."));
         else
-            holder.content.setText(news.content);
+            holder.content.setText(bookMark.summary);
 
-        holder.nickname.setText(news.nickname);
-        holder.datetime.setText(news.datetime);
-        holder.bookTitle.setText(news.book.title);
+        holder.nickname.setText(bookMark.nickname);
+        holder.datetime.setText(bookMark.time);
+        holder.bookTitle.setText(bookMark.book_title);
     }
 
     @Override

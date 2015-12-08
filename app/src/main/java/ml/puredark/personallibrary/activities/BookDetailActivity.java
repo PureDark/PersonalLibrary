@@ -69,6 +69,9 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
     //是否动画中
     private boolean animating = false;
 
+    //此次实例展示的图书
+    private Book book;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,7 +100,7 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
         fabAction = (FloatingActionButton) findViewById(R.id.fab_action);
         fabMenu = (FloatingActionMenu) findViewById(R.id.fab_menu);
 
-        final Book book = (Book) PLApplication.temp;
+        book = (Book) PLApplication.temp;
         Bitmap cover = PLApplication.bitmap;
         fabAction.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,7 +135,7 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
         String author = (book.author.length>0)?book.author[0]:(book.translator.length>0)?book.translator[0]+"[译]":"";
         ((TextView)findViewById(R.id.author)).setText(author);
         ((TextView)findViewById(R.id.pages)).setText(book.pages + "页");
-        ((TextView)findViewById(R.id.price)).setText(book.price + "元");
+        ((TextView)findViewById(R.id.price)).setText(book.price);
         ((TextView)findViewById(R.id.pubdate)).setText(book.pubdate + "出版");
         ((TextView)findViewById(R.id.isbn)).setText(book.isbn13);
 
@@ -179,11 +182,13 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
         setInfoIconColor(bundle.getInt("topTextColor"));
         setInfoTextColor(bundle.getInt("topTextColor"));
 
-        int fabColor = bundle.getInt("fabColor");
+        final int topColor = bundle.getInt("topColor");
+        final int topTextColor = bundle.getInt("topTextColor");
+        final int fabColor = bundle.getInt("fabColor");
         float[] hsv = new float[3];
         Color.colorToHSV(fabColor, hsv);
         hsv[2] *= 0.8f;
-        int fabColorPressed = Color.HSVToColor(hsv);
+        final int fabColorPressed = Color.HSVToColor(hsv);
         setFloatingActionButtonColors(fabAction, fabColor, fabColorPressed);
         setFloatingActionMenuColors(fabMenu, fabColor, fabColorPressed);
         new Thread(new Runnable() {
@@ -218,6 +223,23 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
                 });
             }
         }).start();
+
+        //写书评按钮
+        fabMenu.getChildAt(0).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Intent intent = new Intent(BookDetailActivity.this, WriteMarkActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putInt("bid", book.id);
+                bundle.putString("isbn13", book.isbn13);
+                bundle.putInt("topColor", topColor);
+                bundle.putInt("topTextColor", topTextColor);
+                bundle.putInt("fabColor", fabColor);
+                bundle.putInt("fabColorPressed", fabColorPressed);
+                intent.putExtras(bundle);
+                startActivity(intent);
+            }
+        });
     }
 
     public void finishActivity(){

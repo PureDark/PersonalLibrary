@@ -22,16 +22,20 @@
         android:src="@drawable/avatar"
         app:riv_corner_radius="1000dp"/>
 
-    <TextView android:layout_width="match_parent"
+    <EditText android:id="@+id/nickname"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
         tools:text="PureDark"
+        android:background="@null"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
-    <TextView android:id="@+id/signature"
+    <EditText android:id="@+id/signature"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/gray"
-        tools:text="大括号写在下一行的都是异端！"/>
+        android:background="@null"
+        tools:text="大括号写在下一行的都是异端！"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2"/>
 
 </LinearLayout>
