@@ -33,7 +33,7 @@ public class FriendFragment extends Fragment {
     private static FriendFragment mInstance;
     private View rootView;
 
-    private OnFragmentInteractionListener mListener;
+    private MainActivity mActivity;
 
     //好友列表
     private RecyclerView mRecyclerView;
@@ -72,10 +72,10 @@ public class FriendFragment extends Fragment {
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_friend, container, false);
 
-        ((MainActivity)getActivity()).setToolbarUncollapsible();
-        ((MainActivity)getActivity()).setCurrFragment(MainActivity.FRAGMENT_FRIEND);
-        mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_SET_TITLE, getResources().getString(R.string.title_fragment_friend), null);
-        mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_SET_NAVIGATION_ITEM, R.id.nav_friend, null);
+        mActivity.setToolbarUncollapsible();
+        mActivity.setCurrFragment(MainActivity.FRAGMENT_FRIEND);
+        mActivity.setMainTitle(getResources().getString(R.string.title_fragment_friend));
+        mActivity.setNavigationItemSelected(R.id.nav_friend);
 
         //初始化好友列表相关变量
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
@@ -94,7 +94,6 @@ public class FriendFragment extends Fragment {
             public void onItemClick(View view, int postion) {
                 if (friendItemClicked == false) {
                     friendItemClicked = true;
-                    mListener.onFragmentInteraction(1, mFriendAdapter.getDataProvider().getItem(postion), view);
                 }
             }
         });
@@ -137,7 +136,7 @@ public class FriendFragment extends Fragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            mListener = (OnFragmentInteractionListener) activity;
+            mActivity = (MainActivity) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -147,7 +146,7 @@ public class FriendFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        mActivity = null;
     }
 
     @Override
