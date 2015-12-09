@@ -52,6 +52,7 @@ import java.util.List;
 import io.codetail.widget.RevealFrameLayout;
 import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
+import ml.puredark.personallibrary.User;
 import ml.puredark.personallibrary.adapters.BookListAdapter;
 import ml.puredark.personallibrary.adapters.ViewPagerAdapter;
 import ml.puredark.personallibrary.beans.Book;
@@ -62,6 +63,7 @@ import ml.puredark.personallibrary.dataprovider.BookListDataProvider;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimator;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimatorListener;
+import ml.puredark.personallibrary.helpers.DoubanRestAPI;
 import ml.puredark.personallibrary.helpers.FastBlur;
 import ml.puredark.personallibrary.helpers.PLServerAPI;
 import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
@@ -88,8 +90,10 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
     private View revealView, extendBar, blank;
     private ImageView backButton;
     private DrawerArrowDrawable backButtonIcon;
+
     //是否动画中
     private boolean animating = false;
+    private boolean bookItemClicked = false;
 
     //此次实例展示的好友
     private Friend friend;
@@ -190,8 +194,41 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
 
         mTabLayout = (TabLayout) findViewById(R.id.tabLayout);
         mViewPager = (ViewPager) findViewById(R.id.viewpager);
-
-
+        getBookList(friend.getId());
+        mBookAdapter = new BookListAdapter(new BookListDataProvider(null));
+        mBookAdapter.setOnItemClickListener(new BookListAdapter.MyItemClickListener() {
+            @Override
+            public void onItemClick(final View view, int postion) {
+                if (bookItemClicked == false) {
+                    bookItemClicked = true;
+                    final BookListItem item = (BookListItem) mBookAdapter.getDataProvider().getItem(postion);
+                    String bookString = (String) SharedPreferencesUtil.getData(PLApplication.mContext, "isbn13_" + item.isbn13, "");
+                    if (!bookString.equals("")) {
+                        Book book = new Gson().fromJson(bookString, Book.class);
+                        book.id = item.getId();
+                        book.uid = User.getUid();
+                        mActivity.startBookDetailActivity(book, view);
+                    } else {
+                        DoubanRestAPI.getBookByISBN(item.isbn13, new MainActivity.CallBack() {
+                            @Override
+                            public void action(final Object obj) {
+                                new Handler().postDelayed(new Runnable() {
+                                    public void run() {
+                                        if (obj instanceof Book) {
+                                            Book book = (Book) obj;
+                                            book.id = item.getId();
+                                            book.uid = User.getUid();
+                                            mActivity.startBookDetailActivity(book, view);
+                                            SharedPreferencesUtil.saveData(PLApplication.mContext, "isbn13_" + book.isbn13, new Gson().toJson(book));
+                                        }
+                                    }
+                                }, 500);
+                            }
+                        });
+                    }
+                }
+            }
+        });
         List<View> views = new ArrayList<>();
         final View viewBookList = getLayoutInflater().inflate(R.layout.view_book_list, null);
         //final View viewMaskList = getLayoutInflater().inflate(R.layout.view_mark_list, null);
@@ -219,9 +256,8 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
         }else
             finish();
     }
-    public void getBookList(String uid){
-        //没改好
-        PLServerAPI.getBookList(null, null, new PLServerAPI.onResponseListener() {
+    public void getBookList(int uid){
+        PLServerAPI.getBookList(uid,null, null, new PLServerAPI.onResponseListener() {
             @Override
             public void onSuccess(Object data) {
                 List<BookListItem> books = (List<BookListItem>) data;
