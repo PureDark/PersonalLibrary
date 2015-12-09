@@ -209,6 +209,7 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
         mTabLayout = (TabLayout) findViewById(R.id.tabLayout);
         mViewPager = (ViewPager) findViewById(R.id.viewpager);
         mBookAdapter = new BookListAdapter(new BookListDataProvider(new ArrayList<BookListItem>()));
+        mMarkAdapter = new BookMarkAdapter(new BookMarkDataProvider(new ArrayList<BookMark>()));
         //初始化书籍列表相关变量
 
         getBookList(friend.getId());
@@ -229,6 +230,7 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
         //书评模块
         List<BookMark> bookMarks = new ArrayList<>();
         getBookMarks(User.getUid());
+
         //书籍模块
         mRecyclerView = (EmptyRecyclerView) viewBookList.findViewById(R.id.my_recycler_view);
         mRecyclerView.setEmptyView(rootView.findViewById(R.id.empty_view));
@@ -302,6 +304,9 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
             @Override
             public void onSuccess(Object data) {
                 List<BookMark> bMarks = (List<BookMark>) data;
+                for(BookMark bm : bMarks){
+                    Log.i("Kevin",bm.book_title);
+                }
                 mMarkAdapter.setDataProvider(new BookMarkDataProvider(bMarks));
                 mMarkAdapter.notifyDataSetChanged();
             }
