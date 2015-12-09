@@ -28,5 +28,5 @@
         android:clipChildren="false"
         android:clipToPadding="false"
         tools:visibility="gone"
-        tools:context="MainActivity"/>
+        tools:context="FriendActivity"/>
 </RelativeLayout>

@@ -1,7 +1,9 @@
 package ml.puredark.personallibrary.fragments;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -20,13 +22,16 @@ import java.util.List;
 
 import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
+import ml.puredark.personallibrary.activities.FriendActivity;
 import ml.puredark.personallibrary.activities.MainActivity;
 import ml.puredark.personallibrary.adapters.FriendListAdapter;
+import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.beans.BookListItem;
 import ml.puredark.personallibrary.beans.BookMark;
 import ml.puredark.personallibrary.beans.Friend;
 import ml.puredark.personallibrary.dataprovider.BookMarkDataProvider;
 import ml.puredark.personallibrary.dataprovider.FriendListDataProvider;
+import ml.puredark.personallibrary.helpers.DoubanRestAPI;
 import ml.puredark.personallibrary.helpers.PLServerAPI;
 import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 
@@ -95,13 +100,19 @@ public class FriendFragment extends Fragment {
         FriendListDataProvider mFriendListDataProvider = new FriendListDataProvider(myFriends);
         mFriendAdapter = new FriendListAdapter(mFriendListDataProvider);
         getFriendList();
-
         mFriendAdapter.setOnItemClickListener(new FriendListAdapter.MyItemClickListener() {
             @Override
             public void onItemClick(View view, int postion) {
-                if (friendItemClicked == false) {
-                    friendItemClicked = true;
-                }
+                    final Friend item = (Friend) mFriendAdapter.getDataProvider().getItem(postion);
+                     String uid =String .valueOf(item.getId());
+                     Log.i("Kevin",item.nickname);
+                    if(!uid.equals("")){
+                        PLApplication.temp = item;
+                        Intent intent = new Intent();
+                        intent.setClass(mActivity, FriendActivity.class);
+                        intent.putExtra("uid", uid);
+                        startActivity(intent);
+                    }
             }
         });
 

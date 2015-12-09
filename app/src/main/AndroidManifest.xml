@@ -51,6 +51,9 @@
             android:name=".activities.BookDetailActivity"
             android:label="@string/title_activity_book_detail"
             android:theme="@style/Transparent" />
+        <activity android:name=".activities.FriendActivity"
+            android:label="好友详情"
+            android:theme="@style/Transparent"/>
         <activity
             android:name=".activities.WriteMarkActivity"
             android:label="@string/title_activity_write_mark"

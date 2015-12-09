@@ -1,6 +1,7 @@
 package ml.puredark.personallibrary.activities;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -8,41 +9,61 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.drawable.DrawerArrowDrawable;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.gc.materialdesign.views.ProgressBarCircularIndeterminate;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.gson.Gson;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.animation.ValueAnimator;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.telly.mrvector.MrVector;
 import com.transitionseverywhere.utils.ViewGroupOverlayUtils;
 
+import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
 import net.steamcrafted.materialiconlib.MaterialIconView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.codetail.widget.RevealFrameLayout;
 import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
+import ml.puredark.personallibrary.adapters.BookListAdapter;
+import ml.puredark.personallibrary.adapters.ViewPagerAdapter;
 import ml.puredark.personallibrary.beans.Book;
+import ml.puredark.personallibrary.beans.BookListItem;
 import ml.puredark.personallibrary.beans.Friend;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
+import ml.puredark.personallibrary.dataprovider.BookListDataProvider;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimator;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimatorListener;
 import ml.puredark.personallibrary.helpers.FastBlur;
+import ml.puredark.personallibrary.helpers.PLServerAPI;
 import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 
 public class FriendActivity extends AppCompatActivity implements AppBarLayout.OnOffsetChangedListener {
@@ -54,6 +75,9 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
     private ActivityTransitionHelper transitionHelper;
     private TextView nickname;
     private TextView signature;
+    private TabLayout mTabLayout;
+    private ViewPager mViewPager;
+    private BookListAdapter mBookAdapter;
     private boolean scaned = false;
 
     //动画相关元素
@@ -67,13 +91,16 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
     //是否动画中
     private boolean animating = false;
 
-    //此次实例展示的图书
+    //此次实例展示的好友
     private Friend friend;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_friend_detail);
+
+        Log.i("Kevin", "startH1");
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         mCoordinatorLayout = (MyCoordinatorLayout) findViewById(R.id.coordinator_layout);
         mAppBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
@@ -81,6 +108,7 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
 
+        Log.i("Kevin", "startH2");
         rootView = (ViewGroup) findViewById(R.id.root_view);
         animationView = (RevealFrameLayout) findViewById(R.id.animation_view);
         revealView = findViewById(R.id.reveal_view);
@@ -94,39 +122,38 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
         final ImageView backdrop = (ImageView) findViewById(R.id.backdrop);
         View hover = findViewById(R.id.hover);
 
+        Log.i("Kevin","startH3");
         friend = (Friend) PLApplication.temp;
-        Bitmap cover = PLApplication.bitmap;
-        /*  fabAction.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SharedPreferencesUtil.saveData(getBaseContext(), "isbn13_" + book.isbn13, new Gson().toJson(book));
-                setResult(RESULT_OK);
-                finishActivity();
-            }
-        });
-*/
+
         final Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
-        scaned = intent.getBooleanExtra("scaned", false);
-        if(scaned)
-            fabMenu.setVisibility(View.GONE);
-        else
-            fabAction.setVisibility(View.GONE);
+        String uid = intent.getStringExtra("uid");
+
+        Log.i("Kevin","startH4");
 
         Object data = PLApplication.temp;
-        if(data==null||!(data instanceof Book)){
+        if(data==null||!(data instanceof Friend)){
+            Log.i("Kevin","startH5");
             setResult(RESULT_CANCELED);
             finish();
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             return;
         }
-
+        Log.i("Kevin", friend.nickname + "test");
         /* 修改界面文字 */
         nickname.setText(friend.nickname);
         signature.setText(friend.signature);
-
-        backdrop.setImageBitmap(cover);
-
+        String url =  PLApplication.serverHost + "/images/users/avatars/" + friend.uid + ".png";
+        if(avatar.getTag() != url) {
+            DisplayImageOptions options = new DisplayImageOptions.Builder()
+                    .cacheInMemory(true)//设置下载的图片是否缓存在内存中
+                    .cacheOnDisc(false)//设置下载的图片是否缓存在SD卡中
+                    .displayer(new FadeInBitmapDisplayer(300))//是否图片加载好后渐入的动画时间
+                    .build();//构建完成
+            ImageLoader.getInstance().displayImage(null, avatar,options);
+            ImageLoader.getInstance().displayImage(url,avatar,options);
+            avatar.setTag(url);
+        }
         /* 为返回按钮加载图标 */
         backButtonIcon = new DrawerArrowDrawable(this);
         backButtonIcon.setColor(getResources().getColor(R.color.white));
@@ -159,56 +186,24 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
                 }
             }, 200);
         }
-        /* 修改UI颜色 */
-        toolbarLayout.setContentScrimColor(bundle.getInt("topColor"));
-        hover.setBackgroundColor(bundle.getInt("topColor"));
+        /* 加载ViewPager */
 
-        setInfoIconColor(bundle.getInt("topTextColor"));
-        setInfoTextColor(bundle.getInt("topTextColor"));
-
-        final int topColor = bundle.getInt("topColor");
-        final int topTextColor = bundle.getInt("topTextColor");
-        final int fabColor = bundle.getInt("fabColor");
-        float[] hsv = new float[3];
-        Color.colorToHSV(fabColor, hsv);
-        hsv[2] *= 0.8f;
-        final int fabColorPressed = Color.HSVToColor(hsv);
-        setFloatingActionButtonColors(fabAction, fabColor, fabColorPressed);
-        setFloatingActionMenuColors(fabMenu, fabColor, fabColorPressed);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                /* 给背景封面加上高斯模糊 */
-                final Bitmap overlay = FastBlur.doBlur(PLApplication.bitmap.copy(Bitmap.Config.ARGB_8888, true), 2, true);
-                final Drawable iconStar = MrVector.inflate(getResources(), R.drawable.ic_star_white_24dp);
-                final Drawable iconPencil = MrVector.inflate(getResources(),R.drawable.ic_pencil_white_24dp);
-                final Drawable iconPaperclip = MrVector.inflate(getResources(),R.drawable.ic_paperclip_white_24dp);
-                final Drawable iconLibraryBooks = MrVector.inflate(getResources(),R.drawable.ic_library_books_white_24dp);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        backdrop.setImageBitmap(overlay);
-                        fabAction.setImageDrawable(iconStar);
-                        ((FloatingActionButton)fabMenu.getChildAt(0)).setImageDrawable(iconPencil);
-                        ((FloatingActionButton)fabMenu.getChildAt(1)).setImageDrawable(iconPaperclip);
-                        ((FloatingActionButton)fabMenu.getChildAt(2)).setImageDrawable(iconLibraryBooks);
-                        /* 让背景的封面大图来回缓慢移动 */
-                        float targetY = (backdrop.getHeight()>backdrop.getWidth())?-0.4f:0f;
-                        Animation translateAnimation = new TranslateAnimation(TranslateAnimation.RELATIVE_TO_SELF, 0f,
-                                TranslateAnimation.RELATIVE_TO_SELF, 0f,
-                                TranslateAnimation.RELATIVE_TO_SELF, 0f,
-                                TranslateAnimation.RELATIVE_TO_SELF, targetY);
-                        translateAnimation.setDuration(30000);
-                        translateAnimation.setRepeatCount(-1);
-                        translateAnimation.setRepeatMode(Animation.REVERSE);
-                        translateAnimation.setInterpolator(new LinearInterpolator());
-                        backdrop.startAnimation(translateAnimation);
-                    }
-                });
-            }
-        }).start();
+        mTabLayout = (TabLayout) findViewById(R.id.tabLayout);
+        mViewPager = (ViewPager) findViewById(R.id.viewpager);
 
 
+        List<View> views = new ArrayList<>();
+        final View viewBookList = getLayoutInflater().inflate(R.layout.view_book_list, null);
+        //final View viewMaskList = getLayoutInflater().inflate(R.layout.view_mark_list, null);
+        views.add(viewBookList);
+        //views.add(viewMaskList);
+        List<String> titles = new ArrayList<String>();
+        titles.add("书籍");
+        //titles.add("书评");
+        ViewPagerAdapter mAdapter = new ViewPagerAdapter(views, titles);
+        mTabLayout.setTabsFromPagerAdapter(mAdapter);
+        mViewPager.setAdapter(mAdapter);
+        mTabLayout.setupWithViewPager(mViewPager);
     }
 
     public void finishActivity(){
@@ -223,6 +218,29 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
             mAppBarLayout.setExpanded(true, true);
         }else
             finish();
+    }
+    public void getBookList(String uid){
+        //没改好
+        PLServerAPI.getBookList(null, null, new PLServerAPI.onResponseListener() {
+            @Override
+            public void onSuccess(Object data) {
+                List<BookListItem> books = (List<BookListItem>) data;
+                mBookAdapter.setDataProvider(new BookListDataProvider(books));
+                mBookAdapter.notifyDataSetChanged();
+            }
+            @Override
+            public void onFailure(PLServerAPI.ApiError apiError) {
+                showSnackBar(apiError.getErrorString());
+            }
+        });
+    }
+    public void showSnackBar(String content){
+        Snackbar snackbar = Snackbar.make(
+                findViewById(R.id.container),
+                content,
+                Snackbar.LENGTH_LONG);
+        snackbar.setActionTextColor(ContextCompat.getColor(PLApplication.mContext, R.color.colorAccentDark));
+        snackbar.show();
     }
 
     private void setInfoIconColor(int color){
@@ -284,17 +302,6 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
 
     @Override
     public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
-        if(verticalOffset!=0){
-            if(scaned)
-                fabAction.hide(true);
-            else
-                fabMenu.hideMenu(true);
-        }else{
-            if(scaned)
-                fabAction.show(true);
-            else
-                fabMenu.showMenu(true);
-        }
 
     }
 
