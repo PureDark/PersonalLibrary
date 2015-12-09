@@ -17,8 +17,6 @@ import android.view.ViewGroup;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.nineoldandroids.animation.ArgbEvaluator;
-import com.nineoldandroids.animation.ObjectAnimator;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
@@ -34,7 +32,6 @@ import ml.puredark.personallibrary.adapters.BookMarkAdapter;
 import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.beans.BookMark;
 import ml.puredark.personallibrary.dataprovider.BookMarkDataProvider;
-import ml.puredark.personallibrary.helpers.ActivityTransitionHelper;
 import ml.puredark.personallibrary.helpers.DoubanRestAPI;
 import ml.puredark.personallibrary.helpers.PLServerAPI;
 import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
@@ -116,6 +113,7 @@ public class NewsFragment extends MyFragment {
                     if(!bookString.equals("")){
                         Book book = new Gson().fromJson(bookString, Book.class);
                         book.id = bookMark.bid;
+                        book.uid = bookMark.uid;
                         if(view.getId()==R.id.book)
                             mActivity.startBookDetailActivity(book, view);
                         else
@@ -129,6 +127,7 @@ public class NewsFragment extends MyFragment {
                                         if (obj instanceof Book) {
                                             Book book = (Book) obj;
                                             book.id = bookMark.bid;
+                                            book.uid = bookMark.uid;
                                             if(view.getId()==R.id.book)
                                                 mActivity.startBookDetailActivity(book, view);
                                             else
@@ -209,8 +208,10 @@ public class NewsFragment extends MyFragment {
     }
 
     public void showSnackBar(String content){
+        View container = findViewById(R.id.container);
+        if(container==null)return;
         Snackbar snackbar = Snackbar.make(
-                findViewById(R.id.container),
+                container,
                 content,
                 Snackbar.LENGTH_LONG);
         snackbar.setActionTextColor(ContextCompat.getColor(PLApplication.mContext, R.color.colorAccentDark));

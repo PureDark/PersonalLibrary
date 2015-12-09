@@ -271,10 +271,11 @@ public class PLServerAPI {
         });
     }
 
-    public static void getBookList(int[] tids, String keyword, final onResponseListener callBack) {
+    public static void getBookList(int uid, int[] tids, String keyword, final onResponseListener callBack) {
         RequestParams params = new RequestParams();
         params.put("module", "library");
         params.put("action", "getBookList");
+        params.put("uid", uid);
         if(tids!=null)
             params.put("tids", new Gson().toJson(tids));
         params.put("keyword", keyword);

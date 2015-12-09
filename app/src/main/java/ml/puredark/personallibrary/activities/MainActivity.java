@@ -85,6 +85,7 @@ import ml.puredark.personallibrary.utils.ViewUtils;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+    private static MainActivity mInstance;
     //Fragment编号
     public final static int FRAGMENT_INDEX = 1;
     public final static int FRAGMENT_FRIEND = 3;
@@ -122,6 +123,17 @@ public class MainActivity extends AppCompatActivity
     //是否正在从网络获取数据
     private boolean getting = false;
 
+    public static MainActivity newInstance() {
+        mInstance = new MainActivity();
+        return mInstance;
+    }
+    public static MainActivity getInstance() {
+        if(mInstance!=null)
+            return mInstance;
+        else
+            return newInstance();
+    }
+
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(MrVector.wrap(newBase));
@@ -129,6 +141,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mInstance = this;
         setContentView(R.layout.activity_main);
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         if (savedInstanceState == null) {
@@ -652,7 +665,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void setSearchEnable(boolean enable){
-        collapseSearchBar();
+        if(expanded==true)
+            collapseSearchBar();
         if(enable) {
             inputSearch.setVisibility(View.VISIBLE);
             findViewById(R.id.search_button).setVisibility(View.VISIBLE);
