@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity
 
                                 @Override
                                 public void onFailure(PLServerAPI.ApiError apiError) {
-                                    Toast.makeText(MainActivity.this, getString(R.string.network_error), Toast.LENGTH_LONG);
+                                    Toast.makeText(MainActivity.this, apiError.getErrorString(), Toast.LENGTH_LONG);
                                     nickname.setText(User.getNickname());
                                 }
                             });
@@ -236,7 +236,7 @@ public class MainActivity extends AppCompatActivity
                                 }
                                 @Override
                                 public void onFailure(PLServerAPI.ApiError apiError) {
-                                    Toast.makeText(MainActivity.this, getString(R.string.network_error), Toast.LENGTH_LONG);
+                                    Toast.makeText(MainActivity.this, apiError.getErrorString(), Toast.LENGTH_LONG);
                                     signature.setText(User.getSignature());
                                 }
                             });
@@ -497,7 +497,7 @@ public class MainActivity extends AppCompatActivity
 
                         @Override
                         public void onFailure(PLServerAPI.ApiError apiError) {
-                            Toast.makeText(MainActivity.this, getString(R.string.network_error), Toast.LENGTH_LONG);
+                            Toast.makeText(MainActivity.this, apiError.getErrorString(), Toast.LENGTH_LONG).show();
                         }
                     });
                 }

@@ -17,6 +17,8 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.gc.materialdesign.views.ProgressBarCircularIndeterminate;
+
 import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
 
 import java.util.ArrayList;
@@ -33,6 +35,8 @@ public class WriteMarkActivity extends AppCompatActivity {
     private TabLayout mTabLayout;
     private ViewPager mViewPager;
 
+    private ProgressBarCircularIndeterminate loading;
+
     // 正在提交标志
     private boolean posting = false;
 
@@ -44,6 +48,8 @@ public class WriteMarkActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        loading = (ProgressBarCircularIndeterminate) findViewById(R.id.loading);
+
         Bundle bundle = getIntent().getExtras();
         if(bundle==null)finish();
         bid = bundle.getInt("bid");
@@ -51,6 +57,7 @@ public class WriteMarkActivity extends AppCompatActivity {
 
         findViewById(R.id.appbar).setBackgroundColor(bundle.getInt("topColor"));
         findViewById(R.id.toolbar).setBackgroundColor(bundle.getInt("topColor"));
+
 
         mTabLayout = (TabLayout) findViewById(R.id.tabLayout);
         mViewPager = (ViewPager) findViewById(R.id.viewpager);
@@ -86,17 +93,20 @@ public class WriteMarkActivity extends AppCompatActivity {
                 String title = ((EditText)viewWriteTitle.findViewById(R.id.inputTitle)).getText().toString();
                 String content = ((EditText)viewWriteMarks.findViewById(R.id.inputMarks)).getText().toString();
                 posting = true;
+                loading.setVisibility(View.VISIBLE);
                 PLServerAPI.addBookMark(bid, title, content, new PLServerAPI.onResponseListener() {
                     @Override
                     public void onSuccess(Object data) {
                         finish();
-                        Toast.makeText(WriteMarkActivity.this, "发表成功！", Toast.LENGTH_LONG);
+                        Toast.makeText(WriteMarkActivity.this, "发表成功！", Toast.LENGTH_LONG).show();
                         posting = false;
+                        loading.setVisibility(View.INVISIBLE);
                     }
                     @Override
                     public void onFailure(PLServerAPI.ApiError apiError) {
-                        showSnackBar(getString(R.string.network_error));
+                        showSnackBar(apiError.getErrorString());
                         posting = false;
+                        loading.setVisibility(View.INVISIBLE);
                     }
                 });
             }

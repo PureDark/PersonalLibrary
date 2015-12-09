@@ -165,7 +165,7 @@ public class IndexFragment extends Fragment {
                     }
                     @Override
                     public void onFailure(PLServerAPI.ApiError apiError) {
-                        showSnackBar(getString(R.string.network_error));
+                        showSnackBar(apiError.getErrorString());
                     }
                 });
                 Snackbar snackbar = Snackbar.make(
@@ -186,7 +186,7 @@ public class IndexFragment extends Fragment {
 
                             @Override
                             public void onFailure(PLServerAPI.ApiError apiError) {
-                                showSnackBar(getString(R.string.network_error));
+                                showSnackBar(apiError.getErrorString());
                             }
                         });
                     }

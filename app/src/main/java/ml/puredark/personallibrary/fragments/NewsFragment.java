@@ -101,7 +101,7 @@ public class NewsFragment extends Fragment {
         mBookMarkAdapter.setOnItemClickListener(new BookMarkAdapter.MyItemClickListener() {
             @Override
             public void onItemClick(final View view, int postion) {
-                if (newsItemClicked == false) {
+                //if (newsItemClicked == false) {
                     //newsItemClicked = true;
                     System.out.println("view.getId()="+view.getId()+" R.id.book="+R.id.book);
                     if(view.getId()==R.id.book) {
@@ -137,7 +137,7 @@ public class NewsFragment extends Fragment {
                         //TODO: 打开书评详情页面
                     }
                 }
-            }
+            //}
         });
 
         mRecyclerView.setLayoutManager(mLayoutManager);

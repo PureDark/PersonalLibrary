@@ -48,6 +48,12 @@
 
     </LinearLayout>
 
+    <com.gc.materialdesign.views.ProgressBarCircularIndeterminate
+        android:id="@+id/loading"
+        android:layout_gravity="center"
+        android:layout_width="@dimen/loading_size"
+        android:layout_height="@dimen/loading_size"
+        android:visibility="invisible"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
