@@ -41,7 +41,7 @@ import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 
 ;
 
-public class NewsFragment extends Fragment {
+public class NewsFragment extends MyFragment {
     private static NewsFragment mInstance;
     private View rootView;
 
@@ -88,6 +88,7 @@ public class NewsFragment extends Fragment {
         mActivity.setCurrFragment(MainActivity.FRAGMENT_NEWS);
         mActivity.setMainTitle(getResources().getString(R.string.title_fragment_news));
         mActivity.setNavigationItemSelected(R.id.nav_whatshot);
+        mActivity.setSearchEnable(false);
 
         //初始化书籍列表相关变量
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
@@ -201,6 +202,10 @@ public class NewsFragment extends Fragment {
                 showSnackBar(apiError.getErrorString());
             }
         });
+    }
+
+    @Override
+    public void onSearch(String keyword) {
     }
 
     public void showSnackBar(String content){

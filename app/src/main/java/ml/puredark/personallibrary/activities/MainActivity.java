@@ -70,6 +70,7 @@ import ml.puredark.personallibrary.customs.MyEditText;
 import ml.puredark.personallibrary.customs.MyFloatingActionButton;
 import ml.puredark.personallibrary.fragments.FriendFragment;
 import ml.puredark.personallibrary.fragments.IndexFragment;
+import ml.puredark.personallibrary.fragments.MyFragment;
 import ml.puredark.personallibrary.fragments.NewsFragment;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimator;
@@ -94,7 +95,8 @@ public class MainActivity extends AppCompatActivity
     public final static int RESULT_AVATAR = 3;
 
     //记录当前加载的是哪个Fragment
-    private int currFragment = FRAGMENT_INDEX;
+    private int currFragmentNo = FRAGMENT_INDEX;
+    private MyFragment currFragment;
 
     //主要元素
     private MyCoordinatorLayout mCoordinatorLayout;
@@ -132,6 +134,7 @@ public class MainActivity extends AppCompatActivity
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, IndexFragment.getInstance(), IndexFragment.getInstance().getClass().getName())
                     .commit();
+            currFragment = IndexFragment.getInstance();
         }
         mCoordinatorLayout = (MyCoordinatorLayout) findViewById(R.id.content);
         mAppBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
@@ -292,10 +295,9 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void afterTextChanged(Editable s) {
                 String keyword = inputSearch.getText().toString();
-                IndexFragment.getInstance().getBookList(keyword);
+                currFragment.onSearch(keyword);
             }
         });
-
         //为搜索按钮绑定事件
         findViewById(R.id.search_button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -320,14 +322,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void setCurrFragment(int curr){
-        currFragment = curr;
+        currFragmentNo = curr;
     }
 
-    public void replaceFragment(Fragment fragment){
+    public void replaceFragment(MyFragment fragment){
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
                 .replace(R.id.container, fragment, fragment.getClass().getName())
                 .commit();
+        currFragment = fragment;
     }
 
     @Override
@@ -338,9 +341,9 @@ public class MainActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         } else if(revealed){
             new AnimationFabtoCamera().reverse();
-        } else if(currFragment==FRAGMENT_INDEX){
+        } else if(currFragmentNo==FRAGMENT_INDEX){
             finish();
-        } else if(currFragment!=FRAGMENT_INDEX){
+        } else if(currFragmentNo!=FRAGMENT_INDEX){
             listSwitch.setVisibility(View.VISIBLE);
             replaceFragment(IndexFragment.getInstance());
         } else {
@@ -645,6 +648,17 @@ public class MainActivity extends AppCompatActivity
     public void setToolbarUncollapsible(){
         mAppBarLayout.setExpanded(false, true);
         mCoordinatorLayout.setAllowForScrool(false);
+    }
+
+    public void setSearchEnable(boolean enable){
+        collapseSearchBar();
+        if(enable) {
+            inputSearch.setVisibility(View.VISIBLE);
+            findViewById(R.id.search_button).setVisibility(View.VISIBLE);
+        }else{
+            inputSearch.setVisibility(View.INVISIBLE);
+            findViewById(R.id.search_button).setVisibility(View.INVISIBLE);
+        }
     }
 
     static int startFabX;
