@@ -413,7 +413,7 @@ public class PLServerAPI {
     public static void getBookMarkList(int bid, int uid, final onResponseListener callBack) {
         RequestParams params = new RequestParams();
         params.put("module", "social");
-        params.put("action", "getBookList");
+        params.put("action", "getBookMarkList");
         params.put("bid", bid);
         params.put("uid", uid);
         params.put("sessionid", User.getSessionid());

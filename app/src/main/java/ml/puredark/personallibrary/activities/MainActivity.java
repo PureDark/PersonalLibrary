@@ -82,13 +82,9 @@ import ml.puredark.personallibrary.utils.FileUtils;
 import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 import ml.puredark.personallibrary.utils.ViewUtils;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends MyActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private static MainActivity mInstance;
-    //Fragment编号
-    public final static int FRAGMENT_INDEX = 1;
-    public final static int FRAGMENT_FRIEND = 3;
-    public final static int FRAGMENT_NEWS = 4;
 
     //ActivityResult编号
     public final static int RESULT_SCANBOOK = 1;
@@ -338,12 +334,12 @@ public class MainActivity extends AppCompatActivity
         currFragmentNo = curr;
     }
 
-    public void replaceFragment(MyFragment fragment){
+    public void replaceFragment(Fragment fragment){
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
                 .replace(R.id.container, fragment, fragment.getClass().getName())
                 .commit();
-        currFragment = fragment;
+        currFragment = (MyFragment)fragment;
     }
 
     @Override

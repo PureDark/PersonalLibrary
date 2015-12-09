@@ -58,10 +58,6 @@
             android:name=".activities.BookMarkActivity"
             android:label="@string/title_activity_book_mark"
             android:theme="@style/AppTheme" />
-        <activity
-            android:name=".activities.BookMarkListActivity"
-            android:label="@string/title_activity_book_mark_list"
-            android:theme="@style/AppTheme" />
     </application>
 
 </manifest>
