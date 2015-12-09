@@ -3,10 +3,9 @@ package ml.puredark.personallibrary.activities;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -20,9 +19,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 import net.steamcrafted.materialiconlib.MaterialIconView;
 
@@ -36,6 +32,7 @@ import ml.puredark.personallibrary.adapters.ViewPagerAdapter;
 import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.beans.BookMark;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
+import ml.puredark.personallibrary.fragments.ViewBookMarkFragment;
 import ml.puredark.personallibrary.helpers.PLServerAPI;
 import ml.puredark.personallibrary.utils.DensityUtils;
 
@@ -50,10 +47,12 @@ public class BookMarkActivity extends AppCompatActivity {
     private ViewPager mViewPager;
     private View viewBookMark,viewBookDetails;
 
-    //书评View相关引用
-    private ImageView mAvatarView;
-    private TextView tvNickname,tvSignature;
-    private TextView tvMarkTitle,tvMarkContent;
+    //Fragment编号
+    public final static int FRAGMENT_VIEW_BOOK_MARK = 1;
+    public final static int FRAGMENT_BOOK_MARK_LIST = 2;
+
+    //记录当前加载的是哪个Fragment
+    private int currFragmentNo = FRAGMENT_VIEW_BOOK_MARK;
 
     //书籍详情View相关引用
     private ImageView mBookCover;
@@ -62,6 +61,9 @@ public class BookMarkActivity extends AppCompatActivity {
 
     // 正在提交标志
     private boolean posting = false;
+
+    // 是否是列表
+    private boolean isList = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,9 +77,19 @@ public class BookMarkActivity extends AppCompatActivity {
         book = (Book) PLApplication.temp;
         Bundle bundle = getIntent().getExtras();
         if(bundle==null)finish();
-        String bookMarkJson = bundle.getString("bookMark");
-        if(bookMarkJson==null)finish();
-        bookMark = new Gson().fromJson(bookMarkJson,BookMark.class);
+        isList = bundle.getBoolean("isList");
+        if(isList){
+
+        }else{
+            String bookMarkJson = bundle.getString("bookMark");
+            if(bookMarkJson==null)finish();
+            bookMark = new Gson().fromJson(bookMarkJson,BookMark.class);
+            Fragment viewBookMark = new ViewBookMarkFragment();
+            Bundle newbund = new Bundle();
+            newbund.putString("bookMark", bookMarkJson);
+            viewBookMark.setArguments(newbund);
+            replaceFragment(viewBookMark);
+        }
 
         //设置标题为书名
         setTitle(book.title);
@@ -129,24 +141,6 @@ public class BookMarkActivity extends AppCompatActivity {
             }
         });
 
-        mAvatarView = (ImageView)viewBookMark.findViewById(R.id.avatar);
-        tvNickname = (TextView)viewBookMark.findViewById(R.id.nickname);
-        tvSignature = (TextView)viewBookMark.findViewById(R.id.signature);
-        tvMarkTitle = (TextView)viewBookMark.findViewById(R.id.mark_title);
-        tvMarkContent = (TextView)viewBookMark.findViewById(R.id.mark_content);
-
-        tvNickname.setText(bookMark.nickname);
-        tvSignature.setText(bookMark.signature);
-        tvMarkTitle.setText(bookMark.title);
-        //tvMarkContent.setText(bookMark.content);
-
-        DisplayImageOptions options = new DisplayImageOptions.Builder()
-                .cacheInMemory(true)
-                .cacheOnDisc(false)
-                .displayer(new FadeInBitmapDisplayer(300))
-                .build();//构建完成
-        ImageLoader.getInstance().displayImage(PLApplication.serverHost + "/images/users/avatars/" + bookMark.uid + ".png", mAvatarView, options);
-
         //书籍详情View相关内容
         mBookCover = (ImageView)viewBookDetails.findViewById(R.id.book_cover);
         tvAuthor = (TextView)viewBookDetails.findViewById(R.id.author);
@@ -177,23 +171,6 @@ public class BookMarkActivity extends AppCompatActivity {
         setInfoIconColor(bundle.getInt("topTextColor"));
         setInfoTextColor(bundle.getInt("topTextColor"));
 
-
-        PLServerAPI.getBookMarkDetails(bookMark.mid, new PLServerAPI.onResponseListener() {
-            @Override
-            public void onSuccess(Object data) {
-                bookMark = (BookMark) data;
-                tvNickname.setText(bookMark.nickname);
-                tvSignature.setText(bookMark.signature);
-                tvMarkTitle.setText(bookMark.title);
-                tvMarkContent.setText(bookMark.content);
-            }
-
-            @Override
-            public void onFailure(PLServerAPI.ApiError apiError) {
-                showSnackBar(apiError.getErrorString());
-            }
-        });
-
     }
 
     private void setInfoIconColor(int color){
@@ -213,6 +190,17 @@ public class BookMarkActivity extends AppCompatActivity {
             childAt = (LinearLayout) book_info_layout.getChildAt(i);
             ((TextView)childAt.getChildAt(1)).setTextColor(color);
         }
+    }
+
+    public void setCurrFragment(int curr){
+        currFragmentNo = curr;
+    }
+
+    public void replaceFragment(Fragment fragment){
+        getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
+                .replace(R.id.fragmentContainer, fragment, fragment.getClass().getName())
+                .commit();
     }
 
     public void setToolbarCollapsible(){
