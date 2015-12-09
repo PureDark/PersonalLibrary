@@ -21,10 +21,17 @@ public final class Friend extends AbstractDataProvider.Data{
         this.signature = signature;
         this.birthday = birthday;
         this.isFriend = isFriend;
+        updateCharacter();
+    }
+    public void updateCharacter(){
         String[] temp = PinyinHelper.toHanyuPinyinStringArray(nickname.toCharArray()[0]);
-        character = new String(temp[0]);
-        character = character.substring(0,1);
-        character = character.toUpperCase();
+        if(temp!=null){ //上API如果内容非汉字，则返回空
+            character = new String(temp[0]);
+            character = character.substring(0,1);
+        }else{
+            character = String.valueOf(nickname.toCharArray()[0]);
+        }
+        character = character.toUpperCase();    //字符大写
     }
     public int getId(){
         return uid;

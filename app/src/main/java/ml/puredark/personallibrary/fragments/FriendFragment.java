@@ -7,11 +7,13 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,7 @@ import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.activities.MainActivity;
 import ml.puredark.personallibrary.adapters.FriendListAdapter;
+import ml.puredark.personallibrary.beans.BookListItem;
 import ml.puredark.personallibrary.beans.BookMark;
 import ml.puredark.personallibrary.beans.Friend;
 import ml.puredark.personallibrary.dataprovider.BookMarkDataProvider;
@@ -40,6 +43,7 @@ public class FriendFragment extends Fragment {
     private RecyclerView.LayoutManager mLayoutManager;
     private RecyclerView.Adapter mWrappedAdapter;
     private FriendListAdapter mFriendAdapter;
+
     //好友已点击(避免多次点击同时打开多个Activity)
     private boolean friendItemClicked = false;
 
@@ -82,13 +86,16 @@ public class FriendFragment extends Fragment {
         mRecyclerView.setHasFixedSize(true);
         //指定为线性列表
         mLayoutManager = new LinearLayoutManager(this.getContext(), LinearLayoutManager.VERTICAL, false);
-
-        List<Friend> myFriends = new ArrayList<>();
-
+        List<Friend> myFriends = new ArrayList<Friend>();
 
 
+        String data = (String) SharedPreferencesUtil.getData(this.getContext(), "friends", "");
+        if(data!=null&&!data.equals(""))
+            myFriends = new Gson().fromJson(data, new TypeToken<List<Friend>>(){}.getType());
         FriendListDataProvider mFriendListDataProvider = new FriendListDataProvider(myFriends);
         mFriendAdapter = new FriendListAdapter(mFriendListDataProvider);
+        getFriendList();
+
         mFriendAdapter.setOnItemClickListener(new FriendListAdapter.MyItemClickListener() {
             @Override
             public void onItemClick(View view, int postion) {
@@ -99,16 +106,28 @@ public class FriendFragment extends Fragment {
             }
         });
 
-
-
         mRecyclerView.setLayoutManager(mLayoutManager);
+        Log.i("FriendGet","设置adapter");
         mRecyclerView.setAdapter(mFriendAdapter);  // 设置的是处理过的mWrappedAdapter
-
-
 
         return rootView;
     }
+    public void getFriendList(){
+        PLServerAPI.getFriendList(1, new PLServerAPI.onResponseListener() {
+            @Override
+            public void onSuccess(Object data) {
+                List<Friend> myFriends = (List<Friend>) data;
+                mFriendAdapter.setDataProvider(new FriendListDataProvider(myFriends));
+                mFriendAdapter.notifyDataSetChanged();
+            }
 
+            @Override
+            public void onFailure(PLServerAPI.ApiError apiError) {
+                showSnackBar(apiError.getErrorString());
+
+            }
+        });
+    }
     public void searchUser(String keyword){
         PLServerAPI.searchUser(keyword, new PLServerAPI.onResponseListener() {
             @Override

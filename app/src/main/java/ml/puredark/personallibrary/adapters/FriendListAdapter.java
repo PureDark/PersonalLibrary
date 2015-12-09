@@ -1,6 +1,7 @@
 package ml.puredark.personallibrary.adapters;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,11 +10,17 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.balysv.materialripple.MaterialRippleLayout;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
+import com.makeramen.roundedimageview.RoundedImageView;
+import java.util.List;
 
+import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.beans.Friend;
 import ml.puredark.personallibrary.dataprovider.AbstractDataProvider;
+import ml.puredark.personallibrary.helpers.PLServerAPI;
 
 public class FriendListAdapter
         extends RecyclerView.Adapter<FriendListAdapter.FriendViewHolder> {
@@ -26,14 +33,14 @@ public class FriendListAdapter
     public class FriendViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public MaterialRippleLayout rippleLayout;
         public LinearLayout container;
-        public ImageView avatar;
+        public RoundedImageView avatar;
         public TextView nickname,description;
         private MyItemClickListener mListener;
         public TextView character;
         public FriendViewHolder(View view, MyItemClickListener onClickListener) {
             super(view);
             container = (LinearLayout)view.findViewById(R.id.container);
-            avatar = (ImageView)view.findViewById(R.id.avatar);
+            avatar = (RoundedImageView)view.findViewById(R.id.avatar);
             rippleLayout = (MaterialRippleLayout) view.findViewById(R.id.rippleLayout);
             nickname = (TextView)view.findViewById(R.id.name);
             description = (TextView)view.findViewById(R.id.description);
@@ -52,8 +59,16 @@ public class FriendListAdapter
         }
     }
 
+    public void setDataProvider(AbstractDataProvider mProvider){
+        this.mProvider = mProvider;
+    }
+
     public FriendListAdapter(AbstractDataProvider mProvider) {
         this.mProvider = mProvider;
+        List<Friend> fs = (List<Friend>) mProvider.getItems();
+        for(Friend f : fs){
+            Log.i("Kevin",f.nickname+":"+f.getId());
+        }
         setHasStableIds(true);
     }
 
@@ -69,14 +84,23 @@ public class FriendListAdapter
     @Override
     public void onBindViewHolder(FriendViewHolder holder, int position) {
         final Friend friend = (Friend) mProvider.getItem(position);
-
-        if(holder.avatar.getTag()!=friend.avatar) {
-            ImageLoader.getInstance().displayImage(null, holder.avatar);
-            ImageLoader.getInstance().displayImage(friend.avatar, holder.avatar);
-            holder.avatar.setTag(friend.avatar);
+        String avatar =  PLApplication.serverHost + "/images/users/avatars/" + friend.uid + ".png";
+        if(holder.avatar.getTag() != avatar) {
+            DisplayImageOptions options = new DisplayImageOptions.Builder()
+                    .cacheInMemory(true)//设置下载的图片是否缓存在内存中
+                    .cacheOnDisc(false)//设置下载的图片是否缓存在SD卡中
+                    .displayer(new FadeInBitmapDisplayer(300))//是否图片加载好后渐入的动画时间
+                    .build();//构建完成
+            ImageLoader.getInstance().displayImage(null, holder.avatar,options);
+            ImageLoader.getInstance().displayImage(avatar, holder.avatar,options);
+            holder.avatar.setTag(avatar);
         }
-        holder.nickname.setText(friend.nickName);
+        holder.nickname.setText(friend.nickname);
+        holder.nickname.setText(friend.nickname);
         holder.description.setText(friend.signature);
+        if (friend.character==null){
+            friend.updateCharacter();
+        }
         holder.character.setText(friend.character);
         //判断与之前的好友前缀是否相同，相同则不重复显示
         if(position>0){
