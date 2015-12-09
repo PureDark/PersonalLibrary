@@ -3,6 +3,7 @@ package ml.puredark.personallibrary.fragments;
 import android.app.Activity;
 import android.graphics.drawable.NinePatchDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;;
 import android.support.v4.content.ContextCompat;
@@ -29,9 +30,11 @@ import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.activities.MainActivity;
 import ml.puredark.personallibrary.adapters.BookListAdapter;
+import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.beans.BookListItem;
 import ml.puredark.personallibrary.customs.EmptyRecyclerView;
 import ml.puredark.personallibrary.dataprovider.BookListDataProvider;
+import ml.puredark.personallibrary.helpers.DoubanRestAPI;
 import ml.puredark.personallibrary.helpers.PLServerAPI;
 import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 
@@ -39,7 +42,7 @@ public class IndexFragment extends Fragment {
     private static IndexFragment mInstance;
     private View rootView;
 
-    private OnFragmentInteractionListener mListener;
+    private MainActivity mActivity;
 
     //首页书籍列表
     private EmptyRecyclerView mRecyclerView;
@@ -82,10 +85,10 @@ public class IndexFragment extends Fragment {
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_index, container, false);
 
-        ((MainActivity)getActivity()).setToolbarCollapsible();
-        ((MainActivity)getActivity()).setCurrFragment(MainActivity.FRAGMENT_INDEX);
-        mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_SET_TITLE, getResources().getString(R.string.title_fragment_index), null);
-        mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_SET_NAVIGATION_ITEM, R.id.nav_index, null);
+        mActivity.setToolbarCollapsible();
+        mActivity.setCurrFragment(MainActivity.FRAGMENT_INDEX);
+        mActivity.setMainTitle(getResources().getString(R.string.title_fragment_index));
+        mActivity.setNavigationItemSelected(R.id.nav_index);
 
         //初始化书籍列表相关变量
         mRecyclerView = (EmptyRecyclerView) findViewById(R.id.my_recycler_view);
@@ -124,10 +127,32 @@ public class IndexFragment extends Fragment {
         mBookAdapter = new BookListAdapter(mBookListDataProvider);
         mBookAdapter.setOnItemClickListener(new BookListAdapter.MyItemClickListener() {
             @Override
-            public void onItemClick(View view, int postion) {
+            public void onItemClick(final View view, int postion) {
                 if (bookItemClicked == false) {
                     bookItemClicked = true;
-                    mListener.onFragmentInteraction(MainActivity.FRAGMENT_ACTION_START_BOOK_DETAIL_ACTIVITY, mBookAdapter.getDataProvider().getItem(postion), view);
+                    final BookListItem item = (BookListItem) mBookAdapter.getDataProvider().getItem(postion);
+                    String bookString = (String) SharedPreferencesUtil.getData(PLApplication.mContext, "isbn13_"+item.isbn13, "");
+                    if(!bookString.equals("")){
+                        Book book = new Gson().fromJson(bookString, Book.class);
+                        book.id = item.getId();
+                        mActivity.startBookDetailActivity(book, view);
+                    }else{
+                        DoubanRestAPI.getBookByISBN(item.isbn13, new MainActivity.CallBack() {
+                            @Override
+                            public void action(final Object obj) {
+                                new Handler().postDelayed(new Runnable() {
+                                    public void run() {
+                                        if (obj instanceof Book) {
+                                            Book book = (Book) obj;
+                                            book.id = item.getId();
+                                            mActivity.startBookDetailActivity(book, view);
+                                            SharedPreferencesUtil.saveData(PLApplication.mContext, "isbn13_" + book.isbn13, new Gson().toJson(book));
+                                        }
+                                    }
+                                }, 500);
+                            }
+                        });
+                    }
                 }
             }
         });
@@ -140,7 +165,7 @@ public class IndexFragment extends Fragment {
                     }
                     @Override
                     public void onFailure(PLServerAPI.ApiError apiError) {
-                        showSnackBar(getString(R.string.network_error));
+                        showSnackBar(apiError.getErrorString());
                     }
                 });
                 Snackbar snackbar = Snackbar.make(
@@ -161,7 +186,7 @@ public class IndexFragment extends Fragment {
 
                             @Override
                             public void onFailure(PLServerAPI.ApiError apiError) {
-                                showSnackBar(getString(R.string.network_error));
+                                showSnackBar(apiError.getErrorString());
                             }
                         });
                     }
@@ -223,7 +248,7 @@ public class IndexFragment extends Fragment {
 
                 @Override
                 public void onFailure(PLServerAPI.ApiError apiError) {
-                    showSnackBar(getString(R.string.network_error));
+                    showSnackBar(apiError.getErrorString());
                 }
         });
     }
@@ -238,7 +263,7 @@ public class IndexFragment extends Fragment {
             }
             @Override
             public void onFailure(PLServerAPI.ApiError apiError) {
-                showSnackBar(getString(R.string.network_error));
+                showSnackBar(apiError.getErrorString());
             }
         });
     }
@@ -272,7 +297,7 @@ public class IndexFragment extends Fragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            mListener = (OnFragmentInteractionListener) activity;
+            mActivity =  (MainActivity)activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -282,7 +307,7 @@ public class IndexFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        mActivity = null;
     }
 
     @Override

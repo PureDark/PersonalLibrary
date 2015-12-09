@@ -10,17 +10,17 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.balysv.materialripple.MaterialRippleLayout;
+import com.makeramen.roundedimageview.RoundedImageView;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
-import com.makeramen.roundedimageview.RoundedImageView;
+
 import java.util.List;
 
 import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.beans.Friend;
 import ml.puredark.personallibrary.dataprovider.AbstractDataProvider;
-import ml.puredark.personallibrary.helpers.PLServerAPI;
 
 public class FriendListAdapter
         extends RecyclerView.Adapter<FriendListAdapter.FriendViewHolder> {

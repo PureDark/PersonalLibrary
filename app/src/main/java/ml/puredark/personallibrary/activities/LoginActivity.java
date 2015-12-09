@@ -274,7 +274,7 @@ public class LoginActivity extends AppCompatActivity {
                 DisplayImageOptions options = new DisplayImageOptions.Builder()
                         .cacheInMemory(false)//设置下载的图片是否缓存在内存中
                         .cacheOnDisc(false)//设置下载的图片是否缓存在SD卡中
-                        .displayer(new FadeInBitmapDisplayer(300))//是否图片加载好后渐入的动画时间
+                        .displayer(new FadeInBitmapDisplayer(300))//图片加载好后渐入的动画时间
                         .build();//构建完成
                 ImageLoader.getInstance().displayImage(PLApplication.serverHost + "/images/users/avatars/" + uid + ".png", mAvatarView, options);
                 isDefaultAvatar = false;

@@ -8,9 +8,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.AppBarLayout;
@@ -25,15 +23,12 @@ import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gc.materialdesign.views.ProgressBarCircularIndeterminate;
@@ -45,9 +40,6 @@ import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ArgbEvaluator;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.assist.ImageScaleType;
-import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
-import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.telly.mrvector.MrVector;
 import com.wnafee.vector.compat.ResourcesCompat;
@@ -73,14 +65,12 @@ import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.User;
 import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.beans.BookListItem;
-import ml.puredark.personallibrary.beans.UserInfo;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
 import ml.puredark.personallibrary.customs.MyEditText;
 import ml.puredark.personallibrary.customs.MyFloatingActionButton;
 import ml.puredark.personallibrary.fragments.FriendFragment;
 import ml.puredark.personallibrary.fragments.IndexFragment;
 import ml.puredark.personallibrary.fragments.NewsFragment;
-import ml.puredark.personallibrary.fragments.OnFragmentInteractionListener;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimator;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimatorListener;
@@ -92,17 +82,11 @@ import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 import ml.puredark.personallibrary.utils.ViewUtils;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,
-        OnFragmentInteractionListener {
+        implements NavigationView.OnNavigationItemSelectedListener {
     //Fragment编号
     public final static int FRAGMENT_INDEX = 1;
     public final static int FRAGMENT_FRIEND = 3;
     public final static int FRAGMENT_NEWS = 4;
-
-    //Fragment回调动作的定义
-    public final static int FRAGMENT_ACTION_START_BOOK_DETAIL_ACTIVITY = 1;
-    public final static int FRAGMENT_ACTION_SET_NAVIGATION_ITEM = 2;
-    public final static int FRAGMENT_ACTION_SET_TITLE = 3;
 
     //ActivityResult编号
     public final static int RESULT_SCANBOOK = 1;
@@ -235,7 +219,7 @@ public class MainActivity extends AppCompatActivity
 
                                 @Override
                                 public void onFailure(PLServerAPI.ApiError apiError) {
-                                    Toast.makeText(MainActivity.this, getString(R.string.network_error), Toast.LENGTH_LONG);
+                                    Toast.makeText(MainActivity.this, apiError.getErrorString(), Toast.LENGTH_LONG);
                                     nickname.setText(User.getNickname());
                                 }
                             });
@@ -252,7 +236,7 @@ public class MainActivity extends AppCompatActivity
                                 }
                                 @Override
                                 public void onFailure(PLServerAPI.ApiError apiError) {
-                                    Toast.makeText(MainActivity.this, getString(R.string.network_error), Toast.LENGTH_LONG);
+                                    Toast.makeText(MainActivity.this, apiError.getErrorString(), Toast.LENGTH_LONG);
                                     signature.setText(User.getSignature());
                                 }
                             });
@@ -513,7 +497,7 @@ public class MainActivity extends AppCompatActivity
 
                         @Override
                         public void onFailure(PLServerAPI.ApiError apiError) {
-                            Toast.makeText(MainActivity.this, getString(R.string.network_error), Toast.LENGTH_LONG);
+                            Toast.makeText(MainActivity.this, apiError.getErrorString(), Toast.LENGTH_LONG).show();
                         }
                     });
                 }
@@ -526,13 +510,13 @@ public class MainActivity extends AppCompatActivity
             }, 500);
         }
     }
-    private void startBookDetailActivity(final Book book){
+    public void startBookDetailActivity(final Book book){
         startBookDetailActivity(book, true, null);
     }
-    private void startBookDetailActivity(final Book book, View view){
+    public void startBookDetailActivity(final Book book, View view){
         startBookDetailActivity(book, false, view);
     }
-    private void startBookDetailActivity(final Book book, final boolean scaned, final View cover){
+    public void startBookDetailActivity(final Book book, final boolean scaned, final View cover){
         final String url = (book.images.get("large")==null)?book.image:book.images.get("large");
         ImageLoader.getInstance().loadImage(url, new SimpleImageLoadingListener() {
             @Override
@@ -622,39 +606,12 @@ public class MainActivity extends AppCompatActivity
     protected void onDestroy() {
         super.onDestroy();
     }
-    @Override
-    public void onFragmentInteraction(int action, Object data, final View view) {
-        if(action==FRAGMENT_ACTION_START_BOOK_DETAIL_ACTIVITY && data instanceof BookListItem){
-                final BookListItem item = (BookListItem) data;
-                String bookString = (String) SharedPreferencesUtil.getData(this, "isbn13_"+item.isbn13, "");
-                if(!bookString.equals("")){
-                    Book book = new Gson().fromJson(bookString, Book.class);
-                    book.id = item.getId();
-                    startBookDetailActivity(book, view);
-                }else{
-                    getting = true;
-                    DoubanRestAPI.getBookByISBN(item.isbn13, new CallBack() {
-                        @Override
-                        public void action(final Object obj) {
-                            getting = false;
-                            new Handler().postDelayed(new Runnable() {
-                                public void run() {
-                                    if (obj instanceof Book) {
-                                        Book book = (Book) obj;
-                                        book.id = item.getId();
-                                        startBookDetailActivity(book, view);
-                                        SharedPreferencesUtil.saveData(getBaseContext(), "isbn13_" + book.isbn13, new Gson().toJson(book));
-                                    }
-                                }
-                            }, 500);
-                        }
-                    });
-                }
-        }else if(action==FRAGMENT_ACTION_SET_NAVIGATION_ITEM && data instanceof Integer){
-            navigationView.setCheckedItem((int)data);
-        }else if(action==FRAGMENT_ACTION_SET_TITLE && data instanceof String){
-            mCollapsingToolbar.setTitle((String)data);
-        }
+
+    public void setMainTitle(String title){
+        mCollapsingToolbar.setTitle(title);
+    }
+    public void setNavigationItemSelected(int itemId){
+        navigationView.setCheckedItem(itemId);
     }
 
     public void extendSearchBar(){
@@ -874,7 +831,7 @@ public class MainActivity extends AppCompatActivity
         public void onAnimationRepeat(com.nineoldandroids.animation.Animator animation) {}
     }
 
-    public abstract class CallBack{
+    public abstract static class CallBack{
         public abstract void action(Object data);
     }
 

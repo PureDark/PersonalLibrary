@@ -8,15 +8,15 @@
     android:layout_marginTop="8dp"
     android:orientation="vertical"
     android:background="@color/white"
-    android:clipChildren="false"
-    android:clipToPadding="false">
+    android:clipChildren="true"
+    android:clipToPadding="true">
 
     <com.balysv.materialripple.MaterialRippleLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/rippleLayout"
         android:padding="8dp"
-        app:mrl_rippleOverlay="false"
+        app:mrl_rippleOverlay="true"
         app:mrl_rippleColor="@color/black"
         app:mrl_rippleAlpha="0.1"
         app:mrl_rippleDimension="10dp"
@@ -28,6 +28,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <LinearLayout
+                android:id="@+id/markLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

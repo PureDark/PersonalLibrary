@@ -18,36 +18,39 @@ import ml.puredark.personallibrary.beans.BookMark;
 import ml.puredark.personallibrary.dataprovider.AbstractDataProvider;
 
 public class BookMarkAdapter
-        extends RecyclerView.Adapter<BookMarkAdapter.NewsViewHolder> {
+        extends RecyclerView.Adapter<BookMarkAdapter.BookMarkViewHolder> {
     private AbstractDataProvider mProvider;
     private MyItemClickListener mItemClickListener;
 
-    public class NewsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class BookMarkViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public MaterialRippleLayout rippleLayout;
-        public LinearLayout book;
+        public LinearLayout markLayout,book;
         public ImageView avatar, bookCover;
         public TextView nickname,datetime,content;
         private MyItemClickListener mListener;
         public TextView bookTitle;
 
-        public NewsViewHolder(View view, MyItemClickListener onClickListener) {
+        public BookMarkViewHolder(View view, MyItemClickListener onClickListener) {
             super(view);
             rippleLayout = (MaterialRippleLayout) view.findViewById(R.id.rippleLayout);
             avatar = (ImageView)view.findViewById(R.id.avatar);
             nickname = (TextView)view.findViewById(R.id.nickname);
             datetime = (TextView)view.findViewById(R.id.datetime);
             content = (TextView)view.findViewById(R.id.content);
+            markLayout = (LinearLayout)view.findViewById(R.id.markLayout);
             book = (LinearLayout)view.findViewById(R.id.book);
             bookCover = (ImageView)view.findViewById(R.id.book_cover);
             bookTitle = (TextView)view.findViewById(R.id.book_title);
             mListener = onClickListener;
             book.setOnClickListener(this);
-            rippleLayout.setOnClickListener(this);
+            markLayout.setOnClickListener(this);
         }
 
 
         @Override
         public void onClick(View view) {
+            System.out.println("view.getId()="+view.getId()+" R.id.book="+R.id.book);
+            System.out.println("mListener=="+mListener);
             if(mListener != null){
                 mListener.onItemClick(view, getPosition());
             }
@@ -64,16 +67,16 @@ public class BookMarkAdapter
     }
 
     @Override
-    public BookMarkAdapter.NewsViewHolder onCreateViewHolder(ViewGroup parent,int viewType) {
+    public BookMarkAdapter.BookMarkViewHolder onCreateViewHolder(ViewGroup parent,int viewType) {
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_news, parent, false);
+                .inflate(R.layout.item_book_mark, parent, false);
         // 在这里对View的参数进行设置
-        NewsViewHolder vh = new NewsViewHolder(v, mItemClickListener);
+        BookMarkViewHolder vh = new BookMarkViewHolder(v, mItemClickListener);
         return vh;
     }
 
     @Override
-    public void onBindViewHolder(NewsViewHolder holder, int position) {
+    public void onBindViewHolder(BookMarkViewHolder holder, int position) {
         final BookMark bookMark = (BookMark) mProvider.getItem(position);
 
         if(holder.avatar.getTag()!=bookMark.bid) {
