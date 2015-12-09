@@ -28,6 +28,7 @@ import java.util.List;
 
 import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
+import ml.puredark.personallibrary.User;
 import ml.puredark.personallibrary.activities.MainActivity;
 import ml.puredark.personallibrary.adapters.BookListAdapter;
 import ml.puredark.personallibrary.beans.Book;
@@ -136,6 +137,7 @@ public class IndexFragment extends MyFragment {
                     if(!bookString.equals("")){
                         Book book = new Gson().fromJson(bookString, Book.class);
                         book.id = item.getId();
+                        book.uid = User.getUid();
                         mActivity.startBookDetailActivity(book, view);
                     }else{
                         DoubanRestAPI.getBookByISBN(item.isbn13, new MainActivity.CallBack() {
@@ -146,6 +148,7 @@ public class IndexFragment extends MyFragment {
                                         if (obj instanceof Book) {
                                             Book book = (Book) obj;
                                             book.id = item.getId();
+                                            book.uid = User.getUid();
                                             mActivity.startBookDetailActivity(book, view);
                                             SharedPreferencesUtil.saveData(PLApplication.mContext, "isbn13_" + book.isbn13, new Gson().toJson(book));
                                         }
@@ -239,7 +242,7 @@ public class IndexFragment extends MyFragment {
 
     @Override
     public void onSearch(String keyword) {
-        IndexFragment.getInstance().getBookList(keyword);
+        getBookList(keyword);
     }
 
     public void addNewBook(final int position, BookListItem book) {
@@ -260,7 +263,7 @@ public class IndexFragment extends MyFragment {
     }
 
     public void getBookList(String keyword){
-        PLServerAPI.getBookList(null, keyword, new PLServerAPI.onResponseListener() {
+        PLServerAPI.getBookList(User.getUid(), null, keyword, new PLServerAPI.onResponseListener() {
             @Override
             public void onSuccess(Object data) {
                 List<BookListItem> books = (List<BookListItem>) data;
@@ -276,8 +279,10 @@ public class IndexFragment extends MyFragment {
     }
 
     public void showSnackBar(String content){
+        View container = findViewById(R.id.container);
+        if(container==null)return;
         Snackbar snackbar = Snackbar.make(
-                findViewById(R.id.container),
+                container,
                 content,
                 Snackbar.LENGTH_LONG);
         snackbar.setActionTextColor(ContextCompat.getColor(PLApplication.mContext, R.color.colorAccentDark));

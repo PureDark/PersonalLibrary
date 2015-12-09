@@ -42,6 +42,7 @@
     <string name="item_removed">移除了一本书</string>
     <string name="snack_bar_action_undo">撤销</string>
 
-    <string name="title_activity_write_mark">WriteMarkActivity</string>
-    <string name="title_activity_view_book_mark">ViewBookMarkActivity</string>
+    <string name="title_activity_write_mark">写书评</string>
+    <string name="title_activity_book_mark">查看书评</string>
+    <string name="title_activity_book_mark_list">所有书评</string>
 </resources>

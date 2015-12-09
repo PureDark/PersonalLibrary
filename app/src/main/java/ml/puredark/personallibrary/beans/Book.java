@@ -5,7 +5,7 @@ import android.nfc.Tag;
 import java.util.Map;
 
 public final class Book {
-    public int id;
+    public int id, uid;
     public String image, title, summary, pubdate;
     public String[] author, translator;
     public Map<String, String> images;

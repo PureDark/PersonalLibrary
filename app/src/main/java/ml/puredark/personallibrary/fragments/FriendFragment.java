@@ -128,8 +128,10 @@ public class FriendFragment extends MyFragment {
     }
 
     public void showSnackBar(String content){
+        View container = findViewById(R.id.container);
+        if(container==null)return;
         Snackbar snackbar = Snackbar.make(
-                findViewById(R.id.container),
+                container,
                 content,
                 Snackbar.LENGTH_LONG);
         snackbar.setActionTextColor(ContextCompat.getColor(PLApplication.mContext, R.color.colorAccentDark));

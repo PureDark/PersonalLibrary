@@ -30,7 +30,6 @@
             android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -57,8 +56,12 @@
             android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.BookMarkActivity"
-            android:label="@string/title_activity_view_book_mark"
-            android:theme="@style/AppTheme"></activity>
+            android:label="@string/title_activity_book_mark"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".activities.BookMarkListActivity"
+            android:label="@string/title_activity_book_mark_list"
+            android:theme="@style/AppTheme" />
     </application>
 
 </manifest>

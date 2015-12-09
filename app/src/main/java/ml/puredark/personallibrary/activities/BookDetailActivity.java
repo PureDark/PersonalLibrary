@@ -40,6 +40,7 @@ import net.steamcrafted.materialiconlib.MaterialIconView;
 import io.codetail.widget.RevealFrameLayout;
 import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
+import ml.puredark.personallibrary.User;
 import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
 import ml.puredark.personallibrary.customs.MyFloatingActionButton;
@@ -68,6 +69,9 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
     private DrawerArrowDrawable backButtonIcon;
     //是否动画中
     private boolean animating = false;
+
+    //是否是书籍拥有者
+    private boolean isOwner = false;
 
     //此次实例展示的图书
     private Book book;
@@ -102,6 +106,8 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
 
         book = (Book) PLApplication.temp;
         Bitmap cover = PLApplication.bitmap;
+        isOwner = (book.uid== User.getUid());
+
         fabAction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -224,8 +230,16 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
             }
         }).start();
 
+        FloatingActionButton fab_write = (FloatingActionButton)fabMenu.getChildAt(0);
+        FloatingActionButton fab_borrow_lend = (FloatingActionButton)fabMenu.getChildAt(1);
+        FloatingActionButton fab_book_marks = (FloatingActionButton)fabMenu.getChildAt(2);
+        if(!isOwner)
+            fab_write.setVisibility(View.GONE);
+        if(isOwner)
+            fab_borrow_lend.setVisibility(View.GONE);
+
         //写书评按钮
-        fabMenu.getChildAt(0).setOnClickListener(new View.OnClickListener() {
+        fab_write.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final Intent intent = new Intent(BookDetailActivity.this, WriteMarkActivity.class);
@@ -238,6 +252,18 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
                 bundle.putInt("fabColorPressed", fabColorPressed);
                 intent.putExtras(bundle);
                 startActivity(intent);
+            }
+        });
+        //借书还书按钮
+        fab_borrow_lend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+            }
+        });
+        //查看读书笔记按钮
+        fab_book_marks.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
             }
         });
     }
