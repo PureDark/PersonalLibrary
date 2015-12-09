@@ -43,14 +43,12 @@ public class BookMarkAdapter
             bookTitle = (TextView)view.findViewById(R.id.book_title);
             mListener = onClickListener;
             book.setOnClickListener(this);
-            markLayout.setOnClickListener(this);
+            rippleLayout.setOnClickListener(this);
         }
 
 
         @Override
         public void onClick(View view) {
-            System.out.println("view.getId()="+view.getId()+" R.id.book="+R.id.book);
-            System.out.println("mListener=="+mListener);
             if(mListener != null){
                 mListener.onItemClick(view, getPosition());
             }

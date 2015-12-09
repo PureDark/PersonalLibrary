@@ -37,7 +37,7 @@ import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 
 ;
 
-public class FriendFragment extends Fragment {
+public class FriendFragment extends MyFragment {
     private static FriendFragment mInstance;
     private View rootView;
 
@@ -85,6 +85,7 @@ public class FriendFragment extends Fragment {
         mActivity.setCurrFragment(MainActivity.FRAGMENT_FRIEND);
         mActivity.setMainTitle(getResources().getString(R.string.title_fragment_friend));
         mActivity.setNavigationItemSelected(R.id.nav_friend);
+        mActivity.setSearchEnable(true);
 
         //初始化好友列表相关变量
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
@@ -150,6 +151,10 @@ public class FriendFragment extends Fragment {
                 showSnackBar(apiError.getErrorString());
             }
         });
+    }
+
+    @Override
+    public void onSearch(String keyword) {
     }
 
     public void showSnackBar(String content){

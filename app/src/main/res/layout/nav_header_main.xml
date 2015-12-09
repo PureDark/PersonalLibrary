@@ -10,6 +10,8 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/status_bar_padding_plus_standard"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     android:theme="@style/ThemeOverlay.AppCompat.Dark"
     android:orientation="vertical"
     android:gravity="bottom">
@@ -27,6 +29,7 @@
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
         tools:text="PureDark"
+        android:hint="点击设置昵称"
         android:background="@null"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
@@ -36,6 +39,7 @@
         android:textColor="@color/gray"
         android:background="@null"
         tools:text="大括号写在下一行的都是异端！"
+        android:hint="点击设置个性签名"
         android:textAppearance="@style/TextAppearance.AppCompat.Body2"/>
 
 </LinearLayout>

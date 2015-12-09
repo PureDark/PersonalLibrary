@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ml.puredark.personallibrary.customs.MyCoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinator_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="false"
-    tools:context="ml.puredark.personallibrary.activities.WriteMarkActivity">
+    tools:context="ml.puredark.personallibrary.activities.BookMarkActivity">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"
@@ -13,12 +15,12 @@
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/status_bar_padding"
         android:theme="@style/AppTheme.AppBarOverlay">
-
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
+            app:layout_scrollFlags="scroll|enterAlways"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>
@@ -48,11 +50,11 @@
             android:clipToPadding="false"
             android:fitsSystemWindows="false"
             android:focusable="true"
-            android:focusableInTouchMode="true"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+            android:focusableInTouchMode="true">
 
             <android.support.v4.view.ViewPager
                 android:id="@+id/viewpager"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
@@ -64,19 +66,4 @@
 
     </LinearLayout>
 
-    <com.gc.materialdesign.views.ProgressBarCircularIndeterminate
-        android:id="@+id/loading"
-        android:layout_gravity="center"
-        android:layout_width="@dimen/loading_size"
-        android:layout_height="@dimen/loading_size"
-        android:visibility="invisible"/>
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        app:borderWidth="0dp"/>
-
-</android.support.design.widget.CoordinatorLayout>
+</ml.puredark.personallibrary.customs.MyCoordinatorLayout >

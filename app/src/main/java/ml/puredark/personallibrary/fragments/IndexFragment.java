@@ -38,7 +38,7 @@ import ml.puredark.personallibrary.helpers.DoubanRestAPI;
 import ml.puredark.personallibrary.helpers.PLServerAPI;
 import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 
-public class IndexFragment extends Fragment {
+public class IndexFragment extends MyFragment {
     private static IndexFragment mInstance;
     private View rootView;
 
@@ -89,6 +89,7 @@ public class IndexFragment extends Fragment {
         mActivity.setCurrFragment(MainActivity.FRAGMENT_INDEX);
         mActivity.setMainTitle(getResources().getString(R.string.title_fragment_index));
         mActivity.setNavigationItemSelected(R.id.nav_index);
+        mActivity.setSearchEnable(true);
 
         //初始化书籍列表相关变量
         mRecyclerView = (EmptyRecyclerView) findViewById(R.id.my_recycler_view);
@@ -236,21 +237,26 @@ public class IndexFragment extends Fragment {
         return rootView;
     }
 
+    @Override
+    public void onSearch(String keyword) {
+        IndexFragment.getInstance().getBookList(keyword);
+    }
+
     public void addNewBook(final int position, BookListItem book) {
         PLServerAPI.addBook(book.isbn13, book.cover, book.title, book.author, book.summary,
-            new PLServerAPI.onResponseListener() {
-                @Override
-                public void onSuccess(Object data) {
-                    BookListItem book = (BookListItem)data;
-                    mBookAdapter.getDataProvider().addItem(position, book);
-                    mBookAdapter.notifyDataSetChanged();
-                }
+                new PLServerAPI.onResponseListener() {
+                    @Override
+                    public void onSuccess(Object data) {
+                        BookListItem book = (BookListItem) data;
+                        mBookAdapter.getDataProvider().addItem(position, book);
+                        mBookAdapter.notifyDataSetChanged();
+                    }
 
-                @Override
-                public void onFailure(PLServerAPI.ApiError apiError) {
-                    showSnackBar(apiError.getErrorString());
-                }
-        });
+                    @Override
+                    public void onFailure(PLServerAPI.ApiError apiError) {
+                        showSnackBar(apiError.getErrorString());
+                    }
+                });
     }
 
     public void getBookList(String keyword){
@@ -261,6 +267,7 @@ public class IndexFragment extends Fragment {
                 mBookAdapter.setDataProvider(new BookListDataProvider(books));
                 mBookAdapter.notifyDataSetChanged();
             }
+
             @Override
             public void onFailure(PLServerAPI.ApiError apiError) {
                 showSnackBar(apiError.getErrorString());
@@ -332,5 +339,4 @@ public class IndexFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
     }
-
 }
