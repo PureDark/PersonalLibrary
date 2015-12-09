@@ -206,6 +206,7 @@ public class BookMarkActivity extends MyActivity {
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
                 .replace(R.id.fragmentContainer, fragment, fragment.getClass().getName())
+                .addToBackStack(fragment.getClass().getName())
                 .commit();
     }
 
@@ -216,6 +217,10 @@ public class BookMarkActivity extends MyActivity {
     public void setToolbarUncollapsible(){
         mAppBarLayout.setExpanded(false, true);
         mCoordinatorLayout.setAllowForScrool(false);
+    }
+    public void setBookMark(BookMark bookMark){
+        this.bookMark = bookMark;
+        invalidateOptionsMenu();
     }
 
     public void showSnackBar(String content){
@@ -229,12 +234,10 @@ public class BookMarkActivity extends MyActivity {
 
     @Override
     public void onBackPressed() {
-        if(currFragmentNo==FRAGMENT_VIEW_BOOK_MARK){
-            replaceFragment(BookMarkListFragment.getInstance());
-            setCurrFragment(FRAGMENT_BOOK_MARK_LIST);
-        } else {
+        if(isList&&currFragmentNo==FRAGMENT_VIEW_BOOK_MARK)
+            super.onBackPressed();
+        else
             this.finish();
-        }
     }
 
     @Override

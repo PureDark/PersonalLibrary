@@ -91,39 +91,10 @@ public class BookMarkListFragment extends Fragment {
         mBookMarkAdapter.setOnItemClickListener(new BookMarkAdapter.MyItemClickListener() {
             @Override
             public void onItemClick(final View view, int postion) {
-                if (markItemClicked == false) {
+                if (!markItemClicked) {
                     markItemClicked = true;
                     final BookMark bookMark = (BookMark) mBookMarkAdapter.getDataProvider().getItem(postion);
-                    String bookString = (String) SharedPreferencesUtil.getData(PLApplication.mContext, "isbn13_"+bookMark.isbn13, "");
-                    if(!bookString.equals("")){
-                        Book book = new Gson().fromJson(bookString, Book.class);
-                        book.id = bookMark.bid;
-                        book.uid = bookMark.uid;
-                        if(view.getId()==R.id.book)
-                            MainActivity.getInstance().startBookDetailActivity(book, view);
-                        else
-                            viewBookMark(bookMark);
-                    }else{
-                        DoubanRestAPI.getBookByISBN(bookMark.isbn13, new MainActivity.CallBack() {
-                            @Override
-                            public void action(final Object obj) {
-                                new Handler().postDelayed(new Runnable() {
-                                    public void run() {
-                                        if (obj instanceof Book) {
-                                            Book book = (Book) obj;
-                                            book.id = bookMark.bid;
-                                            book.uid = bookMark.uid;
-                                            if (view.getId() == R.id.book)
-                                                MainActivity.getInstance().startBookDetailActivity(book, view);
-                                            else
-                                                viewBookMark(bookMark);
-                                            SharedPreferencesUtil.saveData(PLApplication.mContext, "isbn13_" + book.isbn13, new Gson().toJson(book));
-                                        }
-                                    }
-                                }, 500);
-                            }
-                        });
-                    }
+                    viewBookMark(bookMark);
                 }
             }
         });
@@ -173,7 +144,7 @@ public class BookMarkListFragment extends Fragment {
     public void onResume(){
         super.onResume();
         markItemClicked = false;
+        ((MyActivity)getActivity()).setCurrFragment(MyActivity.FRAGMENT_BOOK_MARK_LIST);
     }
-
 
 }
