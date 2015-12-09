@@ -17,6 +17,7 @@ import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
+import ml.puredark.personallibrary.activities.BookMarkActivity;
 import ml.puredark.personallibrary.activities.MyActivity;
 import ml.puredark.personallibrary.beans.BookMark;
 import ml.puredark.personallibrary.helpers.PLServerAPI;
@@ -52,6 +53,7 @@ public class ViewBookMarkFragment extends Fragment {
         ((MyActivity)getActivity()).setCurrFragment(MyActivity.FRAGMENT_VIEW_BOOK_MARK);
 
         bookMark = new Gson().fromJson(getArguments().getString("bookMark"), BookMark.class);
+        ((BookMarkActivity)getActivity()).setBookMark(bookMark);
 
         mAvatarView = (ImageView)findViewById(R.id.avatar);
         tvNickname = (TextView)findViewById(R.id.nickname);
@@ -79,6 +81,7 @@ public class ViewBookMarkFragment extends Fragment {
                 tvSignature.setText(bookMark.signature);
                 tvMarkTitle.setText(bookMark.title);
                 tvMarkContent.setText(bookMark.content);
+                ((BookMarkActivity)getActivity()).setBookMark(bookMark);
             }
 
             @Override
@@ -100,6 +103,12 @@ public class ViewBookMarkFragment extends Fragment {
                 Snackbar.LENGTH_LONG);
         snackbar.setActionTextColor(ContextCompat.getColor(PLApplication.mContext, R.color.colorAccentDark));
         snackbar.show();
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        ((MyActivity)getActivity()).setCurrFragment(MyActivity.FRAGMENT_VIEW_BOOK_MARK);
     }
 
 }
