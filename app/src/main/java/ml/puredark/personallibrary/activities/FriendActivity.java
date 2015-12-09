@@ -57,13 +57,16 @@ import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.User;
 import ml.puredark.personallibrary.adapters.BookListAdapter;
+import ml.puredark.personallibrary.adapters.BookMarkAdapter;
 import ml.puredark.personallibrary.adapters.ViewPagerAdapter;
 import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.beans.BookListItem;
+import ml.puredark.personallibrary.beans.BookMark;
 import ml.puredark.personallibrary.beans.Friend;
 import ml.puredark.personallibrary.customs.EmptyRecyclerView;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
 import ml.puredark.personallibrary.dataprovider.BookListDataProvider;
+import ml.puredark.personallibrary.dataprovider.BookMarkDataProvider;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimator;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimatorListener;
@@ -84,6 +87,7 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
     private TabLayout mTabLayout;
     private ViewPager mViewPager;
     private BookListAdapter mBookAdapter;
+    private BookMarkAdapter mMarkAdapter;
     private boolean scaned = false;
     private LinearLayoutManager mLinearLayoutManager;
     private RecyclerView.Adapter mWrappedAdapter;
@@ -208,24 +212,27 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
         //初始化书籍列表相关变量
 
         getBookList(friend.getId());
-
+        getBookMarks(friend.getId());
 
         List<View> views = new ArrayList<>();
         final View viewBookList = getLayoutInflater().inflate(R.layout.view_book_list, null);
-        //final View viewMaskList = getLayoutInflater().inflate(R.layout.view_mark_list, null);
+        final View viewMaskList = getLayoutInflater().inflate(R.layout.list_news, null);
         views.add(viewBookList);
-        //views.add(viewMaskList);
+        views.add(viewMaskList);
         List<String> titles = new ArrayList<String>();
         titles.add("书籍");
-       // titles.add("书评");
+        titles.add("书评");
         ViewPagerAdapter mAdapter = new ViewPagerAdapter(views, titles);
-        mRecyclerView = (EmptyRecyclerView) viewBookList.findViewById(R.id.my_recycler_view);
-        mRecyclerView.setEmptyView(rootView.findViewById(R.id.empty_view));
-        mRecyclerView.setHasFixedSize(true);
         mTabLayout.setTabsFromPagerAdapter(mAdapter);
         mViewPager.setAdapter(mAdapter);
         mTabLayout.setupWithViewPager(mViewPager);
-
+        //书评模块
+        List<BookMark> bookMarks = new ArrayList<>();
+        getBookMarks(User.getUid());
+        //书籍模块
+        mRecyclerView = (EmptyRecyclerView) viewBookList.findViewById(R.id.my_recycler_view);
+        mRecyclerView.setEmptyView(rootView.findViewById(R.id.empty_view));
+        mRecyclerView.setHasFixedSize(true);
         mBookAdapter.setOnItemClickListener(new BookListAdapter.MyItemClickListener() {
             @Override
             public void onItemClick(final View view, int postion) {
@@ -290,14 +297,26 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
         }else
             finish();
     }
+    public void getBookMarks(int uid){
+        PLServerAPI.getRecentBookMarks(uid, new PLServerAPI.onResponseListener() {
+            @Override
+            public void onSuccess(Object data) {
+                List<BookMark> bMarks = (List<BookMark>) data;
+                mMarkAdapter.setDataProvider(new BookMarkDataProvider(bMarks));
+                mMarkAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onFailure(PLServerAPI.ApiError apiError) {
+                showSnackBar(apiError.getErrorString());
+            }
+        });
+    }
     public void getBookList(int uid){
         PLServerAPI.getBookList(uid,null, null, new PLServerAPI.onResponseListener() {
             @Override
             public void onSuccess(Object data) {
                 List<BookListItem> books = (List<BookListItem>) data;
-                for(BookListItem b : books){
-                    Log.i("Kevin",b.title);
-                }
                 mBookAdapter.setDataProvider(new BookListDataProvider(books));
                 mBookAdapter.notifyDataSetChanged();
             }
