@@ -16,6 +16,9 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.drawable.DrawerArrowDrawable;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -58,6 +61,7 @@ import ml.puredark.personallibrary.adapters.ViewPagerAdapter;
 import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.beans.BookListItem;
 import ml.puredark.personallibrary.beans.Friend;
+import ml.puredark.personallibrary.customs.EmptyRecyclerView;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
 import ml.puredark.personallibrary.dataprovider.BookListDataProvider;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper;
@@ -81,7 +85,10 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
     private ViewPager mViewPager;
     private BookListAdapter mBookAdapter;
     private boolean scaned = false;
-
+    private LinearLayoutManager mLinearLayoutManager;
+    private RecyclerView.Adapter mWrappedAdapter;
+    private EmptyRecyclerView mRecyclerView;
+    //private View viewBookList,viewMaskList,viewFriendList;
     //动画相关元素
     private ViewGroup rootView;
     private FloatingActionButton fabAction;
@@ -101,7 +108,9 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+      //  viewBookList = getLayoutInflater().inflate(R.layout.view_book_list, null);
+       // viewFriendList = getLayoutInflater().inflate(R.layout.view_mark_list, null);
+       // viewMaskList = getLayoutInflater().inflate(R.layout.view_register, null);
         setContentView(R.layout.activity_friend_detail);
 
         Log.i("Kevin", "startH1");
@@ -192,10 +201,31 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
         }
         /* 加载ViewPager */
 
+
         mTabLayout = (TabLayout) findViewById(R.id.tabLayout);
         mViewPager = (ViewPager) findViewById(R.id.viewpager);
+        mBookAdapter = new BookListAdapter(new BookListDataProvider(new ArrayList<BookListItem>()));
+        //初始化书籍列表相关变量
+
         getBookList(friend.getId());
-        mBookAdapter = new BookListAdapter(new BookListDataProvider(null));
+
+
+        List<View> views = new ArrayList<>();
+        final View viewBookList = getLayoutInflater().inflate(R.layout.view_book_list, null);
+        //final View viewMaskList = getLayoutInflater().inflate(R.layout.view_mark_list, null);
+        views.add(viewBookList);
+        //views.add(viewMaskList);
+        List<String> titles = new ArrayList<String>();
+        titles.add("书籍");
+       // titles.add("书评");
+        ViewPagerAdapter mAdapter = new ViewPagerAdapter(views, titles);
+        mRecyclerView = (EmptyRecyclerView) viewBookList.findViewById(R.id.my_recycler_view);
+        mRecyclerView.setEmptyView(rootView.findViewById(R.id.empty_view));
+        mRecyclerView.setHasFixedSize(true);
+        mTabLayout.setTabsFromPagerAdapter(mAdapter);
+        mViewPager.setAdapter(mAdapter);
+        mTabLayout.setupWithViewPager(mViewPager);
+
         mBookAdapter.setOnItemClickListener(new BookListAdapter.MyItemClickListener() {
             @Override
             public void onItemClick(final View view, int postion) {
@@ -207,7 +237,7 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
                         Book book = new Gson().fromJson(bookString, Book.class);
                         book.id = item.getId();
                         book.uid = User.getUid();
-                        mActivity.startBookDetailActivity(book, view);
+                        MainActivity.getInstance().startBookDetailActivity(book, view);
                     } else {
                         DoubanRestAPI.getBookByISBN(item.isbn13, new MainActivity.CallBack() {
                             @Override
@@ -218,7 +248,7 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
                                             Book book = (Book) obj;
                                             book.id = item.getId();
                                             book.uid = User.getUid();
-                                            mActivity.startBookDetailActivity(book, view);
+                                            MainActivity.getInstance().startBookDetailActivity(book, view);
                                             SharedPreferencesUtil.saveData(PLApplication.mContext, "isbn13_" + book.isbn13, new Gson().toJson(book));
                                         }
                                     }
@@ -229,18 +259,22 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
                 }
             }
         });
-        List<View> views = new ArrayList<>();
-        final View viewBookList = getLayoutInflater().inflate(R.layout.view_book_list, null);
-        //final View viewMaskList = getLayoutInflater().inflate(R.layout.view_mark_list, null);
-        views.add(viewBookList);
-        //views.add(viewMaskList);
-        List<String> titles = new ArrayList<String>();
-        titles.add("书籍");
-        //titles.add("书评");
-        ViewPagerAdapter mAdapter = new ViewPagerAdapter(views, titles);
-        mTabLayout.setTabsFromPagerAdapter(mAdapter);
-        mViewPager.setAdapter(mAdapter);
-        mTabLayout.setupWithViewPager(mViewPager);
+
+
+
+
+        //指定为线性列表
+        mLinearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+
+        mRecyclerView.setLayoutManager(mLinearLayoutManager);
+        mRecyclerView.setAdapter(mBookAdapter);
+        mRecyclerView.setRecyclerListener(new RecyclerView.RecyclerListener() {
+            @Override
+            public void onViewRecycled(RecyclerView.ViewHolder holder) {
+
+            }
+        });
+
     }
 
     public void finishActivity(){
@@ -261,6 +295,9 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
             @Override
             public void onSuccess(Object data) {
                 List<BookListItem> books = (List<BookListItem>) data;
+                for(BookListItem b : books){
+                    Log.i("Kevin",b.title);
+                }
                 mBookAdapter.setDataProvider(new BookListDataProvider(books));
                 mBookAdapter.notifyDataSetChanged();
             }
@@ -344,6 +381,7 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
     @Override
     public void onResume() {
         super.onResume();
+        bookItemClicked = false;
         mAppBarLayout.addOnOffsetChangedListener(this);
     }
     @Override
