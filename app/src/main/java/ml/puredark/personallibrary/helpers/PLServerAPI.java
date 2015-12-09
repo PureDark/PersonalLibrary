@@ -353,7 +353,8 @@ public class PLServerAPI {
         postReturnJsonElement(params, new onResponseListener() {
             @Override
             public void onSuccess(Object data) {
-                List<Request> requests = new Gson().fromJson((JsonElement) data, new TypeToken<List<Request>>() {}.getType());
+                List<Request> requests = new Gson().fromJson((JsonElement) data, new TypeToken<List<Request>>() {
+                }.getType());
                 callBack.onSuccess(requests);
             }
 
@@ -399,6 +400,15 @@ public class PLServerAPI {
     }
 
 
+    public static void deleteBookMark(int mid, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "social");
+        params.put("action", "deleteBookMark");
+        params.put("mid", mid);
+        params.put("sessionid", User.getSessionid());
+        postNoReturnData(params, callBack);
+    }
+
     public static void getBookMarkList(int bid, int uid, final onResponseListener callBack) {
         RequestParams params = new RequestParams();
         params.put("module", "social");
@@ -435,6 +445,27 @@ public class PLServerAPI {
                 List<BookMark> bookmarks = new Gson().fromJson((JsonElement) data, new TypeToken<List<BookMark>>() {}.getType());
                 callBack.onSuccess(bookmarks);
             }
+            @Override
+            public void onFailure(ApiError apiError) {
+                callBack.onFailure(apiError);
+            }
+        });
+    }
+
+    public static void getBookMarkDetails(int mid, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "social");
+        params.put("action", "getBookMarkDetails");
+        params.put("mid", mid);
+        params.put("sessionid", User.getSessionid());
+
+        postReturnJsonElement(params, new onResponseListener() {
+            @Override
+            public void onSuccess(Object data) {
+                BookMark bookmark = new Gson().fromJson((JsonElement) data, BookMark.class);
+                callBack.onSuccess(bookmark);
+            }
+
             @Override
             public void onFailure(ApiError apiError) {
                 callBack.onFailure(apiError);

@@ -56,7 +56,7 @@
             android:label="@string/title_activity_write_mark"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".activities.ViewBookMarkActivity"
+            android:name=".activities.BookMarkActivity"
             android:label="@string/title_activity_view_book_mark"
             android:theme="@style/AppTheme"></activity>
     </application>
