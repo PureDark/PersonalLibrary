@@ -42,7 +42,10 @@
     <string name="item_removed">移除了一本书</string>
     <string name="snack_bar_action_undo">撤销</string>
 
-    <string name="title_activity_write_mark">写书评</string>
-    <string name="title_activity_book_mark">查看书评</string>
-    <string name="title_activity_book_mark_list">所有书评</string>
+    <string name="title_activity_write_mark">写读书笔记</string>
+    <string name="title_activity_book_mark">查看读书笔记</string>
+    <string name="title_activity_book_mark_list">所有读书笔记</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

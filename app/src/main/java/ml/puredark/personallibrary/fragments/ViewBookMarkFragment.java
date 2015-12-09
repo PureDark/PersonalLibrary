@@ -1,16 +1,9 @@
 package ml.puredark.personallibrary.fragments;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.graphics.Palette;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,29 +11,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
-import ml.puredark.personallibrary.User;
-import ml.puredark.personallibrary.activities.BookMarkActivity;
-import ml.puredark.personallibrary.activities.MainActivity;
-import ml.puredark.personallibrary.adapters.BookMarkAdapter;
-import ml.puredark.personallibrary.beans.Book;
+import ml.puredark.personallibrary.activities.MyActivity;
 import ml.puredark.personallibrary.beans.BookMark;
-import ml.puredark.personallibrary.dataprovider.BookMarkDataProvider;
-import ml.puredark.personallibrary.helpers.DoubanRestAPI;
 import ml.puredark.personallibrary.helpers.PLServerAPI;
-import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
-
-;
 
 public class ViewBookMarkFragment extends Fragment {
     private View rootView;
@@ -70,7 +49,7 @@ public class ViewBookMarkFragment extends Fragment {
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_view_book_mark, container, false);
 
-        ((BookMarkActivity)getActivity()).setCurrFragment(BookMarkActivity.FRAGMENT_VIEW_BOOK_MARK);
+        ((MyActivity)getActivity()).setCurrFragment(MyActivity.FRAGMENT_VIEW_BOOK_MARK);
 
         bookMark = new Gson().fromJson(getArguments().getString("bookMark"), BookMark.class);
 
@@ -104,11 +83,23 @@ public class ViewBookMarkFragment extends Fragment {
 
             @Override
             public void onFailure(PLServerAPI.ApiError apiError) {
-                ((BookMarkActivity)getActivity()).showSnackBar(apiError.getErrorString());
+                showSnackBar(apiError.getErrorString());
             }
         });
 
         return rootView;
+    }
+
+
+    public void showSnackBar(String content){
+        View container = findViewById(R.id.container);
+        if(container==null)return;
+        Snackbar snackbar = Snackbar.make(
+                container,
+                content,
+                Snackbar.LENGTH_LONG);
+        snackbar.setActionTextColor(ContextCompat.getColor(PLApplication.mContext, R.color.colorAccentDark));
+        snackbar.show();
     }
 
 }

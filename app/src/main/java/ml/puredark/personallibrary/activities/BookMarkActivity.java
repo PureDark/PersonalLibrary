@@ -8,7 +8,6 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,11 +31,12 @@ import ml.puredark.personallibrary.adapters.ViewPagerAdapter;
 import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.beans.BookMark;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
+import ml.puredark.personallibrary.fragments.BookMarkListFragment;
 import ml.puredark.personallibrary.fragments.ViewBookMarkFragment;
 import ml.puredark.personallibrary.helpers.PLServerAPI;
 import ml.puredark.personallibrary.utils.DensityUtils;
 
-public class BookMarkActivity extends AppCompatActivity {
+public class BookMarkActivity extends MyActivity {
     // 书评所关联的书籍的ID
     private BookMark bookMark;
     private Book book;
@@ -47,9 +47,6 @@ public class BookMarkActivity extends AppCompatActivity {
     private ViewPager mViewPager;
     private View viewBookMark,viewBookDetails;
 
-    //Fragment编号
-    public final static int FRAGMENT_VIEW_BOOK_MARK = 1;
-    public final static int FRAGMENT_BOOK_MARK_LIST = 2;
 
     //记录当前加载的是哪个Fragment
     private int currFragmentNo = FRAGMENT_VIEW_BOOK_MARK;
@@ -77,9 +74,10 @@ public class BookMarkActivity extends AppCompatActivity {
         book = (Book) PLApplication.temp;
         Bundle bundle = getIntent().getExtras();
         if(bundle==null)finish();
-        isList = bundle.getBoolean("isList");
+        else isList = bundle.getBoolean("isList", false);
         if(isList){
-
+            Fragment bookMarkList = new BookMarkListFragment();
+            replaceFragment(bookMarkList);
         }else{
             String bookMarkJson = bundle.getString("bookMark");
             if(bookMarkJson==null)finish();
@@ -119,7 +117,7 @@ public class BookMarkActivity extends AppCompatActivity {
         views.add(viewBookMark);
         views.add(viewBookDetails);
         List<String> titles = new ArrayList<String>();
-        titles.add("书评");
+        titles.add("读书笔记");
         titles.add("书籍详情");
         ViewPagerAdapter mAdapter = new ViewPagerAdapter(views, titles);
         mTabLayout.setTabsFromPagerAdapter(mAdapter);
@@ -192,6 +190,14 @@ public class BookMarkActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public View findViewById(int viewId){
+        View v = super.findViewById(viewId);
+        if(v==null)
+            v = viewBookMark.findViewById(viewId);
+        return v;
+    }
+
     public void setCurrFragment(int curr){
         currFragmentNo = curr;
     }
@@ -222,9 +228,19 @@ public class BookMarkActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        if(currFragmentNo==FRAGMENT_VIEW_BOOK_MARK){
+            replaceFragment(BookMarkListFragment.getInstance());
+            setCurrFragment(FRAGMENT_BOOK_MARK_LIST);
+        } else {
+            this.finish();
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // 如果书评是当前用户发布的
-        if(bookMark.uid == User.getUid())
+        if(bookMark!=null&&bookMark.uid == User.getUid())
             getMenuInflater().inflate(R.menu.book_mark, menu);
         return true;
     }
@@ -238,7 +254,7 @@ public class BookMarkActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(Object data) {
                     posting = false;
-                    Toast.makeText(BookMarkActivity.this, "书评删除成功！", Toast.LENGTH_LONG).show();
+                    Toast.makeText(BookMarkActivity.this, "读书笔记删除成功！", Toast.LENGTH_LONG).show();
                     finish();
                 }
 

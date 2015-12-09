@@ -118,7 +118,7 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
         });
 
         final Intent intent = getIntent();
-        Bundle bundle = intent.getExtras();
+        final Bundle bundle = intent.getExtras();
         scaned = intent.getBooleanExtra("scaned", false);
         if(scaned)
             fabMenu.setVisibility(View.GONE);
@@ -188,8 +188,6 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
         setInfoIconColor(bundle.getInt("topTextColor"));
         setInfoTextColor(bundle.getInt("topTextColor"));
 
-        final int topColor = bundle.getInt("topColor");
-        final int topTextColor = bundle.getInt("topTextColor");
         final int fabColor = bundle.getInt("fabColor");
         float[] hsv = new float[3];
         Color.colorToHSV(fabColor, hsv);
@@ -242,12 +240,9 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
         fab_write.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final Intent intent = new Intent(BookDetailActivity.this, WriteMarkActivity.class);
-                Bundle bundle = new Bundle();
+                Intent intent = new Intent(BookDetailActivity.this, WriteMarkActivity.class);
                 bundle.putInt("bid", book.id);
                 bundle.putString("isbn13", book.isbn13);
-                bundle.putInt("topColor", topColor);
-                bundle.putInt("topTextColor", topTextColor);
                 bundle.putInt("fabColor", fabColor);
                 bundle.putInt("fabColorPressed", fabColorPressed);
                 intent.putExtras(bundle);
@@ -264,6 +259,11 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
         fab_book_marks.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent = new Intent(BookDetailActivity.this, BookMarkActivity.class);
+                bundle.putBoolean("isList", true);
+                intent.putExtras(bundle);
+                PLApplication.temp = book;
+                startActivity(intent);
             }
         });
     }
