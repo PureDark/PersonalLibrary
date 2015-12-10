@@ -14,6 +14,7 @@ public final class Friend extends AbstractDataProvider.Data{
     public String birthday;
     public String character;
     public boolean isFriend = false;
+    public boolean requestSent = false;
     public Friend(int uid, int sex, String nickname, String signature, String birthday, boolean isFriend){
         this.uid = uid;
         this.sex = sex;

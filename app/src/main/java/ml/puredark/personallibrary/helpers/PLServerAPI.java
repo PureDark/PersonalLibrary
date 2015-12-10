@@ -24,6 +24,7 @@ import ml.puredark.personallibrary.User;
 import ml.puredark.personallibrary.activities.LoginActivity;
 import ml.puredark.personallibrary.beans.BookListItem;
 import ml.puredark.personallibrary.beans.BookMark;
+import ml.puredark.personallibrary.beans.BorrowRecord;
 import ml.puredark.personallibrary.beans.Friend;
 import ml.puredark.personallibrary.beans.Request;
 import ml.puredark.personallibrary.beans.Tag;
@@ -295,6 +296,79 @@ public class PLServerAPI {
         });
     }
 
+    public static void addBorrowRecord(int bid, int loan_uid, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "borrow");
+        params.put("action", "addBorrowRecord");
+        params.put("bid", bid);
+        params.put("loan_uid", loan_uid);
+        params.put("sessionid", User.getSessionid());
+        postNoReturnData(params, callBack);
+    }
+
+    public static void acceptBorrowRecord(int brid, boolean accept, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "borrow");
+        params.put("action", "acceptBorrowRecord");
+        params.put("brid", brid);
+        int acpt = (accept)?1:0;
+        params.put("accept", acpt);
+        params.put("sessionid", User.getSessionid());
+        postNoReturnData(params, callBack);
+    }
+
+    public static void setBookReturned(int brid, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "borrow");
+        params.put("action", "setBookReturned");
+        params.put("brid", brid);
+        params.put("sessionid", User.getSessionid());
+        postNoReturnData(params, callBack);
+    }
+
+    public static void getBorrowedBookRecordList(int status, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "borrow");
+        params.put("action", "getBorrowedBookRecordList");
+        params.put("status", status);
+        params.put("sessionid", User.getSessionid());
+
+        postReturnJsonElement(params, new onResponseListener() {
+            @Override
+            public void onSuccess(Object data) {
+                List<BorrowRecord> books = new Gson().fromJson((JsonElement) data, new TypeToken<List<BorrowRecord>>() {
+                }.getType());
+                callBack.onSuccess(books);
+            }
+
+            @Override
+            public void onFailure(ApiError apiError) {
+                callBack.onFailure(apiError);
+            }
+        });
+    }
+
+    public static void getLoanedBookRecordList(int status, final onResponseListener callBack) {
+        RequestParams params = new RequestParams();
+        params.put("module", "borrow");
+        params.put("action", "getLoanedBookRecordList");
+        params.put("status", status);
+        params.put("sessionid", User.getSessionid());
+
+        postReturnJsonElement(params, new onResponseListener() {
+            @Override
+            public void onSuccess(Object data) {
+                List<BorrowRecord> books = new Gson().fromJson((JsonElement)data, new TypeToken<List<BorrowRecord>>() {}.getType());
+                callBack.onSuccess(books);
+            }
+
+            @Override
+            public void onFailure(ApiError apiError) {
+                callBack.onFailure(apiError);
+            }
+        });
+    }
+
 
     public static void searchUser(String keyword, final onResponseListener callBack) {
         RequestParams params = new RequestParams();
@@ -330,7 +404,8 @@ public class PLServerAPI {
         params.put("module", "social");
         params.put("action", "responseRequest");
         params.put("rid", rid);
-        params.put("accept", accept);
+        int acpt = (accept)?1:0;
+        params.put("accept", acpt);
         params.put("sessionid", User.getSessionid());
         postNoReturnData(params, callBack);
     }
@@ -608,6 +683,10 @@ public class PLServerAPI {
                 case 1032:errorString="用户信息不存在";break;
                 case 1041:errorString="用户名已被使用";break;
                 case 1051:errorString="书评不属于该用户";break;
+                case 1061:errorString="对方不拥有该书籍";break;
+                case 1062:errorString="书籍已借出";break;
+                case 1063:errorString="已经发送过借该书的请求";break;
+                case 1064:errorString="无效的借书请求";break;
                 default:errorString="未定义的错误码";break;
             }
         }

@@ -86,6 +86,7 @@ public class FriendFragment extends MyFragment {
         mActivity.setMainTitle(getResources().getString(R.string.title_fragment_friend));
         mActivity.setNavigationItemSelected(R.id.nav_friend);
         mActivity.setSearchEnable(true);
+        mActivity.setShadowEnable(true);
 
         //初始化好友列表相关变量
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
@@ -104,21 +105,36 @@ public class FriendFragment extends MyFragment {
         mFriendAdapter.setOnItemClickListener(new FriendListAdapter.MyItemClickListener() {
             @Override
             public void onItemClick(View view, int postion) {
-                    final Friend item = (Friend) mFriendAdapter.getDataProvider().getItem(postion);
-                     String uid =String .valueOf(item.getId());
-                     Log.i("Kevin",item.nickname);
-                    if(!uid.equals("")){
-                        PLApplication.temp = item;
-                        Intent intent = new Intent();
-                        intent.setClass(mActivity, FriendActivity.class);
-                        intent.putExtra("uid", uid);
-                        startActivity(intent);
-                    }
+                if (friendItemClicked) return;
+                friendItemClicked = true;
+                final Friend item = (Friend) mFriendAdapter.getDataProvider().getItem(postion);
+                if (view.getId() == R.id.btnAdd) {
+                    PLServerAPI.addRequest(item.uid, new PLServerAPI.onResponseListener() {
+                        @Override
+                        public void onSuccess(Object data) {
+                            item.requestSent = true;
+                            mFriendAdapter.notifyDataSetChanged();
+                            friendItemClicked = false;
+                        }
+
+                        @Override
+                        public void onFailure(PLServerAPI.ApiError apiError) {
+                            showSnackBar(apiError.getErrorString());
+                            friendItemClicked = false;
+                        }
+                    });
+                } else if (view.getId() == R.id.rippleLayout) {
+                    PLApplication.temp = item;
+                    Intent intent = new Intent();
+                    intent.setClass(mActivity, FriendActivity.class);
+                    intent.putExtra("uid", item.uid);
+                    startActivity(intent);
+                    friendItemClicked = false;
+                }
             }
         });
 
         mRecyclerView.setLayoutManager(mLayoutManager);
-        Log.i("FriendGet","设置adapter");
         mRecyclerView.setAdapter(mFriendAdapter);  // 设置的是处理过的mWrappedAdapter
 
         return rootView;
@@ -135,7 +151,6 @@ public class FriendFragment extends MyFragment {
             @Override
             public void onFailure(PLServerAPI.ApiError apiError) {
                 showSnackBar(apiError.getErrorString());
-
             }
         });
     }
@@ -144,8 +159,9 @@ public class FriendFragment extends MyFragment {
             @Override
             public void onSuccess(Object data) {
                 List<Friend> friends = (List<Friend>) data;
+                mFriendAdapter.setDataProvider(new FriendListDataProvider(friends));
+                mFriendAdapter.notifyDataSetChanged();
             }
-
             @Override
             public void onFailure(PLServerAPI.ApiError apiError) {
                 showSnackBar(apiError.getErrorString());
@@ -155,6 +171,10 @@ public class FriendFragment extends MyFragment {
 
     @Override
     public void onSearch(String keyword) {
+        if(keyword.equals(""))
+            getFriendList();
+        else
+            searchUser(keyword);
     }
 
     public void showSnackBar(String content){

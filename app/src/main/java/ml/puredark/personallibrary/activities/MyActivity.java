@@ -10,6 +10,7 @@ public abstract class MyActivity extends AppCompatActivity {
 
     //Fragment编号
     public final static int FRAGMENT_INDEX = 1;
+    public final static int FRAGMENT_BORROW = 2;
     public final static int FRAGMENT_FRIEND = 3;
     public final static int FRAGMENT_NEWS = 4;
 

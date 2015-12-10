@@ -24,6 +24,7 @@
     <!-- Strings related to index -->
     <string name="title_activity_main">我的藏书</string>
     <string name="title_fragment_index">我的藏书</string>
+    <string name="title_fragment_borrow">借书记录</string>
     <string name="title_fragment_friend">我的书友</string>
     <string name="title_fragment_news">书友动态</string>
 

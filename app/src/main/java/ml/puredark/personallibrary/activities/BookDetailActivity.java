@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.drawable.DrawerArrowDrawable;
@@ -48,6 +50,7 @@ import ml.puredark.personallibrary.helpers.ActivityTransitionHelper;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimator;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimatorListener;
 import ml.puredark.personallibrary.helpers.FastBlur;
+import ml.puredark.personallibrary.helpers.PLServerAPI;
 import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 
 public class BookDetailActivity extends AppCompatActivity implements AppBarLayout.OnOffsetChangedListener {
@@ -249,10 +252,21 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
                 startActivity(intent);
             }
         });
-        //借书还书按钮
+        //借书按钮
         fab_borrow_lend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                PLServerAPI.addBorrowRecord(book.id, book.uid, new PLServerAPI.onResponseListener() {
+                    @Override
+                    public void onSuccess(Object data) {
+                        showSnackBar("已发送借书请求");
+                    }
+
+                    @Override
+                    public void onFailure(PLServerAPI.ApiError apiError) {
+                        showSnackBar(apiError.getErrorString());
+                    }
+                });
             }
         });
         //查看读书笔记按钮
@@ -353,6 +367,15 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
                 fabMenu.showMenu(true);
         }
 
+    }
+
+    public void showSnackBar(String content){
+        Snackbar snackbar = Snackbar.make(
+                findViewById(R.id.root_view),
+                content,
+                Snackbar.LENGTH_SHORT);
+        snackbar.setActionTextColor(ContextCompat.getColor(PLApplication.mContext, R.color.colorAccentDark));
+        snackbar.show();
     }
 
     @Override

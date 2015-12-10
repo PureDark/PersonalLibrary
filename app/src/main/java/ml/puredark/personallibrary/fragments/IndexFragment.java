@@ -91,6 +91,7 @@ public class IndexFragment extends MyFragment {
         mActivity.setMainTitle(getResources().getString(R.string.title_fragment_index));
         mActivity.setNavigationItemSelected(R.id.nav_index);
         mActivity.setSearchEnable(true);
+        mActivity.setShadowEnable(true);
 
         //初始化书籍列表相关变量
         mRecyclerView = (EmptyRecyclerView) findViewById(R.id.my_recycler_view);

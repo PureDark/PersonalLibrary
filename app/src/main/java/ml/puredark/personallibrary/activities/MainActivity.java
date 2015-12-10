@@ -18,7 +18,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -33,7 +32,6 @@ import android.widget.Toast;
 
 import com.gc.materialdesign.views.ProgressBarCircularIndeterminate;
 import com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch;
-import com.google.gson.Gson;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.nineoldandroids.animation.AnimatorSet;
@@ -65,10 +63,10 @@ import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.User;
 import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.beans.BookListItem;
-import ml.puredark.personallibrary.beans.Friend;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
 import ml.puredark.personallibrary.customs.MyEditText;
 import ml.puredark.personallibrary.customs.MyFloatingActionButton;
+import ml.puredark.personallibrary.fragments.BorrowFragment;
 import ml.puredark.personallibrary.fragments.FriendFragment;
 import ml.puredark.personallibrary.fragments.IndexFragment;
 import ml.puredark.personallibrary.fragments.MyFragment;
@@ -80,7 +78,6 @@ import ml.puredark.personallibrary.helpers.DoubanRestAPI;
 import ml.puredark.personallibrary.helpers.PLServerAPI;
 import ml.puredark.personallibrary.utils.BitmapUtils;
 import ml.puredark.personallibrary.utils.FileUtils;
-import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 import ml.puredark.personallibrary.utils.ViewUtils;
 
 public class MainActivity extends MyActivity
@@ -371,6 +368,7 @@ public class MainActivity extends MyActivity
             replaceFragment(IndexFragment.getInstance());
         } else if (id == R.id.nav_borrow) {
             listSwitch.setVisibility(View.INVISIBLE);
+            replaceFragment(BorrowFragment.getInstance());
         } else if (id == R.id.nav_friend) {
             listSwitch.setVisibility(View.INVISIBLE);
             replaceFragment(FriendFragment.getInstance());
@@ -670,6 +668,13 @@ public class MainActivity extends MyActivity
             inputSearch.setVisibility(View.INVISIBLE);
             findViewById(R.id.search_button).setVisibility(View.INVISIBLE);
         }
+    }
+
+    public void setShadowEnable(boolean enable){
+        if(enable)
+            findViewById(R.id.shadowDown).setVisibility(View.VISIBLE);
+        else
+            findViewById(R.id.shadowDown).setVisibility(View.INVISIBLE);
     }
 
     static int startFabX;

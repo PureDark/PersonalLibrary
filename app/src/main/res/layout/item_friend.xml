@@ -86,7 +86,24 @@
                 </LinearLayout>
             </RelativeLayout>
         </com.balysv.materialripple.MaterialRippleLayout>
-
+        <com.gc.materialdesign.views.ButtonFlat
+            android:id="@+id/btnAdd"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginRight="@dimen/half_margin"
+            android:background="@color/cpb_blue"
+            android:text="添加"/>
+        <TextView
+            android:id="@+id/status"
+            android:visibility="gone"
+            android:gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginRight="@dimen/half_margin"
+            android:textColor="@color/textSecoundary"
+            android:textSize="14sp"
+            android:text="未还"/>
     </LinearLayout>
 
 </RelativeLayout>
