@@ -15,6 +15,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.graphics.Palette;
 import android.support.v7.graphics.drawable.DrawerArrowDrawable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -43,6 +44,7 @@ import com.nineoldandroids.animation.ValueAnimator;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.telly.mrvector.MrVector;
 import com.transitionseverywhere.utils.ViewGroupOverlayUtils;
 
@@ -90,6 +92,7 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
     private BookMarkAdapter mMarkAdapter;
     private boolean scaned = false;
     private LinearLayoutManager mLinearLayoutManager;
+    private LinearLayoutManager mLayoutManager;
     private RecyclerView.Adapter mWrappedAdapter;
     private EmptyRecyclerView mRecyclerView;
     //private View viewBookList,viewMaskList,viewFriendList;
@@ -101,11 +104,11 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
     private View revealView, extendBar, blank;
     private ImageView backButton;
     private DrawerArrowDrawable backButtonIcon;
-
+    private RecyclerView mRecyclerMaskView;
     //是否动画中
     private boolean animating = false;
     private boolean bookItemClicked = false;
-
+    private boolean newsItemClicked = false;
     //此次实例展示的好友
     private Friend friend;
 
@@ -217,7 +220,7 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
 
         List<View> views = new ArrayList<>();
         final View viewBookList = getLayoutInflater().inflate(R.layout.view_book_list, null);
-        final View viewMaskList = getLayoutInflater().inflate(R.layout.list_news, null);
+        final View viewMaskList = getLayoutInflater().inflate(R.layout.view_mark_list, null);
         views.add(viewBookList);
         views.add(viewMaskList);
         List<String> titles = new ArrayList<String>();
@@ -227,11 +230,62 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
         mTabLayout.setTabsFromPagerAdapter(mAdapter);
         mViewPager.setAdapter(mAdapter);
         mTabLayout.setupWithViewPager(mViewPager);
-        //书评模块
+        /*书评模块*/
         List<BookMark> bookMarks = new ArrayList<>();
-        getBookMarks(User.getUid());
+        getBookMarks(friend.getId());
+        //初始化书籍列表相关变量
+        mRecyclerMaskView = (RecyclerView) viewMaskList.findViewById(R.id.my_recycler_view);
+        mRecyclerMaskView.setHasFixedSize(true);
+        mMarkAdapter.setOnItemClickListener(new BookMarkAdapter.MyItemClickListener() {
+            @Override
+            public void onItemClick(final View view, int postion) {
+                if (newsItemClicked == false) {
+                    newsItemClicked = true;
+                    final BookMark bookMark = (BookMark) mMarkAdapter.getDataProvider().getItem(postion);
+                    String bookString = (String) SharedPreferencesUtil.getData(PLApplication.mContext, "isbn13_" + bookMark.isbn13, "");
+                    if (!bookString.equals("")) {
+                        Book book = new Gson().fromJson(bookString, Book.class);
+                        book.id = bookMark.bid;
+                        book.uid = bookMark.uid;
+                        if (view.getId() == R.id.book)
+                            MainActivity.getInstance().startBookDetailActivity(book, view);
+                        else
+                            startViewBookMarkActivity(bookMark, book);
+                    } else {
+                        DoubanRestAPI.getBookByISBN(bookMark.isbn13, new MainActivity.CallBack() {
+                            @Override
+                            public void action(final Object obj) {
+                                new Handler().postDelayed(new Runnable() {
+                                    public void run() {
+                                        if (obj instanceof Book) {
+                                            Book book = (Book) obj;
+                                            book.id = bookMark.bid;
+                                            book.uid = bookMark.uid;
+                                            if (view.getId() == R.id.book)
+                                                MainActivity.getInstance().startBookDetailActivity(book, view);
+                                            else
+                                                startViewBookMarkActivity(bookMark, book);
+                                            SharedPreferencesUtil.saveData(PLApplication.mContext, "isbn13_" + book.isbn13, new Gson().toJson(book));
+                                        }
+                                    }
+                                }, 500);
+                            }
+                        });
+                    }
+                }
+            }
+        });
 
-        //书籍模块
+        //指定为线性列表
+        mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        mRecyclerMaskView.setLayoutManager(mLayoutManager);
+        mRecyclerMaskView.setAdapter(mMarkAdapter);
+
+
+
+
+
+        /*书籍模块*/
         mRecyclerView = (EmptyRecyclerView) viewBookList.findViewById(R.id.my_recycler_view);
         mRecyclerView.setEmptyView(rootView.findViewById(R.id.empty_view));
         mRecyclerView.setHasFixedSize(true);
@@ -285,6 +339,43 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
         });
 
     }
+    public void startViewBookMarkActivity(final BookMark bookMark, final Book book){
+        final String url = (book.images.get("large")==null)?book.image:book.images.get("large");
+        ImageLoader.getInstance().loadImage(url, new SimpleImageLoadingListener() {
+            @Override
+            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                PLApplication.temp = book;
+                PLApplication.bitmap = loadedImage;
+                Palette.generateAsync(loadedImage, new Palette.PaletteAsyncListener() {
+                    @Override
+                    public void onGenerated(Palette palette) {
+                        Palette.Swatch vibrant = palette.getVibrantSwatch();
+                        Palette.Swatch darkVibrant = palette.getDarkVibrantSwatch();
+                        Palette.Swatch darkmuted = palette.getDarkMutedSwatch();
+                        Palette.Swatch top = (darkmuted != null) ? darkmuted : darkVibrant;
+                        if (darkmuted != null && darkVibrant != null)
+                            top = (darkmuted.getPopulation() >= darkVibrant.getPopulation()) ? darkmuted : darkVibrant;
+                        Palette.Swatch muted = palette.getMutedSwatch();
+                        Palette.Swatch lightmuted = palette.getLightMutedSwatch();
+                        Palette.Swatch bottom = (lightmuted != null) ? lightmuted : muted;
+                        Palette.Swatch fabColor = muted;
+                        final Intent intent = new Intent(MainActivity.getInstance(), BookMarkActivity.class);
+                        Bundle bundle = new Bundle();
+                        bundle.putString("bookMark", new Gson().toJson(bookMark));
+                        bundle.putInt("topColor", top.getRgb());
+                        bundle.putInt("topTextColor", top.getTitleTextColor());
+                        bundle.putInt("bottomColor", bottom.getRgb());
+                        bundle.putInt("bottomTextColor", bottom.getBodyTextColor());
+                        bundle.putInt("titleBarColor", vibrant.getRgb());
+                        bundle.putInt("titleTextColor", vibrant.getTitleTextColor());
+                        bundle.putInt("fabColor", fabColor.getRgb());
+                        intent.putExtras(bundle);
+                        startActivity(intent);
+                    }
+                });
+            }
+        });
+    }
 
     public void finishActivity(){
         if(transitionHelper!=null) {
@@ -300,12 +391,12 @@ public class FriendActivity extends AppCompatActivity implements AppBarLayout.On
             finish();
     }
     public void getBookMarks(int uid){
-        PLServerAPI.getRecentBookMarks(uid, new PLServerAPI.onResponseListener() {
+        PLServerAPI.getBookMarkList(0, uid, new PLServerAPI.onResponseListener() {
             @Override
             public void onSuccess(Object data) {
                 List<BookMark> bMarks = (List<BookMark>) data;
-                for(BookMark bm : bMarks){
-                    Log.i("Kevin",bm.book_title);
+                for (BookMark bm : bMarks) {
+                    Log.i("Kevin", bm.book_title + "Mark");
                 }
                 mMarkAdapter.setDataProvider(new BookMarkDataProvider(bMarks));
                 mMarkAdapter.notifyDataSetChanged();
