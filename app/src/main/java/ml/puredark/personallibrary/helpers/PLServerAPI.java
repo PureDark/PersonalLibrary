@@ -680,8 +680,7 @@ public class PLServerAPI {
                 case 1021:errorString="用户无此书";break;
                 case 1022:errorString="书籍不存在";break;
                 case 1023:errorString="Tag不存在";break;
-                case 1032:errorString="用户信息不存在";break;
-                case 1041:errorString="用户名已被使用";break;
+                case 1032:errorString="手机号已被使用";break;
                 case 1051:errorString="书评不属于该用户";break;
                 case 1061:errorString="对方不拥有该书籍";break;
                 case 1062:errorString="书籍已借出";break;
