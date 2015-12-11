@@ -56,7 +56,7 @@
                         android:gravity="center_vertical"
                         android:maxLines="2"
                         android:lineSpacingExtra="2dp"
-                        tools:text="请求借阅《苏菲的选择》"
+                        android:text="对方请求添加您为书友"
                         android:textColor="@color/textPrimary"
                         android:textSize="14sp"/>
                 </LinearLayout>
@@ -78,14 +78,6 @@
                 android:layout_marginLeft="@dimen/half_margin"
                 android:background="@color/cpb_blue"
                 android:text="同意"/>
-            <com.gc.materialdesign.views.ButtonFlat
-                android:id="@+id/btnReturn"
-                android:visibility="gone"
-                android:layout_width="60dp"
-                android:layout_height="match_parent"
-                android:layout_marginTop="@dimen/half_margin"
-                android:background="@color/cpb_blue"
-                android:text="确认已还"/>
             <TextView
                 android:id="@+id/status"
                 android:visibility="gone"
@@ -96,20 +88,8 @@
                 android:layout_marginLeft="@dimen/activity_horizontal_margin"
                 android:textColor="@color/textSecoundary"
                 android:textSize="14sp"
-                tools:text="未归还"/>
+                tools:text="已添加"/>
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/datetime"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_marginTop="@dimen/half_margin"
-            android:layout_marginRight="@dimen/half_margin"
-            android:singleLine="true"
-            android:textColor="@color/textSecoundary"
-            android:textSize="12sp"
-            tools:text="2015-11-09 03:16:15"/>
     </RelativeLayout>
     <View
         android:layout_width="match_parent"

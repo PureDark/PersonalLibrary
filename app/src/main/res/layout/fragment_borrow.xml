@@ -32,8 +32,7 @@
             android:clipToPadding="false"
             android:fitsSystemWindows="false"
             android:focusable="true"
-            android:focusableInTouchMode="true"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+            android:focusableInTouchMode="true">
 
             <android.support.v4.view.ViewPager
                 android:id="@+id/viewpager"

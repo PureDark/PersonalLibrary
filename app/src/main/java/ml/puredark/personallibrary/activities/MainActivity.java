@@ -2,6 +2,7 @@ package ml.puredark.personallibrary.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
@@ -32,12 +33,14 @@ import android.widget.Toast;
 
 import com.gc.materialdesign.views.ProgressBarCircularIndeterminate;
 import com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch;
+import com.google.gson.Gson;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ArgbEvaluator;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.telly.mrvector.MrVector;
 import com.wnafee.vector.compat.ResourcesCompat;
@@ -63,6 +66,8 @@ import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.User;
 import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.beans.BookListItem;
+import ml.puredark.personallibrary.beans.BookMark;
+import ml.puredark.personallibrary.beans.Friend;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
 import ml.puredark.personallibrary.customs.MyEditText;
 import ml.puredark.personallibrary.customs.MyFloatingActionButton;
@@ -550,12 +555,21 @@ public class MainActivity extends MyActivity
                         Palette.Swatch fabColor = muted;
                         final Intent intent = new Intent(MainActivity.this, BookDetailActivity.class);
                         Bundle bundle = new Bundle();
+                        Resources res = getResources();
+                        if (top == null)
+                            top = new Palette.Swatch(res.getColor(R.color.colorPrimary), 1000);
                         bundle.putInt("topColor", top.getRgb());
                         bundle.putInt("topTextColor", top.getTitleTextColor());
+                        if (bottom == null)
+                            bottom = new Palette.Swatch(res.getColor(R.color.colorPrimaryLight), 1000);
                         bundle.putInt("bottomColor", bottom.getRgb());
                         bundle.putInt("bottomTextColor", bottom.getBodyTextColor());
+                        if (vibrant == null)
+                            vibrant = new Palette.Swatch(res.getColor(R.color.colorAccent), 1000);
                         bundle.putInt("titleBarColor", vibrant.getRgb());
                         bundle.putInt("titleTextColor", vibrant.getTitleTextColor());
+                        if (fabColor == null)
+                            fabColor = new Palette.Swatch(res.getColor(R.color.colorPrimaryDark), 1000);
                         bundle.putInt("fabColor", fabColor.getRgb());
                         intent.putExtras(bundle);
                         intent.putExtra("scaned", scaned);
@@ -580,6 +594,112 @@ public class MainActivity extends MyActivity
                             ActivityTransitionHelper.with(MainActivity.this)
                                     .fromView(fromView).startActivityForResult(intent, RESULT_BOOKDETAIL);
                         }
+                    }
+                });
+            }
+        });
+    }
+
+    public void startFriendDetailActivity(final Friend friend, final View avatar){
+        ImageLoader.getInstance().loadImage(PLApplication.serverHost+"/images/users/avatars/"+friend.uid+".png", new SimpleImageLoadingListener() {
+            @Override
+            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                PLApplication.temp = friend;
+                PLApplication.bitmap = loadedImage;
+                final View fromView = avatar;
+                Palette.generateAsync(loadedImage, new Palette.PaletteAsyncListener() {
+                    @Override
+                    public void onGenerated(Palette palette) {
+                        Palette.Swatch vibrant = palette.getVibrantSwatch();
+                        Palette.Swatch darkVibrant = palette.getDarkVibrantSwatch();
+                        Palette.Swatch darkmuted = palette.getDarkMutedSwatch();
+                        Palette.Swatch top = (darkmuted != null) ? darkmuted : darkVibrant;
+                        if (darkmuted != null && darkVibrant != null)
+                            top = (darkmuted.getPopulation() >= darkVibrant.getPopulation()) ? darkmuted : darkVibrant;
+                        Palette.Swatch muted = palette.getMutedSwatch();
+                        Palette.Swatch lightmuted = palette.getLightMutedSwatch();
+                        Palette.Swatch bottom = (lightmuted != null) ? lightmuted : muted;
+                        final Intent intent = new Intent(MainActivity.this, FriendDetailActivity.class);
+                        Bundle bundle = new Bundle();
+                        Resources res = getResources();
+                        if(top==null)
+                            top = new Palette.Swatch(res.getColor(R.color.colorPrimary),1000);
+                        bundle.putInt("topColor", top.getRgb());
+                        bundle.putInt("topTextColor", top.getTitleTextColor());
+                        if(bottom==null)
+                            bottom = new Palette.Swatch(res.getColor(R.color.colorPrimaryLight),1000);
+                        bundle.putInt("bottomColor", bottom.getRgb());
+                        bundle.putInt("bottomTextColor", bottom.getBodyTextColor());
+                        if(vibrant==null)
+                            vibrant = new Palette.Swatch(res.getColor(R.color.colorAccent),1000);
+                        bundle.putInt("titleBarColor", vibrant.getRgb());
+                        bundle.putInt("titleTextColor", vibrant.getTitleTextColor());
+                        intent.putExtras(bundle);
+                        ActivityTransitionHelper.with(MainActivity.this).fromView(fromView).startActivity(intent);
+                    }
+                });
+            }
+            @Override
+            public void onLoadingFailed(String imageUri, View view, FailReason failReason){
+                final Intent intent = new Intent(MainActivity.this, FriendDetailActivity.class);
+                Bundle bundle = new Bundle();
+                Resources res = getResources();
+                Palette.Swatch top = new Palette.Swatch(res.getColor(R.color.colorPrimary),1000);
+                bundle.putInt("topColor", top.getRgb());
+                bundle.putInt("topTextColor", top.getTitleTextColor());
+                Palette.Swatch bottom = new Palette.Swatch(res.getColor(R.color.colorPrimaryLight),1000);
+                bundle.putInt("bottomColor", bottom.getRgb());
+                bundle.putInt("bottomTextColor", bottom.getBodyTextColor());
+                Palette.Swatch vibrant = new Palette.Swatch(res.getColor(R.color.colorAccent),1000);
+                bundle.putInt("titleBarColor", vibrant.getRgb());
+                bundle.putInt("titleTextColor", vibrant.getTitleTextColor());
+                intent.putExtras(bundle);
+                ActivityTransitionHelper.with(MainActivity.this).fromView(avatar).startActivity(intent);
+            }
+        });
+    }
+
+    public void startViewBookMarkActivity(final BookMark bookMark, final Book book){
+        final String url = (book.images.get("large")==null)?book.image:book.images.get("large");
+        ImageLoader.getInstance().loadImage(url, new SimpleImageLoadingListener() {
+            @Override
+            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                PLApplication.temp = book;
+                PLApplication.bitmap = loadedImage;
+                Palette.generateAsync(loadedImage, new Palette.PaletteAsyncListener() {
+                    @Override
+                    public void onGenerated(Palette palette) {
+                        Palette.Swatch vibrant = palette.getVibrantSwatch();
+                        Palette.Swatch darkVibrant = palette.getDarkVibrantSwatch();
+                        Palette.Swatch darkmuted = palette.getDarkMutedSwatch();
+                        Palette.Swatch top = (darkmuted != null) ? darkmuted : darkVibrant;
+                        if (darkmuted != null && darkVibrant != null)
+                            top = (darkmuted.getPopulation() >= darkVibrant.getPopulation()) ? darkmuted : darkVibrant;
+                        Palette.Swatch muted = palette.getMutedSwatch();
+                        Palette.Swatch lightmuted = palette.getLightMutedSwatch();
+                        Palette.Swatch bottom = (lightmuted != null) ? lightmuted : muted;
+                        Palette.Swatch fabColor = muted;
+                        final Intent intent = new Intent(MainActivity.this, BookMarkActivity.class);
+                        Bundle bundle = new Bundle();
+                        bundle.putString("bookMark", new Gson().toJson(bookMark));
+                        Resources res = getResources();
+                        if (top == null)
+                            top = new Palette.Swatch(res.getColor(R.color.colorPrimary), 1000);
+                        bundle.putInt("topColor", top.getRgb());
+                        bundle.putInt("topTextColor", top.getTitleTextColor());
+                        if (bottom == null)
+                            bottom = new Palette.Swatch(res.getColor(R.color.colorPrimaryLight), 1000);
+                        bundle.putInt("bottomColor", bottom.getRgb());
+                        bundle.putInt("bottomTextColor", bottom.getBodyTextColor());
+                        if (vibrant == null)
+                            vibrant = new Palette.Swatch(res.getColor(R.color.colorAccent), 1000);
+                        bundle.putInt("titleBarColor", vibrant.getRgb());
+                        bundle.putInt("titleTextColor", vibrant.getTitleTextColor());
+                        if (fabColor == null)
+                            fabColor = new Palette.Swatch(res.getColor(R.color.colorPrimaryDark), 1000);
+                        bundle.putInt("fabColor", fabColor.getRgb());
+                        intent.putExtras(bundle);
+                        startActivity(intent);
                     }
                 });
             }

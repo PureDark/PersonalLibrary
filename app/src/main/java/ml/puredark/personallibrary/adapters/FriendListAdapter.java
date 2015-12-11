@@ -32,8 +32,6 @@ public class FriendListAdapter
     private MyItemClickListener mItemClickListener;
 
 
-
-
     public class FriendViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public MaterialRippleLayout rippleLayout;
         public LinearLayout container;
@@ -62,7 +60,10 @@ public class FriendListAdapter
         @Override
         public void onClick(View view) {
             if(mListener != null){
-                mListener.onItemClick(view, getPosition());
+                if (view.getId() == R.id.btnAdd)
+                    mListener.onItemClick(view, getPosition());
+                else
+                    mListener.onItemClick(avatar, getPosition());
             }
         }
     }
@@ -74,9 +75,6 @@ public class FriendListAdapter
     public FriendListAdapter(AbstractDataProvider mProvider) {
         this.mProvider = mProvider;
         List<Friend> fs = (List<Friend>) mProvider.getItems();
-        for(Friend f : fs){
-            Log.i("Kevin",f.nickname+":"+f.getId());
-        }
         setHasStableIds(true);
     }
 
@@ -131,14 +129,15 @@ public class FriendListAdapter
         if(friend.isFriend){
             holder.btnAdd.setVisibility(View.GONE);
             holder.status.setVisibility(View.GONE);
-        }else{
-            holder.btnAdd.setVisibility(View.VISIBLE);
+        }else if(friend.requestSent) {
+            holder.btnAdd.setVisibility(View.GONE);
             holder.status.setVisibility(View.VISIBLE);
-        }
-        if(friend.requestSent)
             holder.status.setText("等待验证");
-        else
+        }else {
+            holder.btnAdd.setVisibility(View.VISIBLE);
+            holder.status.setVisibility(View.GONE);
             holder.status.setText("");
+        }
     }
 
     @Override

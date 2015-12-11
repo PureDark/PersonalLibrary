@@ -77,6 +77,10 @@ public class BookMarkActivity extends MyActivity {
         else isList = bundle.getBoolean("isList", false);
         if(isList){
             Fragment bookMarkList = new BookMarkListFragment();
+            Bundle newbund = new Bundle();
+            newbund.putInt("bid",book.id);
+            newbund.putInt("uid", book.uid);
+            bookMarkList.setArguments(newbund);
             replaceFragment(bookMarkList);
         }else{
             String bookMarkJson = bundle.getString("bookMark");

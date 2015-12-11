@@ -164,9 +164,9 @@ public class BorrowRecordAdapter
     }
 
     public interface MyItemClickListener {
-        public static int ACCEPT = 1;
-        public static int DECLINE = 2;
-        public static int RETURN = 3;
+        int ACCEPT = 1;
+        int DECLINE = 2;
+        int RETURN = 3;
         void onItemClick(View view, int postion, int action);
     }
 }

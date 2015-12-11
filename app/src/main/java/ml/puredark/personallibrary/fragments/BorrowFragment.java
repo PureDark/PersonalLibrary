@@ -6,6 +6,7 @@ import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -40,6 +41,7 @@ public class BorrowFragment extends MyFragment {
     private ViewPager mViewPager;
 
     // 借出记录列表
+    private SwipeRefreshLayout mLoanSwipeRefreshLayout, mBorrowSwipeRefreshLayout;
     private RecyclerView mLoanRecyclerView, mBorrowRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private BorrowRecordAdapter mLoanRecordAdapter, mBorrowRecordAdapter;
@@ -98,6 +100,24 @@ public class BorrowFragment extends MyFragment {
         mTabLayout.setTabsFromPagerAdapter(mAdapter);
         mViewPager.setAdapter(mAdapter);
         mTabLayout.setupWithViewPager(mViewPager);
+
+        //初始化下拉刷新相关变量
+        mLoanSwipeRefreshLayout = (SwipeRefreshLayout)viewLoanList.findViewById(R.id.swipe_container);
+        mLoanSwipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_light, android.R.color.holo_red_light, android.R.color.holo_orange_light, android.R.color.holo_green_light);
+        mLoanSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getLoanedBookRecordList(0);
+            }
+        });
+        mBorrowSwipeRefreshLayout = (SwipeRefreshLayout)viewBorrowList.findViewById(R.id.swipe_container);
+        mBorrowSwipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_light, android.R.color.holo_red_light, android.R.color.holo_orange_light, android.R.color.holo_green_light);
+        mBorrowSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getBorrowedBookRecordList(0);
+            }
+        });
 
         //初始化借出列表相关变量
         mLoanRecyclerView = (RecyclerView) viewLoanList.findViewById(R.id.my_recycler_view);
@@ -171,6 +191,9 @@ public class BorrowFragment extends MyFragment {
         mBorrowRecyclerView.setLayoutManager(mLayoutManager);
         mBorrowRecyclerView.setAdapter(mBorrowRecordAdapter);
 
+        //从服务器获取最新的动态
+        getLoanedBookRecordList(0);
+        getBorrowedBookRecordList(0);
         return rootView;
     }
 
@@ -181,11 +204,13 @@ public class BorrowFragment extends MyFragment {
                 List<BorrowRecord> loanRecords = (List<BorrowRecord>) data;
                 mLoanRecordAdapter.setDataProvider(new BorrowRecordDataProvider(loanRecords));
                 mLoanRecordAdapter.notifyDataSetChanged();
+                mLoanSwipeRefreshLayout.setRefreshing(false);
             }
 
             @Override
             public void onFailure(PLServerAPI.ApiError apiError) {
                 showSnackBar(apiError.getErrorString());
+                mLoanSwipeRefreshLayout.setRefreshing(false);
             }
         });
     }
@@ -197,11 +222,13 @@ public class BorrowFragment extends MyFragment {
                 List<BorrowRecord> borrowRecords = (List<BorrowRecord>) data;
                 mBorrowRecordAdapter.setDataProvider(new BorrowRecordDataProvider(borrowRecords));
                 mBorrowRecordAdapter.notifyDataSetChanged();
+                mBorrowSwipeRefreshLayout.setRefreshing(false);
             }
 
             @Override
             public void onFailure(PLServerAPI.ApiError apiError) {
                 showSnackBar(apiError.getErrorString());
+                mBorrowSwipeRefreshLayout.setRefreshing(false);
             }
         });
     }
@@ -243,9 +270,6 @@ public class BorrowFragment extends MyFragment {
     public void onResume(){
         super.onResume();
         buttonClicked = false;
-        //从服务器获取最新的动态
-        getLoanedBookRecordList(0);
-        getBorrowedBookRecordList(0);
     }
 
     @Override

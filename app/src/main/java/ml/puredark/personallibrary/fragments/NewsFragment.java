@@ -2,12 +2,14 @@ package ml.puredark.personallibrary.fragments;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -45,6 +47,7 @@ public class NewsFragment extends MyFragment {
     private MainActivity mActivity;
 
     //首页书籍列表
+    private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private BookMarkAdapter mBookMarkAdapter;
@@ -88,6 +91,16 @@ public class NewsFragment extends MyFragment {
         mActivity.setSearchEnable(false);
         mActivity.setShadowEnable(true);
 
+        //初始化下拉刷新相关变量
+        swipeRefreshLayout = (SwipeRefreshLayout)findViewById(R.id.swipe_container);
+        swipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_light, android.R.color.holo_red_light, android.R.color.holo_orange_light, android.R.color.holo_green_light);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getRecentBookMarks(User.getUid());
+            }
+        });
+
         //初始化书籍列表相关变量
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
         mRecyclerView.setHasFixedSize(true);
@@ -115,7 +128,7 @@ public class NewsFragment extends MyFragment {
                         if(view.getId()==R.id.book)
                             mActivity.startBookDetailActivity(book, view);
                         else
-                            startViewBookMarkActivity(bookMark, book);
+                            mActivity.startViewBookMarkActivity(bookMark, book);
                     }else{
                         DoubanRestAPI.getBookByISBN(bookMark.isbn13, new MainActivity.CallBack() {
                             @Override
@@ -129,7 +142,7 @@ public class NewsFragment extends MyFragment {
                                             if(view.getId()==R.id.book)
                                                 mActivity.startBookDetailActivity(book, view);
                                             else
-                                                startViewBookMarkActivity(bookMark, book);
+                                                mActivity.startViewBookMarkActivity(bookMark, book);
                                             SharedPreferencesUtil.saveData(PLApplication.mContext, "isbn13_" + book.isbn13, new Gson().toJson(book));
                                         }
                                     }
@@ -143,46 +156,10 @@ public class NewsFragment extends MyFragment {
 
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mBookMarkAdapter);
+        //从服务器获取最新的动态
+        getRecentBookMarks(User.getUid());
 
         return rootView;
-    }
-
-    public void startViewBookMarkActivity(final BookMark bookMark, final Book book){
-        final String url = (book.images.get("large")==null)?book.image:book.images.get("large");
-        ImageLoader.getInstance().loadImage(url, new SimpleImageLoadingListener() {
-            @Override
-            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                PLApplication.temp = book;
-                PLApplication.bitmap = loadedImage;
-                Palette.generateAsync(loadedImage, new Palette.PaletteAsyncListener() {
-                    @Override
-                    public void onGenerated(Palette palette) {
-                        Palette.Swatch vibrant = palette.getVibrantSwatch();
-                        Palette.Swatch darkVibrant = palette.getDarkVibrantSwatch();
-                        Palette.Swatch darkmuted = palette.getDarkMutedSwatch();
-                        Palette.Swatch top = (darkmuted != null) ? darkmuted : darkVibrant;
-                        if (darkmuted != null && darkVibrant != null)
-                            top = (darkmuted.getPopulation() >= darkVibrant.getPopulation()) ? darkmuted : darkVibrant;
-                        Palette.Swatch muted = palette.getMutedSwatch();
-                        Palette.Swatch lightmuted = palette.getLightMutedSwatch();
-                        Palette.Swatch bottom = (lightmuted != null) ? lightmuted : muted;
-                        Palette.Swatch fabColor = muted;
-                        final Intent intent = new Intent(mActivity, BookMarkActivity.class);
-                        Bundle bundle = new Bundle();
-                        bundle.putString("bookMark", new Gson().toJson(bookMark));
-                        bundle.putInt("topColor", top.getRgb());
-                        bundle.putInt("topTextColor", top.getTitleTextColor());
-                        bundle.putInt("bottomColor", bottom.getRgb());
-                        bundle.putInt("bottomTextColor", bottom.getBodyTextColor());
-                        bundle.putInt("titleBarColor", vibrant.getRgb());
-                        bundle.putInt("titleTextColor", vibrant.getTitleTextColor());
-                        bundle.putInt("fabColor", fabColor.getRgb());
-                        intent.putExtras(bundle);
-                        startActivity(intent);
-                    }
-                });
-            }
-        });
     }
 
     public void getRecentBookMarks(int uid){
@@ -192,11 +169,13 @@ public class NewsFragment extends MyFragment {
                 List<BookMark> bookMarks = (List<BookMark>) data;
                 mBookMarkAdapter.setDataProvider(new BookMarkDataProvider(bookMarks));
                 mBookMarkAdapter.notifyDataSetChanged();
+                swipeRefreshLayout.setRefreshing(false);
             }
 
             @Override
             public void onFailure(PLServerAPI.ApiError apiError) {
                 showSnackBar(apiError.getErrorString());
+                swipeRefreshLayout.setRefreshing(false);
             }
         });
     }
@@ -237,8 +216,6 @@ public class NewsFragment extends MyFragment {
     public void onResume(){
         super.onResume();
         newsItemClicked = false;
-        //从服务器获取最新的动态
-        getRecentBookMarks(User.getUid());
     }
 
     @Override

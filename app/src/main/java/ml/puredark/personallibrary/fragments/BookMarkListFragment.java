@@ -32,8 +32,6 @@ public class BookMarkListFragment extends Fragment {
     private static BookMarkListFragment mInstance;
     private View rootView;
 
-    private Book book;
-
     //首页书籍列表
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
@@ -41,6 +39,9 @@ public class BookMarkListFragment extends Fragment {
 
     //item已点击(避免多次点击同时打开多个Activity)
     private boolean markItemClicked = false;
+
+    //点击后是否打开新Activity
+    private boolean openActivity = false;
 
     public static BookMarkListFragment newInstance() {
         mInstance = new BookMarkListFragment();
@@ -69,11 +70,9 @@ public class BookMarkListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_news, container, false);
+        rootView = inflater.inflate(R.layout.fragment_book_mark_list, container, false);
 
         ((MyActivity)getActivity()).setCurrFragment(MyActivity.FRAGMENT_BOOK_MARK_LIST);
-
-        book = (Book) PLApplication.temp;
 
         //初始化书籍列表相关变量
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
@@ -83,8 +82,12 @@ public class BookMarkListFragment extends Fragment {
 
         List<BookMark> bookMarks = new ArrayList<>();
 
+        int bid = getArguments().getInt("bid");
+        int uid = getArguments().getInt("uid");
+        openActivity = getArguments().getBoolean("openActivity");
+
         //从服务器获取最新的动态
-        getBookMarkList(book.id, book.uid);
+        getBookMarkList(bid, uid);
 
         BookMarkDataProvider mBookMarkDataProvider = new BookMarkDataProvider(bookMarks);
         mBookMarkAdapter = new BookMarkAdapter(mBookMarkDataProvider);
@@ -94,7 +97,40 @@ public class BookMarkListFragment extends Fragment {
                 if (!markItemClicked) {
                     markItemClicked = true;
                     final BookMark bookMark = (BookMark) mBookMarkAdapter.getDataProvider().getItem(postion);
-                    viewBookMark(bookMark);
+                    if(!openActivity) {
+                        viewBookMark(bookMark);
+                        return;
+                    }
+                    String bookString = (String) SharedPreferencesUtil.getData(PLApplication.mContext, "isbn13_"+bookMark.isbn13, "");
+                    if(!bookString.equals("")){
+                        Book book = new Gson().fromJson(bookString, Book.class);
+                        book.id = bookMark.bid;
+                        book.uid = bookMark.uid;
+                        if(view.getId()==R.id.book)
+                            MainActivity.getInstance().startBookDetailActivity(book, view);
+                        else
+                            MainActivity.getInstance().startViewBookMarkActivity(bookMark, book);
+                    }else{
+                        DoubanRestAPI.getBookByISBN(bookMark.isbn13, new MainActivity.CallBack() {
+                            @Override
+                            public void action(final Object obj) {
+                                new Handler().postDelayed(new Runnable() {
+                                    public void run() {
+                                        if (obj instanceof Book) {
+                                            Book book = (Book) obj;
+                                            book.id = bookMark.bid;
+                                            book.uid = bookMark.uid;
+                                            if(view.getId()==R.id.book)
+                                                MainActivity.getInstance().startBookDetailActivity(book, view);
+                                            else
+                                                MainActivity.getInstance().startViewBookMarkActivity(bookMark, book);
+                                            SharedPreferencesUtil.saveData(PLApplication.mContext, "isbn13_" + book.isbn13, new Gson().toJson(book));
+                                        }
+                                    }
+                                }, 500);
+                            }
+                        });
+                    }
                 }
             }
         });
@@ -110,7 +146,7 @@ public class BookMarkListFragment extends Fragment {
         Bundle newbund = new Bundle();
         newbund.putString("bookMark", new Gson().toJson(bookMark));
         viewBookMark.setArguments(newbund);
-        ((MyActivity)getActivity()).replaceFragment(viewBookMark);
+        ((MyActivity) getActivity()).replaceFragment(viewBookMark);
     }
 
     public void getBookMarkList(int bid, int uid){

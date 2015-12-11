@@ -16,6 +16,8 @@ public abstract class MyActivity extends AppCompatActivity {
 
     public final static int FRAGMENT_VIEW_BOOK_MARK = 5;
     public final static int FRAGMENT_BOOK_MARK_LIST = 6;
+    public final static int FRAGMENT_FRIEND_LIST = 7;
+    public final static int FRAGMENT_BOOK_LIST = 7;
 
     public abstract void setCurrFragment(int curr);
     public abstract void replaceFragment(Fragment fragment);

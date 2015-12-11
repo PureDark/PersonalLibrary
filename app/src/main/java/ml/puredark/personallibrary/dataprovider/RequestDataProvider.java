@@ -18,24 +18,24 @@ package ml.puredark.personallibrary.dataprovider;
 
 import java.util.List;
 
-import ml.puredark.personallibrary.beans.BookMark;
 import ml.puredark.personallibrary.beans.BorrowRecord;
+import ml.puredark.personallibrary.beans.Request;
 
-public class BorrowRecordDataProvider extends AbstractDataProvider {
-    private List<BorrowRecord> myBorrowRecords;
+public class RequestDataProvider extends AbstractDataProvider {
+    private List<Request> myRequests;
 
-    public BorrowRecordDataProvider(List<BorrowRecord> myBorrowRecords) {
-        this.myBorrowRecords = myBorrowRecords;
+    public RequestDataProvider(List<Request> myRequests) {
+        this.myRequests = myRequests;
     }
 
     @Override
     public int getCount() {
-        return myBorrowRecords.size();
+        return myRequests.size();
     }
 
     @Override
-    public List<BorrowRecord> getItems() {
-        return myBorrowRecords;
+    public List<Request> getItems() {
+        return myRequests;
     }
 
     @Override
@@ -44,7 +44,7 @@ public class BorrowRecordDataProvider extends AbstractDataProvider {
             throw new IndexOutOfBoundsException("index = " + index);
         }
 
-        return myBorrowRecords.get(index);
+        return myRequests.get(index);
     }
 
     @Override
@@ -60,12 +60,12 @@ public class BorrowRecordDataProvider extends AbstractDataProvider {
 
     @Override
     public void addItem(Data item) {
-        myBorrowRecords.add((BorrowRecord)item);
+        myRequests.add((Request)item);
     }
 
     @Override
     public void addItem(int position, Data item) {
-        myBorrowRecords.add(position, (BorrowRecord)item);
+        myRequests.add(position, (Request)item);
     }
     @Override
     public void moveItem(int fromPosition, int toPosition) {
