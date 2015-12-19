@@ -13,11 +13,11 @@ android {
     buildToolsVersion "23.0.1"
     defaultConfig {
         applicationId "ml.puredark.personallibrary"
-        minSdkVersion 14
+        minSdkVersion 16
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
-        renderscriptTargetApi 20
+        renderscriptTargetApi 23
         renderscriptSupportModeEnabled true
     }
     buildTypes {
@@ -36,6 +36,7 @@ android {
 repositories {
     maven { url "https://jitpack.io" }
     maven { url "http://kodbiro.github.io/repo/" }
+    maven { url "http://dl.bintray.com/glomadrian/maven" }
 }
 
 dependencies {
@@ -49,11 +50,12 @@ dependencies {
     compile 'com.android.support:design:23.1.0'
 
     // unofficial material design libraries
-//    compile 'com.github.vajro:MaterialDesignLibrary:1.6'
+    compile 'com.zhy:percent-support-extends:1.1.1'
+    compile 'com.github.vajro:MaterialDesignLibrary:1.6'
     compile 'com.balysv:material-ripple:1.0.2'
 //    compile 'de.hdodenhof:circleimageview:2.0.0'
     compile 'com.telly:mrvector:0.2.0'
-    compile 'net.steamcrafted:materialiconlib:1.0.4'
+    compile 'net.steamcrafted:materialiconlib:1.0.7'
 //    compile 'com.github.rey5137:material:1.2.1'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.daimajia.easing:library:1.0.1@aar'
@@ -63,9 +65,9 @@ dependencies {
 //    compile 'com.kogitune:pre-lollipop-activity-transition:1.1.0'
     compile 'com.github.PureDark:circular-progress-button:5da765e82b'
     compile files('libs/universal-image-loader-1.9.4.jar')
-//    compile 'com.makeramen:roundedimageview:2.2.0'
+    compile 'com.makeramen:roundedimageview:2.2.0'
 //    compile 'com.github.dmytrodanylyk.shadow-layout:library:1.0.3'
-//    compile 'com.github.chemouna:shadow-layout:b014ac2237'
+    compile 'com.github.chemouna:shadow-layout:b014ac2237'
     compile('com.h6ah4i.android.widget.advrecyclerview:advrecyclerview:0.8.2@aar') {
         transitive = true
     }
@@ -74,8 +76,11 @@ dependencies {
         transitive = true;
     }
     compile "com.andkulikov:transitionseverywhere:1.6.0"
-    compile 'tk.zielony:carbon:0.10.1'
+//    compile 'tk.zielony:carbon:0.10.1'
 //    compile 'com.melnykov:floatingactionbutton:1.3.0'
+//    compile 'com.getbase:floatingactionbutton:1.10.1'
+    compile 'com.github.clans:fab:1.6.1'
+    compile 'com.github.glomadrian:MaterialAnimatedSwitch:1.1@aar'
 
     // Zxing libraries
     compile 'com.journeyapps:zxing-android-embedded:3.0.2@aar'
@@ -86,4 +91,6 @@ dependencies {
 
     // gson library
     compile 'com.google.code.gson:gson:2.2.4'
+    //hanzi to pinyin library
+    compile 'com.github.belerweb:pinyin4j:2.5.0'
 }

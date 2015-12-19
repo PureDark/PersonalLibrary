@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <LinearLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="160dp"
+        android:background="@drawable/carview_radius_bg">
+
+        <com.makeramen.roundedimageview.RoundedImageView
+            android:id="@+id/cover"
+            android:layout_width="114dp"
+            android:layout_height="160dp"
+            android:src="@null"
+            android:scaleType="fitXY"
+            app:riv_corner_radius_top_left="@dimen/book_item_corner_radius"
+            app:riv_corner_radius_bottom_left="@dimen/book_item_corner_radius"/>
+
+
+        <com.balysv.materialripple.MaterialRippleLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/rippleLayout"
+            app:mrl_rippleOverlay="true"
+            app:mrl_rippleColor="@color/black"
+            app:mrl_rippleAlpha="0.1"
+            app:mrl_rippleDimension="10dp"
+            app:mrl_rippleHover="true"
+            app:mrl_rippleDuration="250"
+            app:mrl_rippleFadeDuration="75"
+            app:mrl_rippleDelayClick="true">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+                <View
+                    android:layout_width="3dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/shadow_right" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="@dimen/activity_horizontal_margin"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:textColor="@color/black"
+                        android:textSize="18sp"
+                        tools:text="夜莺与玫瑰"
+                        android:id="@+id/title" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginRight="@dimen/activity_horizontal_margin"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        tools:text="[英] 奥斯卡·王尔德 "
+                        android:id="@+id/author" />
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:src="@drawable/list_divider_h"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:lines="4"
+                        android:ellipsize="end"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        tools:text="《夜莺与玫瑰》是英国唯美主义作家王尔德的童话作品之一，收录于《快乐王子及其他故事》。故事以夜莺受到大学生的爱情感动，培育玫瑰为主线。赞扬了爱情的可贵，鞭挞了世间的拜金主义。在一个寒冷的冬夜"
+                        android:id="@+id/summary" />
+                </LinearLayout>
+            </RelativeLayout>
+        </com.balysv.materialripple.MaterialRippleLayout>
+    </LinearLayout>
+
+</RelativeLayout>

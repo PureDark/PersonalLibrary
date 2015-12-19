@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">个人图书馆</string>
-    
+
     <!-- Strings related to login -->
     <string name="title_activity_login">登 录</string>
     <string name="prompt_cellphone">手机号</string>
@@ -14,7 +14,8 @@
     <string name="error_invalid_password">密码太短</string>
     <string name="error_incorrect_password">密码错误</string>
     <string name="error_field_required">这一项不能为空</string>
-
+    <string name="error_confire_failed">两次密码输入不一致</string>
+    <string name="error_send_requested">请先点击获取验证码</string>
     <string name="success">成 功</string>
     <string name="error">错 误</string>
     <string name="retry">重 试</string>
@@ -22,6 +23,10 @@
 
     <!-- Strings related to index -->
     <string name="title_activity_main">我的藏书</string>
+    <string name="title_fragment_index">我的藏书</string>
+    <string name="title_fragment_borrow">借书记录</string>
+    <string name="title_fragment_friend">我的书友</string>
+    <string name="title_fragment_news">书友动态</string>
 
     <string name="navigation_drawer_open">打开抽屉</string>
     <string name="navigation_drawer_close">关闭抽屉</string>
@@ -29,9 +34,19 @@
     <string name="prompt_search">书名</string>
 
     <string name="action_search">搜索</string>
+    <string name="action_publish">发布</string>
+    <string name="action_cancel">取消</string>
+    <string name="action_delete">删除</string>
 
     <string name="title_activity_book_detail">书籍详情</string>
 
     <string name="item_removed">移除了一本书</string>
     <string name="snack_bar_action_undo">撤销</string>
+
+    <string name="title_activity_write_mark">写读书笔记</string>
+    <string name="title_activity_book_mark">查看读书笔记</string>
+    <string name="title_activity_book_mark_list">所有读书笔记</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

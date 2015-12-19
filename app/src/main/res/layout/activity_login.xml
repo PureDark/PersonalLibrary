@@ -1,4 +1,4 @@
-<carbon.widget.RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
 
     android:id="@+id/loginBackground"
@@ -8,10 +8,10 @@
     android:orientation="vertical"
     tools:context=".LoginActivity">
 
-    <android.support.v4.view.ViewPager
+    <ml.puredark.personallibrary.customs.NoScrollViewPager
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         >
-    </android.support.v4.view.ViewPager>
-</carbon.widget.RelativeLayout>
+    </ml.puredark.personallibrary.customs.NoScrollViewPager>
+</RelativeLayout>

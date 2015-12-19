@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="carbon_Theme.Light">
+    <style name="AppTheme" parent="Theme.AppCompat.Light">
         <!-- Customize your theme here. -->
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
@@ -29,10 +29,9 @@
         <item name="android:paddingBottom">8dp</item>
         <item name="android:paddingLeft">8dp</item>
         <item name="android:paddingRight">8dp</item>
-        <item name="android:paddingTop">16dp</item>
+        <item name="android:paddingTop">8dp</item>
         <item name="android:scrollbarStyle">outsideOverlay</item>
         <item name="android:scrollbars">vertical</item>
-        <item name="android:background">@color/bg_grey</item>
     </style>
 
     <style name="AnimationActivity" parent="@android:style/Animation.Activity">

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="1px"
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_height">
+
+        <com.balysv.materialripple.MaterialRippleLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:id="@+id/rippleLayout"
+            app:mrl_rippleOverlay="true"
+            app:mrl_rippleColor="@color/black"
+            app:mrl_rippleAlpha="0.1"
+            app:mrl_rippleDimension="10dp"
+            app:mrl_rippleHover="true"
+            app:mrl_rippleDuration="250"
+            app:mrl_rippleFadeDuration="75"
+            app:mrl_rippleDelayClick="true">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:id="@+id/character"
+                        android:layout_width="@dimen/chrt_width"
+                        android:layout_height="@dimen/chrt_height"
+                        android:textSize="29sp"
+                        android:layout_marginLeft="@dimen/normal_margin"
+                        android:layout_marginRight="@dimen/normal_margin"
+                        android:layout_marginTop="@dimen/top_margin"
+                        android:textAlignment="center"
+                        android:text="X"/>
+                </LinearLayout>
+                <com.makeramen.roundedimageview.RoundedImageView
+                    android:id="@+id/avatar"
+                    android:layout_width="@dimen/avatar_size_normal_half"
+                    android:layout_height="@dimen/avatar_size_normal_half"
+                    android:layout_marginTop="20dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/avatar"
+                    app:riv_corner_radius="1000dp"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="@dimen/activity_horizontal_margin"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:textColor="@color/black"
+                        android:textSize="22sp"
+                        android:text="小明"
+                        android:id="@+id/name" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:src="@drawable/list_divider_h"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/normal_margin"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:width="@dimen/sig_length"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:text="个人简介个人简介个人简介"
+                        android:id="@+id/description" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.balysv.materialripple.MaterialRippleLayout>
+        <com.gc.materialdesign.views.ButtonFlat
+            android:id="@+id/btnAdd"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginRight="@dimen/half_margin"
+            android:background="@color/cpb_blue"
+            android:text="添加"/>
+        <TextView
+            android:id="@+id/status"
+            android:visibility="gone"
+            android:gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginRight="@dimen/half_margin"
+            android:textColor="@color/textSecoundary"
+            android:textSize="14sp"
+            android:text="未还"/>
+    </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/list_divider_h" />
+</LinearLayout>

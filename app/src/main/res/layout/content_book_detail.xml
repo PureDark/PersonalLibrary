@@ -2,7 +2,7 @@
 <ml.puredark.personallibrary.customs.MyCoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:carbon="http://schemas.android.com/apk/res-auto"
+    xmlns:icon="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinator_layout"
     android:layout_width="match_parent"
@@ -22,7 +22,7 @@
             android:layout_height="match_parent"
             android:clipChildren="false"
             android:clipToPadding="false"
-            app:layout_scrollFlags="scroll"
+            app:layout_scrollFlags="scroll|snap"
             app:contentScrim="?attr/colorPrimary">
             <ScrollView
                 android:layout_width="match_parent"
@@ -44,7 +44,7 @@
                 android:alpha="0.8"
                 android:scaleType="fitXY"/>
 
-            <carbon.widget.LinearLayout
+            <com.dd.ShadowLayout
                 android:id="@+id/book_cover_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -52,15 +52,134 @@
                 android:clipChildren="false"
                 android:clipToPadding="false"
                 android:layout_marginBottom="@dimen/activity_vertical_margin"
-                android:layout_marginLeft="32dp">
-                <carbon.widget.ImageView
+                android:layout_marginLeft="32dp"
+                app:sl_shadowRadius="2dp"
+                app:sl_shadowColor="#AA000000"
+                app:sl_dx="1dp"
+                app:sl_dy="1dp">
+                <ImageView
                     android:id="@+id/book_cover"
                     android:layout_width="114dp"
                     android:layout_height="160dp"
                     android:src="@drawable/cover"
-                    android:scaleType="fitXY"
-                    carbon:carbon_elevation="8dp"/>
-            </carbon.widget.LinearLayout>
+                    android:scaleType="fitXY"/>
+            </com.dd.ShadowLayout>
+
+            <LinearLayout
+                android:id="@+id/book_info_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="160dp"
+                android:layout_gravity="bottom"
+                android:layout_marginTop="@dimen/tool_bar_height"
+                android:layout_marginLeft="162dp"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:orientation="vertical">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="24dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <net.steamcrafted.materialiconlib.MaterialIconView
+                        android:layout_width="36dp"
+                        android:layout_height="24dp"
+                        icon:materialIcon="account"
+                        icon:materialIconColor="@color/white"
+                        icon:materialIconSize="24dp"
+                        android:scaleType="center"/>
+                    <TextView
+                        android:id="@+id/author"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/white"
+                        android:gravity="center_vertical"
+                        android:text="作者名"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="24dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <net.steamcrafted.materialiconlib.MaterialIconView
+                        android:layout_width="36dp"
+                        android:layout_height="24dp"
+                        icon:materialIcon="book_open"
+                        icon:materialIconColor="@color/white"
+                        icon:materialIconSize="24dp"
+                        android:scaleType="center"/>
+                    <TextView
+                        android:id="@+id/pages"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/white"
+                        android:gravity="center_vertical"
+                        android:text="566页"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="24dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <net.steamcrafted.materialiconlib.MaterialIconView
+                        android:layout_width="36dp"
+                        android:layout_height="24dp"
+                        icon:materialIcon="currency_usd"
+                        icon:materialIconColor="@color/white"
+                        icon:materialIconSize="24dp"
+                        android:scaleType="center"/>
+                    <TextView
+                        android:id="@+id/price"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/white"
+                        android:gravity="center_vertical"
+                        android:text="75.00元"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="24dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <net.steamcrafted.materialiconlib.MaterialIconView
+                        android:layout_width="36dp"
+                        android:layout_height="24dp"
+                        icon:materialIcon="calendar"
+                        icon:materialIconColor="@color/white"
+                        icon:materialIconSize="24dp"
+                        android:scaleType="center"/>
+                    <TextView
+                        android:id="@+id/pubdate"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/white"
+                        android:gravity="center_vertical"
+                        android:text="2011-06-05 出版"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="24dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <net.steamcrafted.materialiconlib.MaterialIconView
+                        android:layout_width="36dp"
+                        android:layout_height="24dp"
+                        icon:materialIcon="barcode"
+                        icon:materialIconColor="@color/white"
+                        icon:materialIconSize="24dp"
+                        android:scaleType="center"/>
+                    <TextView
+                        android:id="@+id/isbn"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/white"
+                        android:gravity="center_vertical"
+                        android:text="9787121124419"/>
+                </LinearLayout>
+            </LinearLayout>
 
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
@@ -72,7 +191,7 @@
                 app:layout_collapseMode="pin"
                 app:popupTheme="@style/AppTheme.PopupOverlay">
 
-                <carbon.widget.LinearLayout
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:clipChildren="false"
@@ -84,7 +203,7 @@
                         android:scaleType="fitXY"
                         android:padding="16dp"
                         android:background="@drawable/button_pressed"/>
-                </carbon.widget.LinearLayout>
+                </LinearLayout>
             </android.support.v7.widget.Toolbar>
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
@@ -95,13 +214,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="false">
-        <carbon.widget.LinearLayout
+        <LinearLayout
             android:id="@+id/title_bar"
             android:layout_width="match_parent"
             android:layout_height="@dimen/book_detail_title_bar_height"
             android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:background="@color/colorPrimaryLight"
-            carbon:carbon_elevation="4dp">
+            android:background="@color/colorPrimaryLight">
             <TextView
                 android:id="@+id/book_title"
                 android:layout_width="match_parent"
@@ -110,7 +228,7 @@
                 android:gravity="center_vertical"
                 android:textAppearance="?android:textAppearanceLarge"
                 android:text="标题"/>
-        </carbon.widget.LinearLayout>
+        </LinearLayout>
 
         <android.support.v4.widget.NestedScrollView
             android:id="@+id/summary_layout"
@@ -118,8 +236,7 @@
             android:background="@color/bg_grey"
             android:layout_below="@id/title_bar"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+            android:layout_height="match_parent">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -134,14 +251,53 @@
         </android.support.v4.widget.NestedScrollView>
     </RelativeLayout>
 
-    <ml.puredark.personallibrary.customs.MyFloatingActionButton
+    <com.github.clans.fab.FloatingActionButton
         android:id="@+id/fab_action"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/fab_margin"
-        app:layout_anchor="@id/book_detail_layout"
-        app:layout_anchorGravity="bottom|end"
-        app:borderWidth="0dp"
-        android:src="@null"/>
+        android:layout_gravity="bottom|right"
+        android:layout_marginBottom="12dp"
+        android:layout_marginRight="16dp"
+        android:src="@null"
+        app:fab_elevationCompat="4dp"/>
+
+    <com.github.clans.fab.FloatingActionMenu
+        android:id="@+id/fab_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:layout_marginBottom="12dp"
+        android:layout_marginRight="16dp"
+        app:menu_labels_ellipsize="end"
+        app:menu_labels_singleLine="true"
+        app:menu_fab_label="操作"
+        app:menu_fab_show_animation="@anim/show_from_bottom"
+        app:menu_fab_hide_animation="@anim/hide_to_bottom">
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fab_write"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@null"
+            app:fab_size="mini"
+            app:fab_label="写读书笔记" />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fab_borrow_lend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@null"
+            app:fab_size="mini"
+            app:fab_label="申请借书" />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fab_book_marks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@null"
+            app:fab_size="mini"
+            app:fab_label="查看读书笔记" />
+
+    </com.github.clans.fab.FloatingActionMenu>
 
 </ml.puredark.personallibrary.customs.MyCoordinatorLayout>

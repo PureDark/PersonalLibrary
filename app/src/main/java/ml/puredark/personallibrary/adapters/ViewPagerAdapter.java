@@ -11,9 +11,16 @@ import java.util.List;
  */
 public class ViewPagerAdapter extends PagerAdapter {
     List<View> viewLists;
+    List<String> titles;
 
-    public ViewPagerAdapter(List<View> lists) {
+    @Override
+    public CharSequence getPageTitle(int position) {
+        return titles.get(position);
+    }
+
+    public ViewPagerAdapter(List<View> lists, List<String> titles) {
         viewLists = lists;
+        this.titles = titles;
     }
     @Override
     public int getCount() {                                                                 //获得size

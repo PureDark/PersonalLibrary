@@ -17,6 +17,7 @@ import com.h6ah4i.android.widget.advrecyclerview.swipeable.LegacySwipeableItemAd
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.SwipeableItemConstants;
 import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractDraggableSwipeableItemViewHolder;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.zhy.android.percent.support.PercentRelativeLayout;
 
 import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.beans.BookListItem;
@@ -30,9 +31,10 @@ public class BookListAdapter
     private AbstractDataProvider mProvider;
     private EventListener mEventListener;
     private MyItemClickListener mItemClickListener;
+    private boolean isGrid = false;
 
     public interface EventListener {
-        void onItemRemoved(int position);
+        void onItemRemoved(int position, BookListItem book);
     }
 
     // NOTE: 短名引用
@@ -43,24 +45,24 @@ public class BookListAdapter
 
     public class BookViewHolder extends AbstractDraggableSwipeableItemViewHolder implements View.OnClickListener {
         public MaterialRippleLayout rippleLayout;
-        public LinearLayout container;
+        public View container;
         public ImageView cover;
-        public TextView title,author,description;
-        public carbon.widget.LinearLayout coverLayout;
+        public TextView title,author,summary;
         private MyItemClickListener mListener;
 
         public BookViewHolder(View view, MyItemClickListener onClickListener) {
             super(view);
-            container = (LinearLayout)view.findViewById(R.id.container);
+            container = view.findViewById(R.id.container);
             cover = (ImageView)view.findViewById(R.id.cover);
             rippleLayout = (MaterialRippleLayout) view.findViewById(R.id.rippleLayout);
             title = (TextView)view.findViewById(R.id.title);
             author = (TextView)view.findViewById(R.id.author);
-            description = (TextView)view.findViewById(R.id.description);
-            coverLayout = (carbon.widget.LinearLayout) view.findViewById(R.id.book_cover_layout);
+            summary = (TextView)view.findViewById(R.id.summary);
             mListener = onClickListener;
-            cover.setOnClickListener(this);
-            rippleLayout.setOnClickListener(this);
+            if(cover!=null)
+                cover.setOnClickListener(this);
+            if(rippleLayout!=null)
+                rippleLayout.setOnClickListener(this);
         }
 
         @Override
@@ -81,10 +83,15 @@ public class BookListAdapter
         setHasStableIds(true);
     }
 
+    public void setDataProvider(AbstractDataProvider mProvider){
+        this.mProvider = mProvider;
+    }
+
     @Override
     public BookListAdapter.BookViewHolder onCreateViewHolder(ViewGroup parent,int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_book, parent, false);
+        int layout = (isGrid)?R.layout.item_book_grid:R.layout.item_book_list;
+        View v = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
+
         // 在这里对View的参数进行设置
         BookViewHolder vh = new BookViewHolder(v, mItemClickListener);
         return vh;
@@ -99,9 +106,11 @@ public class BookListAdapter
             ImageLoader.getInstance().displayImage(book.cover, holder.cover);
             holder.cover.setTag(book.cover);
         }
-        holder.title.setText(book.title);
-        holder.author.setText(book.author);
-        holder.description.setText(book.description);
+        if(!isGrid) {
+            holder.title.setText(book.title);
+            holder.author.setText(book.author);
+            holder.summary.setText(book.summary);
+        }
 
         // set swiping properties
         holder.setSwipeItemHorizontalSlideAmount(0);
@@ -109,6 +118,7 @@ public class BookListAdapter
 
     @Override
     public int getItemCount() {
+        int count = 1;
         return (mProvider!=null)?mProvider.getCount():0;
     }
 
@@ -164,20 +174,24 @@ public class BookListAdapter
 
     @Override
     public void onSetSwipeBackground(BookViewHolder holder, int position, int type) {
-        int bgRes = 0;
+        int rootViewBgRes = 0;
+        int containerBgRes = 0;
         switch (type) {
             case Swipeable.DRAWABLE_SWIPE_NEUTRAL_BACKGROUND:
-                bgRes = R.drawable.rounded_bg_2dp;
+                rootViewBgRes = R.drawable.carview_radius_bg;
+                containerBgRes = R.color.transparent;
                 break;
             case Swipeable.DRAWABLE_SWIPE_LEFT_BACKGROUND:
-                bgRes = R.drawable.bg_swipe_item_right;
+                rootViewBgRes = R.drawable.bg_swipe_item_right;
+                containerBgRes = R.drawable.carview_radius_bg;
                 break;
             case Swipeable.DRAWABLE_SWIPE_RIGHT_BACKGROUND:
-                bgRes = R.drawable.bg_swipe_item_left;
+                rootViewBgRes = R.drawable.bg_swipe_item_left;
+                containerBgRes = R.drawable.carview_radius_bg;
                 break;
         }
-
-        holder.itemView.setBackgroundResource(bgRes);
+            holder.itemView.setBackgroundResource(rootViewBgRes);
+            holder.container.setBackgroundResource(containerBgRes);
     }
 
     @Override
@@ -199,12 +213,17 @@ public class BookListAdapter
     @Override
     public void onPerformAfterSwipeReaction(BookViewHolder holder, int position, int result, int reaction) {
         if (reaction == Swipeable.AFTER_SWIPE_REACTION_REMOVE_ITEM) {
+            BookListItem book = (BookListItem) getDataProvider().getItem(position);
             mProvider.removeItem(position);
             notifyItemRemoved(position);
             if (mEventListener != null) {
-                mEventListener.onItemRemoved(position);
+                mEventListener.onItemRemoved(position, book);
             }
         }
+    }
+
+    public void setIsGrid(boolean isGrid){
+        this.isGrid = isGrid;
     }
 
     public EventListener getEventListener() {

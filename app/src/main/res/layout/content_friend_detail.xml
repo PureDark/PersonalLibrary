@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ml.puredark.personallibrary.customs.MyCoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinator_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="false"
+    tools:context=".FriendActivity">
+
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/app_bar"
+        android:layout_height="@dimen/book_detail_app_bar_height"
+        android:layout_width="match_parent"
+        android:fitsSystemWindows="false"
+        android:theme="@style/AppTheme.AppBarOverlay">
+        <android.support.design.widget.CollapsingToolbarLayout
+            android:id="@+id/toolbar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:expandedTitleGravity="center_horizontal|bottom"
+            app:expandedTitleMarginBottom="56dp"
+            app:contentScrim="?attr/colorPrimary">
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_collapseMode="parallax" >
+                <ml.puredark.personallibrary.customs.ScalingImageView
+                    android:id="@+id/backdrop"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scaleType="centerCrop"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/avatar"/>
+            </ScrollView>
+            <View
+                android:id="@+id/hover"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorPrimary"
+                android:alpha="0.8"
+                android:scaleType="fitXY"/>
+            <com.dd.ShadowLayout
+                android:id="@+id/friend_cover_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:layout_marginBottom="32dp"
+                app:sl_shadowRadius="2dp"
+                app:sl_shadowColor="#AA000000"
+                app:sl_dx="1px"
+                app:sl_dy="1px"
+                app:sl_cornerRadius="1000dp">
+                <com.makeramen.roundedimageview.RoundedImageView
+                    android:id="@+id/avatar"
+                    android:layout_width="@dimen/avatar_size_large"
+                    android:layout_height="@dimen/avatar_size_large"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/avatar"
+                    app:riv_corner_radius="1000dp"/>
+            </com.dd.ShadowLayout>
+            <TextView
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:id="@+id/signature"
+                android:layout_marginBottom="16dp"
+                android:layout_gravity="center_horizontal|bottom"
+                android:textColor="@color/white"
+                android:text="好好学习，天天向上"
+                android:textSize="16sp"/>
+
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_height="@dimen/tool_bar_height"
+                android:layout_width="match_parent"
+                android:paddingTop="@dimen/status_bar_padding"
+                android:paddingLeft="-16dp"
+                app:contentInsetStart="0dp"
+                app:layout_collapseMode="pin"
+                app:popupTheme="@style/AppTheme.PopupOverlay">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
+                    <ImageView
+                        android:id="@+id/back_button"
+                        android:layout_width="@dimen/tool_bar_height_no_padding"
+                        android:layout_height="@dimen/tool_bar_height_no_padding"
+                        android:scaleType="fitXY"
+                        android:padding="16dp"
+                        android:background="@drawable/button_pressed"/>
+                </LinearLayout>
+            </android.support.v7.widget.Toolbar>
+
+        </android.support.design.widget.CollapsingToolbarLayout>
+    </android.support.design.widget.AppBarLayout>
+
+    <LinearLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:context=".FriendActivity">
+
+        <android.support.design.widget.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            app:tabIndicatorColor="@color/white"
+            app:tabSelectedTextColor="@color/white"
+            app:tabTextColor="@color/colorPrimaryLight"
+            app:tabMode="scrollable"/>
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+</ml.puredark.personallibrary.customs.MyCoordinatorLayout>

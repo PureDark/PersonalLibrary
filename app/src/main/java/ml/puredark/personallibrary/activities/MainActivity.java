@@ -2,33 +2,45 @@ package ml.puredark.personallibrary.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.gc.materialdesign.views.ProgressBarCircularIndeterminate;
+import com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch;
 import com.google.gson.Gson;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ArgbEvaluator;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.telly.mrvector.MrVector;
 import com.wnafee.vector.compat.ResourcesCompat;
@@ -36,7 +48,13 @@ import com.wnafee.vector.compat.ResourcesCompat;
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.ObjectAnimator;
 
-import carbon.widget.ProgressBar;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 import io.codetail.animation.SupportAnimator;
 import io.codetail.animation.ViewAnimationUtils;
 import io.codetail.animation.arcanimator.ArcAnimator;
@@ -45,31 +63,46 @@ import io.codetail.animation.arcanimator.Side;
 import io.codetail.widget.RevealFrameLayout;
 import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
+import ml.puredark.personallibrary.User;
 import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.beans.BookListItem;
+import ml.puredark.personallibrary.beans.BookMark;
+import ml.puredark.personallibrary.beans.Friend;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
 import ml.puredark.personallibrary.customs.MyEditText;
 import ml.puredark.personallibrary.customs.MyFloatingActionButton;
+import ml.puredark.personallibrary.fragments.BorrowFragment;
+import ml.puredark.personallibrary.fragments.FriendFragment;
 import ml.puredark.personallibrary.fragments.IndexFragment;
-import ml.puredark.personallibrary.fragments.OnFragmentInteractionListener;
+import ml.puredark.personallibrary.fragments.MyFragment;
+import ml.puredark.personallibrary.fragments.NewsFragment;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimator;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimatorListener;
 import ml.puredark.personallibrary.helpers.DoubanRestAPI;
-import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
+import ml.puredark.personallibrary.helpers.PLServerAPI;
+import ml.puredark.personallibrary.utils.BitmapUtils;
+import ml.puredark.personallibrary.utils.FileUtils;
 import ml.puredark.personallibrary.utils.ViewUtils;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,
-        OnFragmentInteractionListener {
-    private View rootLayout;
-    // Fragment的标签
-    private static final String FRAGMENT_INDEX = "index";
+public class MainActivity extends MyActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
+    private static MainActivity mInstance;
 
-    //下拉刷新
+    //ActivityResult编号
+    public final static int RESULT_SCANBOOK = 1;
+    public final static int RESULT_BOOKDETAIL = 2;
+    public final static int RESULT_AVATAR = 3;
+
+    //记录当前加载的是哪个Fragment
+    private int currFragmentNo = FRAGMENT_INDEX;
+    private MyFragment currFragment;
+
+    //主要元素
     private MyCoordinatorLayout mCoordinatorLayout;
     private AppBarLayout mAppBarLayout;
     private CollapsingToolbarLayout mCollapsingToolbar;
+    private NavigationView navigationView;
 
     //搜索栏是否展开
     private boolean expanded = false;
@@ -79,11 +112,25 @@ public class MainActivity extends AppCompatActivity
     private MyFloatingActionButton fabAdd;
     private RevealFrameLayout revealLayout;
     private View revealView, extendBar, blank;
-    private ProgressBar loading;
+    private ProgressBarCircularIndeterminate loading;
+    private MaterialAnimatedSwitch listSwitch;
     //revealView是否展开
     private boolean revealed = false;
     //是否动画中
     private boolean animating = false;
+    //是否正在从网络获取数据
+    private boolean getting = false;
+
+    public static MainActivity newInstance() {
+        mInstance = new MainActivity();
+        return mInstance;
+    }
+    public static MainActivity getInstance() {
+        if(mInstance!=null)
+            return mInstance;
+        else
+            return newInstance();
+    }
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -92,13 +139,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mInstance = this;
         setContentView(R.layout.activity_main);
-        rootLayout = findViewById(R.id.drawer_layout);
-        //ActivityTransition.with(getIntent()).to(findViewById(R.id.avatar)).start(savedInstanceState);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, IndexFragment.getInstance(), FRAGMENT_INDEX)
+                    .add(R.id.container, IndexFragment.getInstance(), IndexFragment.getInstance().getClass().getName())
                     .commit();
+            currFragment = IndexFragment.getInstance();
         }
         mCoordinatorLayout = (MyCoordinatorLayout) findViewById(R.id.content);
         mAppBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
@@ -110,7 +158,7 @@ public class MainActivity extends AppCompatActivity
         revealView = findViewById(R.id.reveal_view);
         extendBar = findViewById(R.id.animator_view);
         blank = findViewById(R.id.blank);
-        loading = (ProgressBar) findViewById(R.id.loading);
+        loading = (ProgressBarCircularIndeterminate) findViewById(R.id.loading);
         revealLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -131,9 +179,86 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
         //初始化侧边栏
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        navigationView.setCheckedItem(R.id.nav_index);
+        listSwitch = (MaterialAnimatedSwitch) findViewById(R.id.list_switch);
+        listSwitch.setOnCheckedChangeListener(new MaterialAnimatedSwitch.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(final boolean right) {
+                new Handler().postDelayed(new Runnable() {
+                    public void run() {
+                        if(right)
+                            IndexFragment.getInstance().setRecyclerViewToGrid();
+                        else
+                            IndexFragment.getInstance().setRecyclerViewToList();
+                        new Handler().postDelayed(new Runnable() {
+                            public void run() {
+                                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                                drawer.closeDrawer(GravityCompat.START);
+                            }
+                        }, 200);
+                    }
+                }, 300);
+            }
+        });
+        //初始化侧边栏里的个人信息
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                ImageView avatar = (ImageView) findViewById(R.id.avatar);
+                DisplayImageOptions options = new DisplayImageOptions.Builder()
+                        .cacheInMemory(false)//设置下载的图片是否缓存在内存中
+                        .cacheOnDisc(false)//设置下载的图片是否缓存在SD卡中
+                        .build();//构建完成
+                ImageLoader.getInstance()
+                        .displayImage(PLApplication.serverHost + "/images/users/avatars/" + User.getUid() + ".png", avatar, options);
+
+                avatar.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                            Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                            startActivityForResult(intent, RESULT_AVATAR);
+                    }
+                });
+                final EditText nickname = (EditText) findViewById(R.id.nickname);
+                final EditText signature = (EditText) findViewById(R.id.signature);
+                nickname.setText(User.getNickname());
+                signature.setText(User.getSignature());
+                nickname.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        if (!hasFocus)
+                            PLServerAPI.modifyUserInfo(nickname.getText().toString(), 0, null, null, new PLServerAPI.onResponseListener() {
+                                @Override
+                                public void onSuccess(Object data) {
+                                    User.setNickname(nickname.getText().toString());
+                                }
+
+                                @Override
+                                public void onFailure(PLServerAPI.ApiError apiError) {
+                                    Toast.makeText(MainActivity.this, apiError.getErrorString(), Toast.LENGTH_LONG);
+                                    nickname.setText(User.getNickname());
+                                }
+                            });
+                    }
+                });
+                signature.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        if(!hasFocus)
+                            PLServerAPI.modifyUserInfo(null, 0, signature.getText().toString(), null, new PLServerAPI.onResponseListener() {
+                                @Override
+                                public void onSuccess(Object data) {
+                                    User.setSignature(signature.getText().toString());
+                                }
+                                @Override
+                                public void onFailure(PLServerAPI.ApiError apiError) {
+                                    Toast.makeText(MainActivity.this, apiError.getErrorString(), Toast.LENGTH_LONG);
+                                    signature.setText(User.getSignature());
+                                }
+                            });
+                    }
+                });
+            }
+        }, 200);
 
         //为FAB加载图标
         Animatable crossStartIcon = (Animatable) ResourcesCompat.getDrawable(this, R.drawable.vector_animated_cross_0_to_45);
@@ -170,6 +295,21 @@ public class MainActivity extends AppCompatActivity
         inputSearch.setEndIcon(searchEndIcon);
         searchStartIcon.start();
 
+        inputSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String keyword = inputSearch.getText().toString();
+                currFragment.onSearch(keyword);
+            }
+        });
         //为搜索按钮绑定事件
         findViewById(R.id.search_button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -190,55 +330,104 @@ public class MainActivity extends AppCompatActivity
                     collapseSearchBar();
             }
         });
+
+    }
+
+    public void setCurrFragment(int curr){
+        currFragmentNo = curr;
+    }
+
+    public void replaceFragment(Fragment fragment){
+        getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
+                .replace(R.id.container, fragment, fragment.getClass().getName())
+                .commit();
+        currFragment = (MyFragment)fragment;
     }
 
     @Override
     public void onBackPressed() {
+        if(animating||getting)return;
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if(revealed&&!animating){
+        } else if(revealed){
             new AnimationFabtoCamera().reverse();
+        } else if(currFragmentNo==FRAGMENT_INDEX){
+            finish();
+        } else if(currFragmentNo!=FRAGMENT_INDEX){
+            listSwitch.setVisibility(View.VISIBLE);
+            replaceFragment(IndexFragment.getInstance());
         } else {
             super.onBackPressed();
         }
     }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+        if (id == R.id.nav_index) {
+            listSwitch.setVisibility(View.VISIBLE);
+            replaceFragment(IndexFragment.getInstance());
+        } else if (id == R.id.nav_borrow) {
+            listSwitch.setVisibility(View.INVISIBLE);
+            replaceFragment(BorrowFragment.getInstance());
+        } else if (id == R.id.nav_friend) {
+            listSwitch.setVisibility(View.INVISIBLE);
+            replaceFragment(FriendFragment.getInstance());
+        } else if (id == R.id.nav_whatshot) {
+            listSwitch.setVisibility(View.INVISIBLE);
+            replaceFragment(NewsFragment.getInstance());
+        } else if (id == R.id.nav_logout) {
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        } else if (id == R.id.nav_exit) {
+            finish();
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         if (result != null&&result.getContents()!=null) {
-//                final Snackbar snackbar = Snackbar.make(rootLayout, contents, Snackbar.LENGTH_LONG);
-//                snackbar.setAction("隐藏", new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        snackbar.dismiss();
-//                    }
-//                }).show();
-            //TODO: 获取书籍信息时显示载入动画
-            loading.setVisibility(View.VISIBLE);
+            new Handler().postDelayed(new Runnable() {
+                public void run() {
+                    loading.setVisibility(View.VISIBLE);
+                }
+            }, 500);
+            getting = true;
             DoubanRestAPI.getBookByISBN(result.getContents(), new CallBack() {
                 @Override
-                public void action(Object obj) {
-                    if (obj instanceof Book) {
-                        Book book = (Book) obj;
-                        startBookDetailActivity(book);
-                    } else {
-                        new Handler().postDelayed(new Runnable() {
-                            public void run() {
+                public void action(final Object obj) {
+                    getting = false;
+                    new Handler().postDelayed(new Runnable() {
+                        public void run() {
+                            if (obj instanceof Book) {
+                                Book book = (Book) obj;
+                                startBookDetailActivity(book);
+                            } else {
+                                loading.setVisibility(View.INVISIBLE);
                                 new AnimationFabtoCamera().reverse();
                             }
-                        }, 500);
-                    }
+                        }
+                    }, 500);
                 }
             });
-            return;
-        }else if(requestCode==1){
+        }else if(requestCode==RESULT_SCANBOOK){
             if(resultCode==RESULT_OK&& PLApplication.temp instanceof Book) {
                 Book book = (Book) PLApplication.temp;
                 String author = (book.author.length>0)?book.author[0]:"";
                 BookListItem item = new BookListItem(book.id, book.isbn13, book.images.get("large"), book.title, author, book.summary);
                 IndexFragment.getInstance().addNewBook(0, item);
             }
+            loading.setVisibility(View.INVISIBLE);
             new Handler().postDelayed(new Runnable() {
                 public void run() {
                     ObjectAnimator bgColorAnimator = ObjectAnimator.ofObject(revealView,
@@ -256,24 +445,94 @@ public class MainActivity extends AppCompatActivity
                     });
                 }
             }, 500);
-            return;
-        }else if(requestCode==2){
+        }else if(requestCode==RESULT_BOOKDETAIL){
 
-            return;
-        }
-        new Handler().postDelayed(new Runnable() {
-            public void run() {
-                new AnimationFabtoCamera().reverse();
+        }else if(requestCode==RESULT_AVATAR){
+            if (resultCode == RESULT_OK) {
+                final Uri uri = intent.getData();
+
+                // Get the File path from the Uri
+                String path = FileUtils.getPath(this, uri);
+
+                File cacheDir = getCacheDir();
+                final String cachePath = cacheDir.getPath();    //缓存路径
+
+                final String filePath = cachePath+"/"+User.getUid()+".png";
+
+                // Alternatively, use FileUtils.getFile(Context, Uri)
+                if (path != null && FileUtils.isLocal(path)) {
+                    BitmapFactory.Options options =new BitmapFactory.Options();
+                    options.inJustDecodeBounds =true;
+                    // 获取这个图片的宽和高
+                    Bitmap bitmap = BitmapFactory.decodeFile(path, options); //此时返回bm为空
+                    options.inJustDecodeBounds =false;
+                    //计算缩放比
+                    int be = (int)(options.outHeight/ (float)256);
+                    if (be <= 0)
+                        be = 1;
+                    options.inSampleSize = be;
+                    //重新读入图片，注意这次要把options.inJustDecodeBounds 设为 false
+                    bitmap=BitmapFactory.decodeFile(path,options);
+                    bitmap = BitmapUtils.cropToSquare(bitmap);
+                    ImageView iv=new ImageView(this);
+                    iv.setImageBitmap(bitmap);
+                    File file=new File(filePath);
+                    try {
+                        FileOutputStream out=new FileOutputStream(file);
+                        if(bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)){
+                            out.flush();
+                            out.close();
+                        }
+                    } catch (FileNotFoundException e){
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    FileInputStream fis = null;
+                    try {
+                        fis = new FileInputStream(filePath);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    int count = 0;
+                    try {
+                        while((count = fis.read(buffer)) >= 0){
+                            baos.write(buffer, 0, count);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    final ImageView avatar = (ImageView) findViewById(R.id.avatar);
+                    PLServerAPI.uploadAvatar(file, new PLServerAPI.onResponseListener() {
+                        @Override
+                        public void onSuccess(Object data){
+                            avatar.setImageDrawable(Drawable.createFromPath(filePath));
+                        }
+
+                        @Override
+                        public void onFailure(PLServerAPI.ApiError apiError) {
+                            Toast.makeText(MainActivity.this, apiError.getErrorString(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
             }
-        }, 500);
+        }else{
+            new Handler().postDelayed(new Runnable() {
+                public void run() {
+                    new AnimationFabtoCamera().reverse();
+                }
+            }, 500);
+        }
     }
-    private void startBookDetailActivity(final Book book){
+    public void startBookDetailActivity(final Book book){
         startBookDetailActivity(book, true, null);
     }
-    private void startBookDetailActivity(final Book book, View view){
+    public void startBookDetailActivity(final Book book, View view){
         startBookDetailActivity(book, false, view);
     }
-    private void startBookDetailActivity(final Book book, final boolean scaned, final View cover){
+    public void startBookDetailActivity(final Book book, final boolean scaned, final View cover){
         final String url = (book.images.get("large")==null)?book.image:book.images.get("large");
         ImageLoader.getInstance().loadImage(url, new SimpleImageLoadingListener() {
             @Override
@@ -296,16 +555,26 @@ public class MainActivity extends AppCompatActivity
                         Palette.Swatch fabColor = muted;
                         final Intent intent = new Intent(MainActivity.this, BookDetailActivity.class);
                         Bundle bundle = new Bundle();
+                        Resources res = getResources();
+                        if (top == null)
+                            top = new Palette.Swatch(res.getColor(R.color.colorPrimary), 1000);
                         bundle.putInt("topColor", top.getRgb());
+                        bundle.putInt("topTextColor", top.getTitleTextColor());
+                        if (bottom == null)
+                            bottom = new Palette.Swatch(res.getColor(R.color.colorPrimaryLight), 1000);
                         bundle.putInt("bottomColor", bottom.getRgb());
                         bundle.putInt("bottomTextColor", bottom.getBodyTextColor());
+                        if (vibrant == null)
+                            vibrant = new Palette.Swatch(res.getColor(R.color.colorAccent), 1000);
                         bundle.putInt("titleBarColor", vibrant.getRgb());
                         bundle.putInt("titleTextColor", vibrant.getTitleTextColor());
+                        if (fabColor == null)
+                            fabColor = new Palette.Swatch(res.getColor(R.color.colorPrimaryDark), 1000);
                         bundle.putInt("fabColor", fabColor.getRgb());
                         intent.putExtras(bundle);
                         intent.putExtra("scaned", scaned);
-                        loading.setVisibility(View.INVISIBLE);
                         if (scaned) {
+                            loading.setVisibility(View.INVISIBLE);
                             ObjectAnimator bgColorAnimator = ObjectAnimator.ofObject(revealView,
                                     "backgroundColor",
                                     new ArgbEvaluator(),
@@ -317,14 +586,120 @@ public class MainActivity extends AppCompatActivity
                             new AnimationShowBookDetail().start(new CustomAnimatorListener() {
                                 @Override
                                 public void onAnimationEnd() {
-                                    startActivityForResult(intent, 1);
+                                    startActivityForResult(intent, RESULT_SCANBOOK);
                                     MainActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                                 }
                             });
                         } else {
                             ActivityTransitionHelper.with(MainActivity.this)
-                                    .fromView(fromView).startActivityForResult(intent, 2);
+                                    .fromView(fromView).startActivityForResult(intent, RESULT_BOOKDETAIL);
                         }
+                    }
+                });
+            }
+        });
+    }
+
+    public void startFriendDetailActivity(final Friend friend, final View avatar){
+        ImageLoader.getInstance().loadImage(PLApplication.serverHost+"/images/users/avatars/"+friend.uid+".png", new SimpleImageLoadingListener() {
+            @Override
+            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                PLApplication.temp = friend;
+                PLApplication.bitmap = loadedImage;
+                final View fromView = avatar;
+                Palette.generateAsync(loadedImage, new Palette.PaletteAsyncListener() {
+                    @Override
+                    public void onGenerated(Palette palette) {
+                        Palette.Swatch vibrant = palette.getVibrantSwatch();
+                        Palette.Swatch darkVibrant = palette.getDarkVibrantSwatch();
+                        Palette.Swatch darkmuted = palette.getDarkMutedSwatch();
+                        Palette.Swatch top = (darkmuted != null) ? darkmuted : darkVibrant;
+                        if (darkmuted != null && darkVibrant != null)
+                            top = (darkmuted.getPopulation() >= darkVibrant.getPopulation()) ? darkmuted : darkVibrant;
+                        Palette.Swatch muted = palette.getMutedSwatch();
+                        Palette.Swatch lightmuted = palette.getLightMutedSwatch();
+                        Palette.Swatch bottom = (lightmuted != null) ? lightmuted : muted;
+                        final Intent intent = new Intent(MainActivity.this, FriendDetailActivity.class);
+                        Bundle bundle = new Bundle();
+                        Resources res = getResources();
+                        if(top==null)
+                            top = new Palette.Swatch(res.getColor(R.color.colorPrimary),1000);
+                        bundle.putInt("topColor", top.getRgb());
+                        bundle.putInt("topTextColor", top.getTitleTextColor());
+                        if(bottom==null)
+                            bottom = new Palette.Swatch(res.getColor(R.color.colorPrimaryLight),1000);
+                        bundle.putInt("bottomColor", bottom.getRgb());
+                        bundle.putInt("bottomTextColor", bottom.getBodyTextColor());
+                        if(vibrant==null)
+                            vibrant = new Palette.Swatch(res.getColor(R.color.colorAccent),1000);
+                        bundle.putInt("titleBarColor", vibrant.getRgb());
+                        bundle.putInt("titleTextColor", vibrant.getTitleTextColor());
+                        intent.putExtras(bundle);
+                        ActivityTransitionHelper.with(MainActivity.this).fromView(fromView).startActivity(intent);
+                    }
+                });
+            }
+            @Override
+            public void onLoadingFailed(String imageUri, View view, FailReason failReason){
+                final Intent intent = new Intent(MainActivity.this, FriendDetailActivity.class);
+                Bundle bundle = new Bundle();
+                Resources res = getResources();
+                Palette.Swatch top = new Palette.Swatch(res.getColor(R.color.colorPrimary),1000);
+                bundle.putInt("topColor", top.getRgb());
+                bundle.putInt("topTextColor", top.getTitleTextColor());
+                Palette.Swatch bottom = new Palette.Swatch(res.getColor(R.color.colorPrimaryLight),1000);
+                bundle.putInt("bottomColor", bottom.getRgb());
+                bundle.putInt("bottomTextColor", bottom.getBodyTextColor());
+                Palette.Swatch vibrant = new Palette.Swatch(res.getColor(R.color.colorAccent),1000);
+                bundle.putInt("titleBarColor", vibrant.getRgb());
+                bundle.putInt("titleTextColor", vibrant.getTitleTextColor());
+                intent.putExtras(bundle);
+                ActivityTransitionHelper.with(MainActivity.this).fromView(avatar).startActivity(intent);
+            }
+        });
+    }
+
+    public void startViewBookMarkActivity(final BookMark bookMark, final Book book){
+        final String url = (book.images.get("large")==null)?book.image:book.images.get("large");
+        ImageLoader.getInstance().loadImage(url, new SimpleImageLoadingListener() {
+            @Override
+            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                PLApplication.temp = book;
+                PLApplication.bitmap = loadedImage;
+                Palette.generateAsync(loadedImage, new Palette.PaletteAsyncListener() {
+                    @Override
+                    public void onGenerated(Palette palette) {
+                        Palette.Swatch vibrant = palette.getVibrantSwatch();
+                        Palette.Swatch darkVibrant = palette.getDarkVibrantSwatch();
+                        Palette.Swatch darkmuted = palette.getDarkMutedSwatch();
+                        Palette.Swatch top = (darkmuted != null) ? darkmuted : darkVibrant;
+                        if (darkmuted != null && darkVibrant != null)
+                            top = (darkmuted.getPopulation() >= darkVibrant.getPopulation()) ? darkmuted : darkVibrant;
+                        Palette.Swatch muted = palette.getMutedSwatch();
+                        Palette.Swatch lightmuted = palette.getLightMutedSwatch();
+                        Palette.Swatch bottom = (lightmuted != null) ? lightmuted : muted;
+                        Palette.Swatch fabColor = muted;
+                        final Intent intent = new Intent(MainActivity.this, BookMarkActivity.class);
+                        Bundle bundle = new Bundle();
+                        bundle.putString("bookMark", new Gson().toJson(bookMark));
+                        Resources res = getResources();
+                        if (top == null)
+                            top = new Palette.Swatch(res.getColor(R.color.colorPrimary), 1000);
+                        bundle.putInt("topColor", top.getRgb());
+                        bundle.putInt("topTextColor", top.getTitleTextColor());
+                        if (bottom == null)
+                            bottom = new Palette.Swatch(res.getColor(R.color.colorPrimaryLight), 1000);
+                        bundle.putInt("bottomColor", bottom.getRgb());
+                        bundle.putInt("bottomTextColor", bottom.getBodyTextColor());
+                        if (vibrant == null)
+                            vibrant = new Palette.Swatch(res.getColor(R.color.colorAccent), 1000);
+                        bundle.putInt("titleBarColor", vibrant.getRgb());
+                        bundle.putInt("titleTextColor", vibrant.getTitleTextColor());
+                        if (fabColor == null)
+                            fabColor = new Palette.Swatch(res.getColor(R.color.colorPrimaryDark), 1000);
+                        bundle.putInt("fabColor", fabColor.getRgb());
+                        intent.putExtras(bundle);
+                        startActivity(intent);
                     }
                 });
             }
@@ -363,42 +738,11 @@ public class MainActivity extends AppCompatActivity
         super.onDestroy();
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_index) {
-
-        } else if (id == R.id.nav_borrow) {
-
-        } else if (id == R.id.nav_friend) {
-
-        } else if (id == R.id.nav_whatshot) {
-
-        } else if (id == R.id.nav_logout) {
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (id == R.id.nav_exit) {
-            finish();
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
+    public void setMainTitle(String title){
+        mCollapsingToolbar.setTitle(title);
     }
-    @Override
-    public void onFragmentInteraction(int action, Object data, View view) {
-        if(action==1&&data instanceof BookListItem){
-                BookListItem item = (BookListItem) data;
-                String bookString = (String) SharedPreferencesUtil.getData(this, "isbn13_"+item.isbn13, "");
-                if(!bookString.equals("")){
-                    Book book = new Gson().fromJson(bookString, Book.class);
-                    startBookDetailActivity(book, view);
-                }
-        }
+    public void setNavigationItemSelected(int itemId){
+        navigationView.setCheckedItem(itemId);
     }
 
     public void extendSearchBar(){
@@ -434,6 +778,25 @@ public class MainActivity extends AppCompatActivity
         mCoordinatorLayout.setAllowForScrool(false);
     }
 
+    public void setSearchEnable(boolean enable){
+        if(expanded==true)
+            collapseSearchBar();
+        if(enable) {
+            inputSearch.setVisibility(View.VISIBLE);
+            findViewById(R.id.search_button).setVisibility(View.VISIBLE);
+        }else{
+            inputSearch.setVisibility(View.INVISIBLE);
+            findViewById(R.id.search_button).setVisibility(View.INVISIBLE);
+        }
+    }
+
+    public void setShadowEnable(boolean enable){
+        if(enable)
+            findViewById(R.id.shadowDown).setVisibility(View.VISIBLE);
+        else
+            findViewById(R.id.shadowDown).setVisibility(View.INVISIBLE);
+    }
+
     static int startFabX;
     static int startFabY;
     private class AnimationFabtoCamera extends CustomAnimator {
@@ -457,7 +820,7 @@ public class MainActivity extends AppCompatActivity
             int endFabY = (int) (revealView.getHeight()*0.5f);
             ArcAnimator arcAnimator = ArcAnimator.createArcAnimator(fabAdd,
                     endFabX, endFabY, 90, Side.LEFT)
-                    .setDuration(300);
+                    .setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
             arcAnimator.setInterpolator(ACCELERATE_DECELERATE);
             arcAnimator.addListener(new SimpleListener(){
                 @Override
@@ -475,7 +838,7 @@ public class MainActivity extends AppCompatActivity
             SupportAnimator animator = ViewAnimationUtils.createCircularReveal(revealView,
                     (int) ViewUtils.centerX(fabAdd), (int) ViewUtils.centerY(fabAdd),
                     fabAdd.getWidth() / 2f, finalRadius);
-            animator.setDuration(400);
+            animator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
             animator.setInterpolator(ACCELERATE);
             animator.addListener(new SimpleListener() {
                 @Override
@@ -491,16 +854,16 @@ public class MainActivity extends AppCompatActivity
 
         void shrinkCameraLayout(){
             revealView.setVisibility(View.VISIBLE);
+            blank.setVisibility(View.INVISIBLE);
             float finalRadius = Math.max(revealView.getWidth(), revealView.getHeight()) * 1.5f;
             SupportAnimator animator = ViewAnimationUtils.createCircularReveal(revealView,
                     (int)ViewUtils.centerX(fabAdd), (int)ViewUtils.centerY(fabAdd),
                     finalRadius, fabAdd.getWidth() / 2f);
-            animator.setDuration(400);
+            animator.setDuration(CustomAnimator.ANIM_DURATION_LONG);
             animator.addListener(new SimpleListener() {
                 @Override
                 public void onAnimationEnd() {
                     revealView.setVisibility(View.INVISIBLE);
-                    blank.setVisibility(View.INVISIBLE);
                     fabAdd.reverse();
                     fabToOrigin();
                 }
@@ -513,7 +876,7 @@ public class MainActivity extends AppCompatActivity
             fabAdd.setVisibility(View.VISIBLE);
             ArcAnimator arcAnimator = ArcAnimator.createArcAnimator(fabAdd,
                     startFabX, startFabY, 90, Side.RIGHT)
-                    .setDuration(300);
+                    .setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
             arcAnimator.setInterpolator(ACCELERATE_DECELERATE);
             arcAnimator.addListener(new SimpleListener(){
                 @Override
@@ -618,7 +981,7 @@ public class MainActivity extends AppCompatActivity
         public void onAnimationRepeat(com.nineoldandroids.animation.Animator animation) {}
     }
 
-    public abstract class CallBack{
+    public abstract static class CallBack{
         public abstract void action(Object data);
     }
 

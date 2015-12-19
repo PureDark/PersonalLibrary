@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="false"
+    tools:context=".FriendActivity">
+
+    <io.codetail.widget.RevealFrameLayout
+        android:id="@+id/animation_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <View
+            android:id="@+id/blank"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="invisible"
+            android:background="@color/white"/>
+
+        <LinearLayout
+            android:id="@+id/reveal_view"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/book_detail_app_bar_height"
+            android:visibility="invisible"
+            android:orientation="vertical"
+            android:background="@color/colorPrimary"/>
+        <View
+            android:id="@+id/extend_bar"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="@dimen/book_detail_app_bar_height"
+            android:visibility="invisible"
+            android:background="@color/colorPrimaryLight"/>
+
+    </io.codetail.widget.RevealFrameLayout>
+
+    <include layout="@layout/content_friend_detail" />
+
+</FrameLayout>
