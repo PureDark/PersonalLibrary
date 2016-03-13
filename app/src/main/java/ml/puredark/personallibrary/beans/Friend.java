@@ -25,6 +25,8 @@ public final class Friend extends AbstractDataProvider.Data{
         updateCharacter();
     }
     public void updateCharacter(){
+        char a[] =nickname.toCharArray();
+        if(a.length==0)return;
         String[] temp = PinyinHelper.toHanyuPinyinStringArray(nickname.toCharArray()[0]);
         if(temp!=null){ //上API如果内容非汉字，则返回空
             character = new String(temp[0]);

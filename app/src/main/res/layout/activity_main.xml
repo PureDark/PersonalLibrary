@@ -5,9 +5,12 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/red"
     tools:openDrawer="false">
 
-    <include layout="@layout/content_main" />
+    <include
+        android:fitsSystemWindows="false"
+        layout="@layout/content_main" />
 
     <io.codetail.widget.RevealFrameLayout
         android:id="@+id/reveal_layout"

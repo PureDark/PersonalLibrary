@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/bgColor"
     android:orientation="vertical"
-    tools:context=".LoginActivity">
+    tools:context=".activities.LoginActivity">
 
     <ml.puredark.personallibrary.customs.NoScrollViewPager
         android:id="@+id/viewPager"
