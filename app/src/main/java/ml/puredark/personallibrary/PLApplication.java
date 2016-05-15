@@ -18,7 +18,6 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
-import com.telly.mrvector.MrVector;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -32,24 +31,6 @@ public class PLApplication extends Application {
     //服务器地址
     public static String serverHost = "http://115.28.135.76";
 
-    /**
-     * 解决低API版本下对矢量图的绘制
-     */
-    {{
-        MrVector.register(
-                R.drawable.ic_search_white_24dp,
-                R.drawable.ic_directions_run_black_24dp,
-                R.drawable.ic_exit_to_app_black_24dp,
-                R.drawable.ic_explore_black_24dp,
-                R.drawable.ic_library_books_black_24dp,
-                R.drawable.ic_people_black_24dp,
-                R.drawable.ic_storage_black_24dp,
-                R.drawable.ic_whatshot_black_24dp,
-                R.drawable.ic_add_white_24dp
-        );
-    }}
-
-    @TargetApi(Build.VERSION_CODES.GINGERBREAD)
     @SuppressWarnings("unused")
     @Override
     public void onCreate() {

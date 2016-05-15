@@ -42,7 +42,6 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
-import com.telly.mrvector.MrVector;
 import com.wnafee.vector.compat.ResourcesCompat;
 
 import com.nineoldandroids.animation.Animator;
@@ -132,10 +131,6 @@ public class MainActivity extends MyActivity
             return newInstance();
     }
 
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(MrVector.wrap(newBase));
-    }
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

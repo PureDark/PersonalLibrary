@@ -34,7 +34,6 @@ import com.google.gson.Gson;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.animation.ValueAnimator;
-import com.telly.mrvector.MrVector;
 import com.transitionseverywhere.utils.ViewGroupOverlayUtils;
 
 import net.steamcrafted.materialiconlib.MaterialIconView;
@@ -45,7 +44,6 @@ import ml.puredark.personallibrary.R;
 import ml.puredark.personallibrary.User;
 import ml.puredark.personallibrary.beans.Book;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
-import ml.puredark.personallibrary.customs.MyFloatingActionButton;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimator;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimatorListener;
@@ -203,18 +201,14 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
             public void run() {
                 /* 给背景封面加上高斯模糊 */
                 final Bitmap overlay = FastBlur.doBlur(PLApplication.bitmap.copy(Bitmap.Config.ARGB_8888, true), 2, true);
-                final Drawable iconStar = MrVector.inflate(getResources(), R.drawable.ic_star_white_24dp);
-                final Drawable iconPencil = MrVector.inflate(getResources(),R.drawable.ic_pencil_white_24dp);
-                final Drawable iconPaperclip = MrVector.inflate(getResources(),R.drawable.ic_paperclip_white_24dp);
-                final Drawable iconLibraryBooks = MrVector.inflate(getResources(),R.drawable.ic_library_books_white_24dp);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         backdrop.setImageBitmap(overlay);
-                        fabAction.setImageDrawable(iconStar);
-                        ((FloatingActionButton)fabMenu.getChildAt(0)).setImageDrawable(iconPencil);
-                        ((FloatingActionButton)fabMenu.getChildAt(1)).setImageDrawable(iconPaperclip);
-                        ((FloatingActionButton)fabMenu.getChildAt(2)).setImageDrawable(iconLibraryBooks);
+                        fabAction.setImageResource(R.drawable.ic_star_white_24dp);
+                        ((FloatingActionButton)fabMenu.getChildAt(0)).setImageResource(R.drawable.ic_pencil_white_24dp);
+                        ((FloatingActionButton)fabMenu.getChildAt(1)).setImageResource(R.drawable.ic_paperclip_white_24dp);
+                        ((FloatingActionButton)fabMenu.getChildAt(2)).setImageResource(R.drawable.ic_library_books_white_24dp);
                         /* 让背景的封面大图来回缓慢移动 */
                         float targetY = (backdrop.getHeight()>backdrop.getWidth())?-0.4f:0f;
                         Animation translateAnimation = new TranslateAnimation(TranslateAnimation.RELATIVE_TO_SELF, 0f,
@@ -499,7 +493,10 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(revealView, "right",
                     startX, endX);
             objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
-            objectAnimator.setInterpolator((show)?ACCELERATE_DECELERATE:ACCELERATE);
+            if(show)
+                objectAnimator.setInterpolator(ACCELERATE_DECELERATE);
+            else
+                objectAnimator.setInterpolator(ACCELERATE);
             return objectAnimator;
         }
 
@@ -509,7 +506,10 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(extendBar, "left",
                     startX, endX);
             objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
-            objectAnimator.setInterpolator((show)?ACCELERATE_DECELERATE:ACCELERATE);
+            if(show)
+                objectAnimator.setInterpolator(ACCELERATE_DECELERATE);
+            else
+                objectAnimator.setInterpolator(ACCELERATE);
             return objectAnimator;
         }
 
@@ -519,7 +519,10 @@ public class BookDetailActivity extends AppCompatActivity implements AppBarLayou
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(blank, "right",
                     startX, endX);
             objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
-            objectAnimator.setInterpolator((show) ? ACCELERATE_DECELERATE : ACCELERATE);
+            if(show)
+                objectAnimator.setInterpolator(ACCELERATE_DECELERATE);
+            else
+                objectAnimator.setInterpolator(ACCELERATE);
             return objectAnimator;
         }
     }

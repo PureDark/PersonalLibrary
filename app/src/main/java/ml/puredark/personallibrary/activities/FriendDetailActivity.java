@@ -2,7 +2,6 @@ package ml.puredark.personallibrary.activities;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.AppBarLayout;
@@ -12,13 +11,8 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.graphics.Palette;
 import android.support.v7.graphics.drawable.DrawerArrowDrawable;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,16 +22,9 @@ import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.github.clans.fab.FloatingActionButton;
-import com.google.gson.Gson;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.animation.ValueAnimator;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
-import com.telly.mrvector.MrVector;
 import com.transitionseverywhere.utils.ViewGroupOverlayUtils;
 
 import java.util.ArrayList;
@@ -46,28 +33,17 @@ import java.util.List;
 import io.codetail.widget.RevealFrameLayout;
 import ml.puredark.personallibrary.PLApplication;
 import ml.puredark.personallibrary.R;
-import ml.puredark.personallibrary.User;
 import ml.puredark.personallibrary.adapters.BookListAdapter;
 import ml.puredark.personallibrary.adapters.BookMarkAdapter;
 import ml.puredark.personallibrary.adapters.FragmentViewPagerAdapter;
-import ml.puredark.personallibrary.adapters.ViewPagerAdapter;
-import ml.puredark.personallibrary.beans.Book;
-import ml.puredark.personallibrary.beans.BookListItem;
-import ml.puredark.personallibrary.beans.BookMark;
 import ml.puredark.personallibrary.beans.Friend;
-import ml.puredark.personallibrary.customs.EmptyRecyclerView;
 import ml.puredark.personallibrary.customs.MyCoordinatorLayout;
-import ml.puredark.personallibrary.dataprovider.BookListDataProvider;
-import ml.puredark.personallibrary.dataprovider.BookMarkDataProvider;
 import ml.puredark.personallibrary.fragments.BookListFragment;
 import ml.puredark.personallibrary.fragments.BookMarkListFragment;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimator;
 import ml.puredark.personallibrary.helpers.ActivityTransitionHelper.CustomAnimatorListener;
-import ml.puredark.personallibrary.helpers.DoubanRestAPI;
 import ml.puredark.personallibrary.helpers.FastBlur;
-import ml.puredark.personallibrary.helpers.PLServerAPI;
-import ml.puredark.personallibrary.utils.SharedPreferencesUtil;
 
 public class FriendDetailActivity extends MyActivity {
     private ImageView avatar;
@@ -385,7 +361,10 @@ public class FriendDetailActivity extends MyActivity {
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(revealView, "right",
                     startX, endX);
             objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
-            objectAnimator.setInterpolator((show)?ACCELERATE_DECELERATE:ACCELERATE);
+            if(show)
+                objectAnimator.setInterpolator(ACCELERATE_DECELERATE);
+            else
+                objectAnimator.setInterpolator(ACCELERATE);
             return objectAnimator;
         }
 
@@ -395,7 +374,10 @@ public class FriendDetailActivity extends MyActivity {
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(extendBar, "left",
                     startX, endX);
             objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
-            objectAnimator.setInterpolator((show)?ACCELERATE_DECELERATE:ACCELERATE);
+            if(show)
+                objectAnimator.setInterpolator(ACCELERATE_DECELERATE);
+            else
+                objectAnimator.setInterpolator(ACCELERATE);
             return objectAnimator;
         }
 
@@ -405,7 +387,10 @@ public class FriendDetailActivity extends MyActivity {
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(blank, "right",
                     startX, endX);
             objectAnimator.setDuration(CustomAnimator.ANIM_DURATION_MEDIUM);
-            objectAnimator.setInterpolator((show) ? ACCELERATE_DECELERATE : ACCELERATE);
+            if(show)
+                objectAnimator.setInterpolator(ACCELERATE_DECELERATE);
+            else
+                objectAnimator.setInterpolator(ACCELERATE);
             return objectAnimator;
         }
     }
