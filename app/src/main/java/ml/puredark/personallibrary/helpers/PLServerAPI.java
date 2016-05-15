@@ -67,6 +67,7 @@ public class PLServerAPI {
         RequestParams params = new RequestParams();
         params.put("module", "user");
         params.put("action", "logout");
+        params.put("sessionid", User.getSessionid());
         postNoReturnData(params, callBack);
     }
 
@@ -336,8 +337,7 @@ public class PLServerAPI {
         postReturnJsonElement(params, new onResponseListener() {
             @Override
             public void onSuccess(Object data) {
-                List<BorrowRecord> books = new Gson().fromJson((JsonElement) data, new TypeToken<List<BorrowRecord>>() {
-                }.getType());
+                List<BorrowRecord> books = new Gson().fromJson((JsonElement) data, new TypeToken<List<BorrowRecord>>() {}.getType());
                 callBack.onSuccess(books);
             }
 
